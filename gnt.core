@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Copyright (c) 2015  Denis Kuzmin (reg) [ entry.reg@gmail.com ]
+    
+    Distributed under the MIT license
+    (see accompanying file LICENSE or a copy at http://opensource.org/licenses/MIT)
+-->
+
+<!--
+    The lightweight non-binary tool for getting the NuGet packages via basic MSBuild Tool (msbuild.exe without additional extensions etc.)
+    https://github.com/3F/GetNuTool/blob/master/README.md
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Main settings -->
+    <PropertyGroup>
+        <ngconfig Condition="'$(ngconfig)' == ''">.nuget\packages.config</ngconfig>                 <!-- Where to look the packages.config of solution-level -->
+        <ngserver Condition="'$(ngserver)' == ''">https://www.nuget.org/api/v2/package/</ngserver>  <!-- Server by default -->
+        <ngpackages Condition="'$(ngpackages)' == ''"></ngpackages>                                 <!-- Packages by default -->
+        <ngpath Condition="'$(ngpath)' == ''">packages</ngpath>                                     <!-- Path by default -->
+    </PropertyGroup>
+
+    <!-- Entry point -->
+    <Target Name="handler" BeforeTargets="Build">
+        
+        <PrepareList cfg="$(ngconfig)" plist="$(ngpackages)">
+            <Output PropertyName="plist" TaskParameter="Result" />
+        </PrepareList>
+        <NGDownload plist="$(plist)" url="$(ngserver)" defpath="$(ngpath)" />
+        
+    </Target>
+    
+    <!-- Prepares list for downloader below -->
+    <UsingTask
+        TaskName="PrepareList"
+        TaskFactory="CodeTaskFactory"
+        AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
+
+        <ParameterGroup>
+            <cfg ParameterType="System.String" Required="true" />
+            <plist ParameterType="System.String" />
+            <Result ParameterType="System.String" Output="true" />
+        </ParameterGroup>
+
+        <Task>
+            <Using Namespace="System" />
+            <Using Namespace="System.Collections.Generic" />
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.Text.RegularExpressions" />
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+                
+                    if(!String.IsNullOrEmpty(plist)) {
+                        Result = plist;
+                        return true;
+                    }
+
+                    if(!File.Exists(cfg)) {
+                        throw new FileNotFoundException(String.Format("List of packages is empty. Use '{0}' or define property to msbuild.exe like /p:ngpackages=\"...\"", cfg));
+                    }
+
+                    MatchCollection packages;
+                    using(StreamReader stream = new StreamReader(cfg, System.Text.Encoding.UTF8, true))
+                    {
+                        string content  = stream.ReadToEnd();
+                        packages        = Regex.Matches(content, @"<\s*package\s+([^>]+)>");
+                    }
+
+                    Queue<string> list = new Queue<string>();
+                    foreach(Match package in packages)
+                    {
+                        string pline    = package.Groups[1].Value;
+                        var attrs       = Regex.Matches(pline, @"(\S+)\s*=\s*['""]?([^'""\s]+)");
+
+                        Dictionary<string, string> dict = new Dictionary<string, string>();
+                        foreach(Match attr in attrs) {
+                            dict[attr.Groups[1].Value.ToLower()] = attr.Groups[2].Value;
+                        }
+
+                        if(!dict.ContainsKey("id")) {
+                            throw new ArgumentException(String.Format("Attribute - 'id' is not found in '{0}'", cfg));
+                        }
+                        string link = dict["id"];
+
+                        if(dict.ContainsKey("version")) {
+                            link += "/" + dict["version"];
+                        }
+
+                        if(dict.ContainsKey("output")) {
+                            list.Enqueue(link + ":" + dict["output"]);
+                            continue;
+                        }
+                        list.Enqueue(link);
+                    }
+
+                    Result = String.Join(";", list.ToArray());
+                ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+    
+    <!-- Downloader -->
+    <UsingTask
+        TaskName="NGDownload"
+        TaskFactory="CodeTaskFactory"
+        AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
+
+        <ParameterGroup>
+            <plist ParameterType="System.String" Required="true" />
+            <url ParameterType="System.String" Required="true" />
+            <defpath ParameterType="System.String" />
+        </ParameterGroup>
+
+        <Task>
+            <Reference Include="WindowsBase" />
+            <Using Namespace="System" />
+            <Using Namespace="System.Collections.Generic" />
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.IO.Packaging" />
+            <Using Namespace="System.Net" />
+            <Using Namespace="System.Text.RegularExpressions" />
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+                
+                    Action<string, string, string> get = delegate(string link, string name, string path)
+                    {
+                        Console.WriteLine("Getting `{0}` ...", link);
+                        string temp = Path.Combine(Path.GetTempPath(), name);
+                        using(WebClient wc = new WebClient()) {
+                            wc.DownloadFile(url + link, temp);
+                        }
+
+                        string output = Path.GetFullPath(path ?? name);
+                        Console.WriteLine("Extracting into `{0}`", output);
+                        using(Package package = ZipPackage.Open(temp, FileMode.Open, FileAccess.Read))
+                        {
+                            foreach(PackagePart part in package.GetParts()) 
+                            {
+                                string uri  = Uri.UnescapeDataString(part.Uri.OriginalString);
+                                string dest = Path.Combine(output, uri.TrimStart('/'));
+                                Console.WriteLine("-> `{0}`", uri);
+
+                                string dir = Path.GetDirectoryName(dest);
+                                if(!Directory.Exists(dir)) {
+                                    Directory.CreateDirectory(dir);
+                                }
+
+                                using(Stream source = part.GetStream(FileMode.Open, FileAccess.Read))
+                                using(FileStream target = File.OpenWrite(dest)) {
+                                    source.CopyTo(target);
+                                } 
+                            } 
+                        }
+                        Console.WriteLine("Done.{0}", Environment.NewLine);
+                    };
+
+                    //Format: id/version[:path];id2/version[:path];...
+
+                    foreach(string package in plist.Split(';'))
+                    {
+                        string[] ident  = package.Split(':');
+                        string link     = ident[0];
+                        string path     = (ident.Length > 1) ? ident[1] : null;
+                        string name     = link.Replace('/', '.');
+
+                        if(!String.IsNullOrEmpty(defpath)) {
+                            path = Path.Combine(defpath, path ?? name);
+                        }
+                        get(link, name, path);
+                    }
+                    
+                ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+
+    <!-- remap targets -->
+
+    <Target Name="Build" DependsOnTargets="handler" />
+
+</Project>
