@@ -1,0 +1,12 @@
+GetNuTool
+____________________
+
+[v1.1]
+    * FIXED: Incorrect path to Microsoft.Build.Tasks.dll with new MSBuild 14.0
+    * NEW: Compact version - `gnt-compact.core`
+    * CHANGED: Ignoring downloading if this folder is already exists. Remove folder to avoid restriction.
+
+[v1.0]
+    * The first point - lightweight non-binary tool for getting the NuGet packages via MSBuild Tool
+    
+

@@ -3,3 +3,4 @@ obj
 *.suo
 .vs
 /packages
+/compact/gnt-compact.core

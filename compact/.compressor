@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Copyright (c) 2015  Denis Kuzmin (reg) [ entry.reg@gmail.com ]
+    
+    Distributed under the GetNuTool license
+    https://github.com/3F/GetNuTool
+-->
+
+<!--
+    Simple compressor of GetNuTool
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Main settings -->
+    <PropertyGroup>
+        <core Condition="'$(core)' == ''">..\gnt.core</core>
+        <output Condition="'$(output)' == ''">gnt-compact.core</output>
+    </PropertyGroup>
+
+    <!-- Entry point -->
+    <Target Name="handler" BeforeTargets="Build">
+        <Compress core="$(core)" output="$(output)" />
+    </Target>
+    
+    <!-- Tasks settings -->
+    <PropertyGroup>
+        <TaskCoreDllPath Condition="Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll</TaskCoreDllPath>
+        <TaskCoreDllPath Condition="'$(TaskCoreDllPath)' == '' and Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll</TaskCoreDllPath>
+    </PropertyGroup>
+    
+    <!-- Prepares list for downloader below -->
+    <UsingTask
+        TaskName="Compress"
+        TaskFactory="CodeTaskFactory"
+        AssemblyFile="$(TaskCoreDllPath)">
+
+        <ParameterGroup>
+            <core ParameterType="System.String" Required="true" />
+            <output ParameterType="System.String" Required="true" />
+        </ParameterGroup>
+
+        <Task>
+            <Using Namespace="System" />
+            <Using Namespace="System.Collections.Generic" />
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.Text.RegularExpressions" />
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+                
+                    Func<char, string> quotes = delegate(char symbol)
+                    {
+                        return String.Format(@"
+                                              (?<!\\)
+                                              (
+                                               {0}(?:
+                                                     (?:
+                                                        [^{0}\\]
+                                                      |
+                                                        \\\\
+                                                      |
+                                                        \\{0}?
+                                                     )*
+                                                  ){0}
+                                              )",
+                                              symbol);
+                    };
+
+                    using(StreamReader reader = new StreamReader(core, System.Text.Encoding.UTF8, true))
+                    {
+                        var content = reader.ReadToEnd();
+                        var copyr   = Regex.Match(content, @"(Copyright[^$]+?)$", RegexOptions.Multiline).Groups[1].Value.Trim();
+                        var vers    = Regex.Match(content, @"(GetNuTool[^$]+?)$", RegexOptions.Multiline).Groups[1].Value.Trim();
+
+                        // protect strings
+
+                        var strings = new Dictionary<uint, string>();
+                        uint ident  = 0;
+                        content = Regex.Replace(content, 
+                                                String.Format(@"({0}|{1})", quotes('"'), quotes('\'')), 
+                                                delegate(Match m)
+                                                {
+                                                    ++ident;
+                                                    strings[ident] = m.Groups[1].Value;
+                                                    return String.Format("!s{0}!", ident);
+                                                },
+                                                RegexOptions.IgnorePatternWhitespace);
+
+                        // C# code
+
+                        content = Regex.Replace(content, 
+                                                @"<!\[CDATA\[.+?\]\]>", 
+                                                delegate(Match m)
+                                                {
+                                                    var data = m.Groups[0].Value;
+                                                    data = Regex.Replace(data, @"\s*\/\*.+?\*\/\s*", "", RegexOptions.Singleline);
+                                                    data = Regex.Replace(data, @"\s*//[^$]+?$", "", RegexOptions.Multiline);
+                                                    data = Regex.Replace(data, @"\s*([{}()=+\-\[\]*?!@,;.])\s*", "$1");
+                                                    return data;
+                                                }, 
+                                                RegexOptions.Singleline);
+
+                        // common rules
+
+                        content = content.Replace("\r", "").Replace("\n", "");
+                        content = Regex.Replace(content, @"<!--.+?-->", "");
+                        content = Regex.Replace(content, @">\s+<", "><");
+                        content = Regex.Replace(content, @"\s{2,}", " ");
+                        content = Regex.Replace(content, @"<\?xml.+?\?>", String.Format("<!-- {0} --><!-- {1} -->", vers, copyr));
+
+                        // recover strings
+
+                        content = Regex.Replace(content, @"!s(\d+)!", delegate (Match m) {
+                            return strings[uint.Parse(m.Groups[1].Value)];
+                        });
+
+                        using(TextWriter writer = new StreamWriter(output, false, System.Text.Encoding.UTF8)) {
+                            writer.Write(content);
+                        }
+                        Console.WriteLine("Compact version of `{0}` has been created -> `{1}`", core, output);
+                    }
+                ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+
+    <!-- remap targets -->
+
+    <Target Name="Build" DependsOnTargets="handler" />
+
+</Project>
