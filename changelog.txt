@@ -1,6 +1,12 @@
 GetNuTool
 ____________________
 
+[v1.2]
+    * NEW: Packing packages into .nupkg by using .nuspec
+    * CHANGED: The `get` & `pack` commands for calling of main features.
+    * CHANGED: Attributes of packages.config is now are case sensitive. Use lowercase for `id`, `version`, `output`
+    * CHANGED: For `get` command: ignoring technical data from package like: /_rels, /package, etc.
+
 [v1.1]
     * FIXED: Incorrect path to Microsoft.Build.Tasks.dll with new MSBuild 14.0
     * NEW: Compact version - `gnt-compact.core`
