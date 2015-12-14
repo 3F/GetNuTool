@@ -13,7 +13,20 @@ The lightweight non-binary tool for work with NuGet packages via basic MSBuild T
 * Extracting the all data from `.nupkg` into path by default or specific for each package.
     * +Custom naming for each package with ignoring for already downloaded packages.
 * Dependencies are not considered! get it manually as other packages above.
+* [NuGet events](http://docs.nuget.org/create/Creating-and-Publishing-a-Package#automatically-running-powershell-scripts-during-package-installation-and-removal) *(Init.ps1, Install.ps1, Uninstall.ps1)* currently are not considered. Call it manually from `/tools`.
 * Packing packages as `.nupkg` by using `.nuspec`
+
+### For what 
+
+Firstly, **it's not for** adding libraries for your projects (use standard nuget clients). This to providing tools for additional maintenance of your projects and libraries, building processes, debugging, and similar. For all that should be used as a tool for all projects (solution-level) or for each.
+
+#### Restoring packages inside Visual Studio IDE
+
+The GetNuTool can't use events from Visual Studio by default. However, it can be combined with other our tool for complex work with **a lot of events** of VS IDE & MSBuild:
+
+* [vsSolutionBuildEvent](http://vssbe.r-eg.net) - [0d1dbfd7-ed8a-40af-ae39-281bfeca2334](https://visualstudiogallery.msdn.microsoft.com/0d1dbfd7-ed8a-40af-ae39-281bfeca2334/)
+
+So you can use this as you want, for example, to automatically getting tool above for work with complex scripts with MSBuild Tool and Visual Studio as unified engine., etc.
 
 ### Getting & Extracting packages
 
@@ -107,7 +120,7 @@ ngout    | Optional path to output the final `.nupkg` package.
 
 ### Paths to msbuild.exe
 
-Sample locations:
+*just a note where to find the msbuild tool by default:*
 
 ```bash
 
