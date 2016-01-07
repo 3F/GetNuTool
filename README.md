@@ -6,6 +6,12 @@ The lightweight non-binary tool for work with NuGet packages via basic MSBuild T
 > msbuild.exe gnt.core
 ```
 
+**Download:** [/releases](https://github.com/3F/GetNuTool/releases) ( [latest](https://github.com/3F/GetNuTool/releases/latest) )
+
+## License
+
+The [MIT License (MIT)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
+
 ## Main features
 
 * Getting the all selected `.nupkg` packages from NuGet server from user list with formats below.
@@ -28,9 +34,11 @@ The GetNuTool can't use events from Visual Studio by default. However, it can be
 
 So you can use this as you want, for example, to automatically getting tool above for work with complex scripts with MSBuild Tool and Visual Studio as unified engine., etc.
 
-### Getting & Extracting packages
+## Commands
 
-*The `get` command is used by default. You can also call it as `/t:get`*
+### `get` 
+
+The `get` command is used by default. For getting & extracting packages. You can also use it as `/t:get`
 
 Settings:
 
@@ -89,9 +97,9 @@ multiple:
 /p:ngconfig=".nuget/packages.config|project1/packages.config|project2/packages.config|..."
 ```
 
-### Packing
+### `pack`
 
-The `pack` command. Call it as `/t:pack`
+The `pack` command. For creating the new .nupkg packages by .nuspec specification. Use it as `/t:pack`
 
 Settings:
 
@@ -104,6 +112,12 @@ ngout    | Optional path to output the final `.nupkg` package.
 > msbuild.exe gnt.core /t:pack /p:ngin="path to .nuspec"
 > msbuild.exe gnt.core /t:pack /p:ngin="path to .nuspec" /p:ngout="path for .nupkg"
 ```
+
+## Properties
+
+Property | Values                   | Description
+---------|--------------------------|------------
+debug    | false (by default), true | v1.3+ To display additional information from selected command.
 
 ## Examples
 
@@ -118,7 +132,7 @@ ngout    | Optional path to output the final `.nupkg` package.
 > msbuild.exe gnt.core /t:pack /p:ngin="D:\tmp\7z.Libs" /p:ngout="newdir/"
 ```
 
-### Paths to msbuild.exe
+#### Paths to msbuild.exe
 
 *just a note where to find the msbuild tool by default:*
 
@@ -143,6 +157,13 @@ Currently compact version ~4 Kb for `get` command and ~4 Kb for `pack` command, 
 > msbuild.exe .compressor /p:core="path to core" /p:output="output file"
 ```
 
-## License
+## Compiled variant
 
-The MIT License (MIT)
+The GetNuTool now is part of [NuGetComponent](http://vssbe.r-eg.net/doc/Scripts/SBE-Scripts/Components/NuGetComponent/) ([SBE-Scripts](http://vssbe.r-eg.net/doc/Scripts/SBE-Scripts/))
+
+```java
+#[NuGet gnt.raw("/t:pack /p:ngin=\"D:\7z.Libs\"")]
+...
+```
+
+etc.

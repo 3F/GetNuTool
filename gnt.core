@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (c) 2015  Denis Kuzmin (reg) [ entry.reg@gmail.com ]
+    Copyright (c) 2015-2016  Denis Kuzmin (reg) [ entry.reg@gmail.com ]
     
     Distributed under the MIT license
     (see accompanying file LICENSE or a copy at http://opensource.org/licenses/MIT)
@@ -27,10 +27,10 @@
         <PrepareList config="$(ngconfig)" plist="$(ngpackages)">
             <Output PropertyName="plist" TaskParameter="Result" />
         </PrepareList>
-        <NGDownload plist="$(plist)" url="$(ngserver)" defpath="$(ngpath)" />
+        <NGDownload plist="$(plist)" url="$(ngserver)" defpath="$(ngpath)" debug="$(debug)" />
     </Target>
     <Target Name="pack" DependsOnTargets="header">
-        <NGPack dir="$(ngin)" dout="$(ngout)" vtool="$(GetNuTool)" />
+        <NGPack dir="$(ngin)" dout="$(ngout)" vtool="$(GetNuTool)" debug="$(debug)" />
     </Target>
     
     <!-- Tasks settings -->
@@ -73,7 +73,7 @@
                         if(id == null) {
                             throw new ArgumentException(String.Format("Attribute - 'id' is not found in '{0}'", cfg));
                         }
-                        string link = id.Value;
+                        var link = id.Value;
 
                         if(version != null) {
                             link += "/" + version.Value;
@@ -110,6 +110,7 @@
             <plist ParameterType="System.String" Required="true" />
             <url ParameterType="System.String" Required="true" />
             <defpath ParameterType="System.String" />
+            <debug ParameterType="System.Boolean" />
         </ParameterGroup>
 
         <Task>
@@ -123,6 +124,12 @@
                 // to ignore from package
                 var ignore = new string[] { "/_rels/", "/package/", "/[Content_Types].xml" };
 
+                Action<string, object> dbg = delegate(string s, object p) {
+                    if(debug) {
+                        Console.WriteLine(s, p);
+                    }
+                };
+
                 Action<string, string, string> get = delegate(string link, string name, string path)
                 {
                     string output = Path.GetFullPath(path ?? name);
@@ -130,7 +137,7 @@
                         Console.WriteLine("The `{0}` is already exists. /pass -> `{1}`", name, output);
                         return;
                     }
-                    Console.WriteLine("Getting `{0}` ...", link);
+                    Console.Write("Getting `{0}` ... ", link);
 
                     string temp = Path.Combine(Path.GetTempPath(), name);
                     using(WebClient wc = new WebClient()) {
@@ -147,10 +154,10 @@
                                 continue;
                             }
 
-                            string dest = Path.Combine(output, uri.TrimStart('/'));
-                            Console.WriteLine("-> `{0}`", uri);
+                            var dest = Path.Combine(output, uri.TrimStart('/'));
+                            dbg("-> `{0}`", uri);
 
-                            string dir = Path.GetDirectoryName(dest);
+                            var dir = Path.GetDirectoryName(dest);
                             if(!Directory.Exists(dir)) {
                                 Directory.CreateDirectory(dir);
                             }
@@ -161,7 +168,7 @@
                             } 
                         } 
                     }
-                    Console.WriteLine("Done.{0}", Environment.NewLine);
+                    dbg("Done.{0}", Environment.NewLine);
                 };
 
                 //Format: id/version[:path];id2/version[:path];...
@@ -190,6 +197,7 @@
             <dir ParameterType="System.String" Required="true" />
             <dout ParameterType="System.String" />
             <vtool ParameterType="System.String" Required="true" />
+            <debug ParameterType="System.Boolean" />
         </ParameterGroup>
 
         <Task>
@@ -214,6 +222,12 @@
                 // Tags
                 const string ID     = "id";
                 const string VER    = "version";
+                
+                Action<string, object> dbg = delegate(string s, object p) {
+                    if(debug) {
+                        Console.WriteLine(s, p);
+                    }
+                };
 
                 // Get metadata
 
@@ -259,60 +273,56 @@
                 }
 
                 Console.WriteLine("Started packing `{0}` ...", pout);
-                using(var sout = File.Create(pout))
+                using(Package package = Package.Open(pout, FileMode.Create))
                 {
-                    using(Package package = Package.Open(sout, FileMode.Create))
+                    // manifest relationship
+
+                    Uri manifestUri = new Uri(String.Format("/{0}{1}", metadata[ID], EXT_NUSPEC), UriKind.Relative);
+                    package.CreateRelationship(manifestUri, TargetMode.Internal, MANIFEST_URL);
+
+                    // content
+
+                    foreach(var file in Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories))
                     {
-                        // manifest relationship
-
-                        Uri manifestUri = new Uri(String.Format("/{0}{1}", metadata[ID], EXT_NUSPEC), UriKind.Relative);
-                        package.CreateRelationship(manifestUri, TargetMode.Internal, MANIFEST_URL);
-
-                        // content
-
-                        foreach(var file in Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories))
-                        {
-                            if(ignore.Any(x => file.StartsWith(x, StringComparison.Ordinal))) {
-                                continue;
-                            }
-
-                            string pUri;
-                            if(file.StartsWith(dir, StringComparison.OrdinalIgnoreCase)) {
-                                pUri = file.Substring(dir.Length).TrimStart(Path.DirectorySeparatorChar);
-                            }
-                            else {
-                                pUri = file;
-                            }
-                            Console.WriteLine("-> `{0}`", pUri);
-
-                            // to protect path without separators
-                            var escaped = String.Join("/", pUri.Split('\\', '/').Select(p => Uri.EscapeDataString(p)));
-                            Uri uri     = PackUriHelper.CreatePartUri(new Uri(escaped, UriKind.Relative));
-
-                            PackagePart part = package.CreatePart(uri, DEF_CONTENT_TYPE, CompressionOption.Maximum);
-
-                            using (Stream tstream = part.GetStream())
-                            using(FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read)) {
-                                fileStream.CopyTo(tstream);
-                            }
+                        if(ignore.Any(x => file.StartsWith(x, StringComparison.Ordinal))) {
+                            continue;
                         }
 
-                        // metadata for package
+                        string pUri;
+                        if(file.StartsWith(dir, StringComparison.OrdinalIgnoreCase)) {
+                            pUri = file.Substring(dir.Length).TrimStart(Path.DirectorySeparatorChar);
+                        }
+                        else {
+                            pUri = file;
+                        }
+                        dbg("-> `{0}`", pUri);
 
-                        Func<string, string> getmeta = delegate(string key) {
-                            return (metadata.ContainsKey(key))? metadata[key] : "";
-                        };
+                        // to protect path without separators
+                        var escaped = String.Join("/", pUri.Split('\\', '/').Select(p => Uri.EscapeDataString(p)));
+                        Uri uri     = PackUriHelper.CreatePartUri(new Uri(escaped, UriKind.Relative));
 
-                        package.PackageProperties.Creator           = getmeta("authors");
-                        package.PackageProperties.Description       = getmeta("description");
-                        package.PackageProperties.Identifier        = metadata[ID];
-                        package.PackageProperties.Version           = metadata[VER];
-                        package.PackageProperties.Keywords          = getmeta("tags");
-                        package.PackageProperties.Title             = getmeta("title");
-                        package.PackageProperties.LastModifiedBy    = String.Format("GetNuTool v{0}", vtool);
+                        PackagePart part = package.CreatePart(uri, DEF_CONTENT_TYPE, CompressionOption.Maximum);
+
+                        using (Stream tstream = part.GetStream())
+                        using(FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read)) {
+                            fileStream.CopyTo(tstream);
+                        }
                     }
+
+                    // metadata for package
+
+                    Func<string, string> getmeta = delegate(string key) {
+                        return (metadata.ContainsKey(key))? metadata[key] : "";
+                    };
+
+                    package.PackageProperties.Creator           = getmeta("authors");
+                    package.PackageProperties.Description       = getmeta("description");
+                    package.PackageProperties.Identifier        = metadata[ID];
+                    package.PackageProperties.Version           = metadata[VER];
+                    package.PackageProperties.Keywords          = getmeta("tags");
+                    package.PackageProperties.Title             = getmeta("title");
+                    package.PackageProperties.LastModifiedBy    = String.Format("GetNuTool v{0}", vtool);
                 }
-                Console.WriteLine("Done.");
 
             ]]></Code>
         </Task>
@@ -323,7 +333,7 @@
     <Target Name="Build" DependsOnTargets="get" />
     
     <PropertyGroup>
-        <GetNuTool>1.2</GetNuTool>
+        <GetNuTool>1.3</GetNuTool>
     </PropertyGroup>
     <Target Name="header">
         <Message Text="%0D%0AGetNuTool - Version: $(GetNuTool)%0D%0A=========%0D%0A" Importance="high" />

@@ -14,7 +14,7 @@
     <!-- Main settings -->
     <PropertyGroup>
         <core Condition="'$(core)' == ''">..\gnt.core</core>
-        <output Condition="'$(output)' == ''">gnt-compact.core</output>
+        <output Condition="'$(output)' == ''">gnt-min.core</output>
     </PropertyGroup>
 
     <!-- Entry point -->

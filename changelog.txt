@@ -1,6 +1,11 @@
 GetNuTool
 ____________________
 
+[v1.3]
+    * NEW: Added `/p:debug` to display additional information from selected command.
+    * CHANGED: Compact output for processed files.
+    * CHANGED: CA2202 -> sout
+
 [v1.2]
     * NEW: Packing packages into .nupkg by using .nuspec
     * CHANGED: The `get` & `pack` commands for calling of main features.

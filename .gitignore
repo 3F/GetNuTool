@@ -4,3 +4,5 @@ obj
 .vs
 /packages
 /compact/gnt-compact.core
+/compact/gnt-min.core
+.nupkg
