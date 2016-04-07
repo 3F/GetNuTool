@@ -8,6 +8,10 @@ The lightweight non-binary tool for work with NuGet packages via basic MSBuild T
 
 **Download:** [/releases](https://github.com/3F/GetNuTool/releases) ( [latest](https://github.com/3F/GetNuTool/releases/latest) )
 
+Demo projects: 
+
+* [![](https://img.shields.io/badge/build143-passing-brightgreen.svg?style=flat-square)](https://ci.appveyor.com/project/3Fs/vssolutionbuildevent/build/build-143) [GetNuTool v1.3 `get` & `pack` commands in use](https://ci.appveyor.com/project/3Fs/vssolutionbuildevent/build/build-143)
+
 ## License
 
 The [MIT License (MIT)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
@@ -165,5 +169,3 @@ The GetNuTool now is part of [NuGetComponent](http://vssbe.r-eg.net/doc/Scripts/
 #[NuGet gnt.raw("/t:pack /p:ngin=\"D:\7z.Libs\"")]
 ...
 ```
-
-etc.
