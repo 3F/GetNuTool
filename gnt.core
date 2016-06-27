@@ -72,7 +72,7 @@
                         var output  = pkg.Attribute("output");
 
                         if(id == null) {
-                            throw new ArgumentException(String.Format("Attribute - 'id' is not found in '{0}'", cfg));
+                            throw new ArgumentException(String.Format("Not found: 'id' in '{0}'", cfg));
                         }
                         var link = id.Value;
 
@@ -97,7 +97,7 @@
                 }
 
                 if(ret.Count < 1) {
-                    throw new FileNotFoundException("List of packages is empty. Use packages.config or property like /p:ngpackages=\"...\"");
+                    throw new FileNotFoundException("List of packages is empty. Use .config or /p:ngpackages=\"...\"");
                 }
                 Result = String.Join(";", ret.ToArray());
 
@@ -141,7 +141,7 @@
                 {
                     string output = Path.GetFullPath(loc(path ?? name));
                     if(Directory.Exists(output)) {
-                        Console.WriteLine("The `{0}` is already exists. /pass -> `{1}`", name, output);
+                        Console.WriteLine("`{0}` is already exists. /pass `{1}`", name, output);
                         return;
                     }
                     Console.Write("Getting `{0}` ... ", link);
@@ -162,7 +162,7 @@
                             }
 
                             var dest = Path.Combine(output, uri.TrimStart('/'));
-                            dbg("-> `{0}`", uri);
+                            dbg("- `{0}`", uri);
 
                             var dir = Path.GetDirectoryName(dest);
                             if(!Directory.Exists(dir)) {
@@ -306,7 +306,7 @@
                         else {
                             pUri = file;
                         }
-                        dbg("-> `{0}`", pUri);
+                        dbg("- `{0}`", pUri);
 
                         // to protect path without separators
                         var escaped = String.Join("/", pUri.Split('\\', '/').Select(p => Uri.EscapeDataString(p)));
@@ -344,7 +344,8 @@
     <Target Name="Build" DependsOnTargets="get" />
     
     <PropertyGroup>
-        <GetNuTool>1.4</GetNuTool>
+        <GetNuTool>1.5</GetNuTool>
+        <wpath Condition="'$(wpath)' == ''">$(MSBuildProjectDirectory)</wpath>
     </PropertyGroup>
     <Target Name="header">
         <Message Text="%0D%0AGetNuTool - Version: $(GetNuTool)%0D%0A=========%0D%0A" Importance="high" />

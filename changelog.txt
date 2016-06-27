@@ -1,6 +1,9 @@
 GetNuTool
 ____________________
 
+[v1.5]
+    * FIXED: error MSB4018 `Value cannot be null`, if the `/p:wpath` key is not defined.
+
 [v1.4]
     * NEW: Added `/p:wpath` key to define working directory.
     * NEW: Support of executable package.
