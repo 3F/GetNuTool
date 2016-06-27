@@ -1,6 +1,11 @@
 GetNuTool
 ____________________
 
+[v1.4]
+    * NEW: Added `/p:wpath` key to define working directory.
+    * NEW: Support of executable package.
+    * NEW: MSBuild searcher.
+
 [v1.3]
     * NEW: Added `/p:debug` to display additional information from selected command.
     * CHANGED: Compact output for processed files.

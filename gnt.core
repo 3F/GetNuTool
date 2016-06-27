@@ -9,7 +9,7 @@
 <!--
     GetNuTool - github.com/3F/GetNuTool
     ========================
-    The lightweight non-binary tool for work with NuGet packages via basic MSBuild Tool (msbuild.exe without additional extensions etc.)
+    The lightweight non-binary tool for work with NuGet packages via basic MSBuild Tools (without additional extensions etc.)
     https://github.com/3F/GetNuTool/blob/master/README.md
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -344,7 +344,7 @@
     <Target Name="Build" DependsOnTargets="get" />
     
     <PropertyGroup>
-        <GetNuTool>1.3</GetNuTool>
+        <GetNuTool>1.4</GetNuTool>
     </PropertyGroup>
     <Target Name="header">
         <Message Text="%0D%0AGetNuTool - Version: $(GetNuTool)%0D%0A=========%0D%0A" Importance="high" />
