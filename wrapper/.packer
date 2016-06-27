@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Copyright (c) 2015-2016  Denis Kuzmin (reg) [ entry.reg@gmail.com ]
+    
+    Distributed under the GetNuTool license
+    https://github.com/3F/GetNuTool
+-->
+
+<!--
+    To create executable package of the GetNuTool
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Main settings -->
+    <PropertyGroup>
+        <core Condition="'$(core)' == ''">..\gnt.core</core>
+        <output Condition="'$(output)' == ''">gnt.bat</output>
+        <maxline Condition="'$(maxline)' == ''">1024</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
+    </PropertyGroup>
+
+    <!-- Entry point -->
+    <Target Name="handler" BeforeTargets="Build">
+        <Packing core="$(core)" output="$(output)" maxline="$(maxline)" />
+    </Target>
+    
+    <!-- Tasks settings -->
+    <PropertyGroup>
+        <TaskCoreDllPath Condition="Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll</TaskCoreDllPath>
+        <TaskCoreDllPath Condition="'$(TaskCoreDllPath)' == '' and Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll</TaskCoreDllPath>
+    </PropertyGroup>
+    
+    <!-- Prepares list for downloader below -->
+    <UsingTask
+        TaskName="Packing"
+        TaskFactory="CodeTaskFactory"
+        AssemblyFile="$(TaskCoreDllPath)">
+
+        <ParameterGroup>
+            <core ParameterType="System.String" Required="true" />
+            <output ParameterType="System.String" Required="true" />
+            <maxline ParameterType="System.Int32" Required="true" />
+        </ParameterGroup>
+
+        <Task>
+            <Using Namespace="System" />
+            <Using Namespace="System.Collections.Generic" />
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.Linq" />
+            <Using Namespace="System.Text" />
+            <Using Namespace="System.Text.RegularExpressions" />
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+
+                    Func<char, string> quotes = delegate(char symbol)
+                    {
+                        return String.Format(@"
+                                                (?<!\\)
+                                                (
+                                                {0}(?:
+                                                        (?:
+                                                        [^{0}\\]
+                                                        |
+                                                        \\\\
+                                                        |
+                                                        \\{0}?
+                                                        )*
+                                                    ){0}
+                                                )",
+                                                symbol);
+                    };
+
+                    using(StreamReader reader = new StreamReader(core, System.Text.Encoding.UTF8, true))
+                    {
+                        var content = reader.ReadToEnd();
+
+                        // First, avoid special chars
+                        // btw, we can use simply: set /P ="..." and escape only `"` as `""`, 
+                        //      but later we also should replace this double quotes :( that more problem for batch
+
+                        content = content.Replace("%", "%%");
+                        content = content.Replace("^", "^^");
+                        content = content.Replace("&", "^&");
+                        content = content.Replace("<", "^<");
+                        content = content.Replace(">", "^>");
+                        content = content.Replace("|", "^|");
+
+                        // Secondly, keep in mind where placed all strings.
+                        // We will work without double quotes, so we should correctly define all pairs of "..." per line
+
+                        var strings = new Dictionary<int, int>(); // positions: "(start) -> "(end)
+
+                        var matches = Regex.Matches(content, quotes('"'), RegexOptions.IgnorePatternWhitespace);
+                        foreach(Match m in matches) {
+                            strings[m.Index] = m.Length;
+                        }
+
+                        // Now, we should split long strings
+
+                        var lines = new List<string>();
+                        for(int i = 0, len = maxline; i < content.Length; i += len)
+                        {
+                            int rlen = Math.Min(content.Length - i, len);
+                            int rpos = i + rlen;
+
+                            bool added = false;
+                            foreach(var ifq in strings)
+                            {
+                                // Protect strings that we saw above
+                                if(rpos >= ifq.Key && rpos <= ifq.Key + ifq.Value)
+                                {
+                                    int repos = ((ifq.Key + ifq.Value) - rpos);
+
+                                    lines.Add(content.Substring(i, rlen + repos));
+                                    i += repos;
+
+                                    added = true;
+                                    break;
+                                }
+                            }
+
+                            if(added) {
+                                continue;
+                            }
+
+                            // we don't see strings, but we also have escape chars as ^ + char above
+
+                            int esc = rpos - 1; // the end of the previous line that should be checked on `^` char
+                            if(content.Length > esc && content.ElementAt(esc) == '^') {
+                                rlen += 1;
+                                lines.Add(content.Substring(i, rlen));
+                                i += 1;
+                                continue;
+                            }
+
+                            // TODO: the line cannot be started with: ` =`, `=`, ` "`, `"`
+
+                            lines.Add(content.Substring(i, rlen)); // simply add new line without processing
+                        }
+
+                        // Now we can define, how it should be written into external file
+
+                        const string corevar    = "gntcore";
+                        content                 = String.Empty;
+
+                        foreach(var line in lines) {
+                            //content += $"<nul set /P ={line}>> %{corevar}%{Environment.NewLine}";
+                            content += String.Format("<nul set /P ={0}>> %{1}%{2}", line, corevar, Environment.NewLine);
+                        }
+
+                        // Finally, format script to work with gnt.core
+
+                        using(StreamReader tplreader = new StreamReader("exec.tpl", System.Text.Encoding.UTF8, true)) {
+                            content = tplreader.ReadToEnd().Replace("$gnt.core.logic$", content).Replace("$tpl.corevar$", corevar);
+                        }
+
+                        // 
+
+                        using(TextWriter writer = new StreamWriter(output, false, new UTF8Encoding(false))) { // do not use BOM ! it failed with initial signature
+                            writer.Write(content);
+                        }
+                        Console.WriteLine("Executable version of `{0}` has been created -> `{1}`", core, output);                
+                    }
+                ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+
+    <!-- remap targets -->
+
+    <Target Name="Build" DependsOnTargets="handler" />
+
+</Project>

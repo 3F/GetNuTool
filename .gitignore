@@ -5,4 +5,6 @@ obj
 /packages
 /compact/gnt-compact.core
 /compact/gnt-min.core
+/compact/gnt.core
 .nupkg
+/wrapper/gnt.bat
