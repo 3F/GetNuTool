@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (c) 2015  Denis Kuzmin (reg) [ entry.reg@gmail.com ]
+    Copyright (c) 2015-2016  Denis Kuzmin (reg) [ entry.reg@gmail.com ]
     
     Distributed under the GetNuTool license
     https://github.com/3F/GetNuTool
@@ -113,7 +113,7 @@
                             return strings[uint.Parse(m.Groups[1].Value)];
                         });
 
-                        using(TextWriter writer = new StreamWriter(output, false, System.Text.Encoding.UTF8)) {
+                        using(TextWriter writer = new StreamWriter(output, false, new UTF8Encoding(false))) {
                             writer.Write(content);
                         }
                         Console.WriteLine("Compact version of `{0}` has been created -> `{1}`", core, output);

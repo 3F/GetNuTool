@@ -21,7 +21,7 @@ goto exit
 $gnt.core.logic$
 
 
-%msbuild% %$tpl.corevar$% %* /nologo /verbosity:m
+%msbuild% %$tpl.corevar$% %* /nologo /verbosity:m /p:wpath="%~dp0/"
 
 
 :exit
