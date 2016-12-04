@@ -1,0 +1,85 @@
+﻿{
+  "Header": {
+    "_": [
+      " This requires vsSolutionBuildEvent engine.",
+      " Free plugin for Visual Studio or MSBuild Tools:",
+      "  * https://github.com/3F/vsSolutionBuildEvent",
+      "  * https://visualstudiogallery.msdn.microsoft.com/0d1dbfd7-ed8a-40af-ae39-281bfeca2334/",
+      " Feedback: github.com/3F  or entry.reg@gmail.com"
+    ],
+    "Compatibility": "0.9"
+  },
+  "PreBuild": [
+    {
+      "Enabled": true,
+      "Name": "ActDir",
+      "Caption": "Prepare output directory",
+      "SupportMSBuild": true,
+      "SupportSBEScripts": true,
+      "IgnoreIfBuildFailed": false,
+      "BuildType": "Common",
+      "Confirmation": false,
+      "Mode": {
+        "$type": "net.r_eg.vsSBE.Events.ModeScript, vsSolutionBuildEvent",
+        "Type": "Script",
+        "Command__": [
+          "#[$(dbin = \"bin/Release/\")]",
+          "",
+          "$(odir = \"$(dbin)raw/\")",
+          "",
+          "#[IO delete.directory(\"$(dbin)\", true)]",
+          "#[IO copy.directory(\"\", \"$(dbin)\", true)]"
+        ]
+      }
+    },
+    {
+      "Enabled": true,
+      "Name": "ActBuild",
+      "Caption": "Building",
+      "SupportMSBuild": true,
+      "SupportSBEScripts": true,
+      "BuildType": "Common",
+      "Mode": {
+        "$type": "net.r_eg.vsSBE.Events.ModeScript, vsSolutionBuildEvent",
+        "Type": "Script",
+        "Command__": [
+          "#[File scall(\"packing.bat\", \"\", 400)]"
+        ]
+      }
+    }
+  ],
+  "PostBuild": [
+    {
+      "Enabled": true,
+      "Name": "ActBin",
+      "Caption": "Binaries & tools ...",
+      "SupportMSBuild": true,
+      "SupportSBEScripts": true,
+      "IgnoreIfBuildFailed": true,
+      "BuildType": "Common",
+      "Mode": {
+        "$type": "net.r_eg.vsSBE.Events.ModeScript, vsSolutionBuildEvent",
+        "Type": "Script",
+        "Command__": [
+          "#[IO copy.file(\"gnt.core\", \"$(odir)core/gnt.core\", true)]",
+          "#[IO copy.file(\"minified/gnt.core\", \"$(odir)core-minified/gnt.core\", true)]",
+          "#[IO copy.file(\"embedded/gnt.bat\", \"$(odir)versions/01. executable/gnt.bat\", true)]",
+          "",
+          "#[IO copy.file({",
+          "                \"minified/gnt.core\", ",
+          "                \"caller/gnt.bat\"",
+          "               }, ",
+          "               \"$(odir)versions/02. caller/\", true)]",
+          "",
+          "#[IO copy.file({ \"README.md\", \"changelog.txt\" }, \"$(odir)doc/\", true)]",
+          "               ",
+          "#[IO copy.file({",
+          "                \"msbuild.bat\",",
+          "                \"LICENSE\"",
+          "               },",
+          "               \"$(odir)\", true)]"
+        ]
+      }
+    }
+  ]
+}

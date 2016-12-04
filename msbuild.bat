@@ -4,7 +4,7 @@ for %%v in (14.0, 12.0, 15.0, 4.0, 3.5, 2.0) do (
     for /F "usebackq tokens=2* skip=2" %%a in (
         `reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions\%%v" /v MSBuildToolsPath 2^> nul`
     ) do if exist %%b (
-        set msbuild="%%bmsbuild.exe"
+        set msbuild="%%b\msbuild.exe"
         goto found
     )
 )

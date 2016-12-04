@@ -1,23 +1,65 @@
 # GetNuTool
 
-The lightweight non-binary tool for work with NuGet packages via basic MSBuild Tools (without additional extensions etc.)
+The lightweight non-binary NuGet Client as a portable & embeddable tool for work with NuGet packages via basic MSBuild 
+(it does not require any additional extensions).
+
+[![Build status](https://ci.appveyor.com/api/projects/status/rv65lbks5frc4k52/branch/master?svg=true)](https://ci.appveyor.com/project/3Fs/getnutool/branch/master)
 
 ```bash
-> gnt
-> msbuild.exe gnt.core
+> gnt                                           # Executable version - full logic inside single script .bat/.cmd
+> msbuild gnt.core                              # Full & Compact versions to execute via MSBuild
+[NuGet gnt.raw("/t:pack /p:ngin=\"7z.Libs\"")]  # Compiled variant via vssbe
 ```
 
-**Download:** [/releases](https://github.com/3F/GetNuTool/releases) ( [latest](https://github.com/3F/GetNuTool/releases/latest) )
+[just try](https://github.com/3F/GetNuTool/releases/download/v1.5/gnt.bat) this:
+```bash
+gnt /p:ngpackages="Conari;regXwild"             # To get `Conari` & `regXwild` packages
+gnt /t:pack /p:ngin="bin\DllExport"             # To create new NuGet package from `bin\DllExport` files
+gnt /p:ngpackages="LunaRoad/1.4.1"              # To get `LunaRoad` package v1.4.1
+msbuild gnt.core /p:ngconfig="packages.config"  # Use `packages.config`
+```
 
-* Available: *Full version, Compact version, Compiled variant, Executable version*
+**Download:** [/releases](https://github.com/3F/GetNuTool/releases) ( [latest](https://github.com/3F/GetNuTool/releases/latest) ) - *Full version, Minified version, Compiled variant, Executable version*
 
-Demo project: [![](https://img.shields.io/badge/build143-passing-brightgreen.svg?style=flat)](https://ci.appveyor.com/project/3Fs/vssolutionbuildevent/build/build-143) [GetNuTool v1.3 `get` & `pack` commands in use](https://ci.appveyor.com/project/3Fs/vssolutionbuildevent/build/build-143)
+* Demo project: [GetNuTool v1.5 `get` & `pack` commands in use](https://ci.appveyor.com/project/3Fs/vssolutionbuildevent/build/build-178)
 
 ## License
 
 The [MIT License (MIT)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
 
-## Main features
+[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=entry%2ereg%40gmail%2ecom&lc=US&item_name=3F%2dOpenSource%20%5b%20github%2ecom%2f3F&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
+
+
+## Why GetNuTool ?
+
+Primarily this to providing tools for service of your projects and libraries, the build processes, debugging, etc. For all that should be used as a tool for all projects (solution-level) or for each.
+
+* The best examples:
+    * [vsSBE.CI.MSBuild](https://www.nuget.org/packages/vsSBE.CI.MSBuild/)
+    * [7z.Libs](https://www.nuget.org/packages/7z.Libs/)
+    * [ILAsm](https://www.nuget.org/packages/ILAsm/)
+
+**But!** How about to consider it like a more lightweight powerful nuget client for getting packages or for new packaging. No, seriously, we already use it for many projects like:
+
+* [Conari](https://github.com/3F/Conari)
+* [DllExport](https://github.com/3F/DllExport)
+* [vsSolutionBuildEvent](https://github.com/3F/vsSolutionBuildEvent)
+* [LunaRoad](https://github.com/3F/LunaRoad)
+* [vsCommandEvent](https://github.com/3F/vsCommandEvent)
+* [regXwild](https://github.com/3F/regXwild)
+* ...
+
+*Because it easy, and works well.*
+
+#### Restoring packages inside Visual Studio IDE
+
+The GetNuTool can't use events from Visual Studio **by default**. However, it can be combined with other our tool for complex work with **lot of events** of VS IDE & MSBuild:
+
+* [vsSolutionBuildEvent](https://visualstudiogallery.msdn.microsoft.com/0d1dbfd7-ed8a-40af-ae39-281bfeca2334/) - https://github.com/3F/vsSolutionBuildEvent
+
+So you can use this as you want, for example, automatically getting tool above for complex scripting in MSBuild & Visual Studio as unified engine., etc.
+
+### Main features
 
 * Getting the all selected `.nupkg` packages from NuGet server from user list with formats below.
     * Two formats: list from `.config` files or direct from string.
@@ -25,19 +67,10 @@ The [MIT License (MIT)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
     * +Custom naming for each package with ignoring for already downloaded packages.
 * Dependencies are not considered! get it manually as other packages above.
 * [NuGet events](http://docs.nuget.org/create/Creating-and-Publishing-a-Package#automatically-running-powershell-scripts-during-package-installation-and-removal) *(Init.ps1, Install.ps1, Uninstall.ps1)* currently are not considered. Call it manually from `/tools`.
-* Packing packages as `.nupkg` by using `.nuspec`
-
-### For what 
-
-Mainly, it's not for adding libraries for your projects (see standard nuget clients). This to providing tools for additional maintenance of your projects and libraries, building processes, debugging, and similar. For all that should be used as a tool for all projects (solution-level) or for each.
-
-#### Restoring packages inside Visual Studio IDE
-
-The GetNuTool can't use events from Visual Studio **by default**. However, it can be combined with other our tool for complex work with **a lot of events** of VS IDE & MSBuild:
-
-* [vsSolutionBuildEvent](http://vssbe.r-eg.net) - [0d1dbfd7-ed8a-40af-ae39-281bfeca2334](https://visualstudiogallery.msdn.microsoft.com/0d1dbfd7-ed8a-40af-ae39-281bfeca2334/)
-
-So you can use this as you want, for example, automatically getting tool above for work with complex scripts with MSBuild Tool and Visual Studio as unified engine., etc.
+* Creating new (packing) NuGet packages as `.nupkg` by using `.nuspec`
+* Wrapping of any package in one executable file, for example:
+    * CI.MSBuild **in one click** ~10 Kb: **[get.CIM.bat](https://github.com/3F/vsSolutionBuildEvent/releases/download/release_v0.12.10/get.CIM.bat)**
+* Via our `.packer` can be easy embedded inside of any scripts.
 
 ## Commands
 
@@ -47,13 +80,13 @@ The `get` command is used by default. For getting & extracting packages. You can
 
 Settings:
 
-Property   | Description
------------|------------
-ngconfig   | Where to look the packages.config files.
-ngserver   | NuGet server.
-ngpackages | List of packages. Uses first if defined, otherwise find packages.config
-ngpath     | Common path for all packages.
-wpath      |`v1.4+` To define working directory.
+Property   | Description                                                             | Default values
+-----------|-------------------------------------------------------------------------|-----------------
+ngconfig   | Where to look the packages.config files.                                | v1.0+ `.nuget\packages.config`
+ngserver   | NuGet server.                                                           | v1.0+ `https://www.nuget.org/api/v2/package/`
+ngpackages | List of packages. Use it first if defined, otherwise find via ngconfig  | v1.0+ *empty*
+ngpath     | Common path for all packages.                                           | v1.0+ `packages`
+wpath      |`v1.4+` To define working directory.                                     | v1.4+ *The absolute path of the directory where the GetNuTool is located.*
 
 Samples:
 
@@ -141,7 +174,7 @@ debug    | false (by default), true | `v1.3+` To display additional information 
 ```
 
 ```bash
-> msbuild gnt.core /t:pack /p:ngin="D:\tmp\7z.Libs"
+> msbuild gnt.core /t:pack /p:ngin="app\LunaRoad"
 > msbuild gnt.core /t:pack /p:ngin="D:\tmp\7z.Libs" /p:ngout="newdir/"
 ```
 
@@ -149,26 +182,23 @@ debug    | false (by default), true | `v1.3+` To display additional information 
 
 Use our MSBuild searcher - [msbuild](https://github.com/3F/GetNuTool/blob/master/msbuild.bat) for more convenience.
 
-*but, just a note where to find the msbuild tool by default:*
+*but, just a note where to find the msbuild tools by default:*
 
 * All available versions on your machine: `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions`
 
-for example:
 ```bash
-
 "C:\Program Files (x86)\MSBuild\14.0\bin\msbuild.exe"
 "C:\Program Files (x86)\MSBuild\12.0\bin\msbuild.exe"
 C:\Windows\Microsoft.NET\Framework\v4.0.30319\msbuild.exe
 C:\Windows\Microsoft.NET\Framework64\v4.0.30319\msbuild.exe
++GAC_32, GAC_64, ...
 ```
 
-+GAC_32, GAC_64, ...
+## Compact & Minified versions
 
-## Compact version
+To build this version you can use our compressor from [here](https://github.com/3F/GetNuTool/tree/master/minified). 
 
-To build manually this version, you should use our compressor from [here](https://github.com/3F/GetNuTool/tree/master/compact) if needed. 
-
-Currently compact version ~4 Kb for `get` command and ~4 Kb for `pack` command, i.e. ~8 Kb in total.
+Currently minified version ~4 Kb for `get` command and ~4 Kb for `pack` command, i.e. ~8 Kb in total.
 
 ```bash
 > compress
@@ -192,19 +222,19 @@ The GetNuTool now is part of [NuGetComponent](http://vssbe.r-eg.net/doc/Scripts/
 
 The `gnt.bat` is already contains `gnt.core` logic. It stored **inside script**.
 
-To build manually this version, you should use our packer from [here](https://github.com/3F/GetNuTool/tree/master/wrapper) if needed.
+To build manually this version, you should use our packer from [here](https://github.com/3F/GetNuTool/tree/master/embedded) if needed.
 
 ```bash
 > packing
 ```
 
 ```bash
-> msbuild wrapper/.packer /p:core="path to compact core" /p:output="output file"
+> msbuild embedded/.packer /p:core="path to minified core" /p:output="output file"
 ```
 
 Then you can use simply:
 
 ```bash
-> gnt /p:ngpackages="vsSBE.CI.MSBuild"
+> gnt /p:ngpackages="Conari"
 ```
 **note:** you do not need the `gnt.core` or something else ! the final script provides all of what you need as non-binary tool ~10 Kb.
