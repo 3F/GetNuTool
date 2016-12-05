@@ -15,7 +15,7 @@
     <PropertyGroup>
         <core Condition="'$(core)' == ''">..\gnt.core</core>
         <output Condition="'$(output)' == ''">gnt.bat</output>
-        <maxline Condition="'$(maxline)' == ''">1400</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
+        <maxline Condition="'$(maxline)' == ''">1572</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
     </PropertyGroup>
 
     <!-- Entry point -->
@@ -78,11 +78,14 @@
                         //      but later we also should replace this double quotes :( that more problem for batch
 
                         content = content.Replace("%", "%%");
-                        content = content.Replace("^", "^^");
+                        // content = content.Replace("^", "^^"); - today we use it only inside double strings
                         content = content.Replace("&", "^&");
                         content = content.Replace("<", "^<");
                         content = content.Replace(">", "^>");
                         content = content.Replace("|", "^|");
+
+                        // Required only when enableDelayedExpansion is active
+                        //content = content.Replace("!", "^^!");
 
                         // Secondly, keep in mind where placed all strings.
                         // We will work without double quotes, so we should correctly define all pairs of "..." per line

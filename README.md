@@ -244,3 +244,10 @@ Now, you can use it simply:
 ```
 
 **note:** you do not need the `gnt.core` or something else ! the final script provides all of what you need as non-binary tool ~10 Kb.
+
+### Additional arguments
+
+key             | Description                                             | Sample
+----------------|---------------------------------------------------------|----------------
+`-unpack`       | To generate minified version from executable. `v1.5.1+` | `gnt -unpack`
+`-msbuild` path | To use specific msbuild if needed. `v1.5.1+`            | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages="Conari"`
