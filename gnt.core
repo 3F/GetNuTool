@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (c) 2015-2016  Denis Kuzmin (reg) [ entry.reg@gmail.com ]
+    Copyright (c) 2015-2016  Denis Kuzmin [ entry.reg@gmail.com ]
     
     Distributed under the MIT license
     (see accompanying file LICENSE or a copy at http://opensource.org/licenses/MIT)
@@ -16,7 +16,7 @@
 
     <!-- Default values -->
     <PropertyGroup>
-        <ngconfig Condition="'$(ngconfig)' == ''">.nuget\packages.config</ngconfig>                 <!-- Where to look the packages.config of solution-level -->
+        <ngconfig Condition="'$(ngconfig)' == ''">packages.config</ngconfig>                        <!-- Where to look the packages.config of solution-level -->
         <ngserver Condition="'$(ngserver)' == ''">https://www.nuget.org/api/v2/package/</ngserver>  <!-- Server by default -->
         <ngpackages Condition="'$(ngpackages)' == ''"></ngpackages>                                 <!-- Packages by default -->
         <ngpath Condition="'$(ngpath)' == ''">packages</ngpath>                                     <!-- Path by default -->
@@ -97,9 +97,11 @@
                 }
 
                 if(ret.Count < 1) {
-                    throw new FileNotFoundException("List of packages is empty. Use .config or /p:ngpackages=\"...\"");
+                    Console.WriteLine("List of packages is empty. Use .config or /p:ngpackages=\"...\"\n");
                 }
-                Result = String.Join(";", ret.ToArray());
+                else {
+                    Result = String.Join(";", ret.ToArray());
+                }
 
             ]]></Code>
         </Task>
@@ -109,7 +111,7 @@
     <UsingTask TaskName="NGDownload" TaskFactory="CodeTaskFactory" AssemblyFile="$(TaskCoreDllPath)">
 
         <ParameterGroup>
-            <plist ParameterType="System.String" Required="true" />
+            <plist ParameterType="System.String" />
             <url ParameterType="System.String" Required="true" />
             <wpath ParameterType="System.String" />
             <defpath ParameterType="System.String" />
@@ -123,6 +125,10 @@
             <Using Namespace="System.IO.Packaging" />
             <Using Namespace="System.Net" />
             <Code Type="Fragment" Language="cs"><![CDATA[
+
+                if(plist == null) {
+                    return false;
+                }
 
                 // to ignore from package
                 var ignore = new string[] { "/_rels/", "/package/", "/[Content_Types].xml" };
@@ -147,8 +153,10 @@
                     Console.Write("Getting `{0}` ... ", link);
 
                     string temp = Path.Combine(Path.GetTempPath(), name);
-                    using(WebClient wc = new WebClient()) {
-                        wc.DownloadFile(url + link, temp);
+                    using(var l = new WebClient()) {
+                        l.Headers.Add("User-Agent", "GetNuTool");
+                        l.UseDefaultCredentials = true;
+                        l.DownloadFile(url + link, temp);
                     }
 
                     Console.WriteLine("Extracting into `{0}`", output);
@@ -315,8 +323,8 @@
                         PackagePart part = package.CreatePart(uri, DEF_CONTENT_TYPE, CompressionOption.Maximum);
 
                         using (Stream tstream = part.GetStream())
-                        using(FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read)) {
-                            fileStream.CopyTo(tstream);
+                        using(var fs = new FileStream(file, FileMode.Open, FileAccess.Read)) {
+                            fs.CopyTo(tstream);
                         }
                     }
 
@@ -332,7 +340,7 @@
                     package.PackageProperties.Version           = metadata[VER];
                     package.PackageProperties.Keywords          = getmeta("tags");
                     package.PackageProperties.Title             = getmeta("title");
-                    package.PackageProperties.LastModifiedBy    = String.Format("GetNuTool v{0}", vtool);
+                    package.PackageProperties.LastModifiedBy    = "GetNuTool v" + vtool;
                 }
 
             ]]></Code>
@@ -348,7 +356,7 @@
         <wpath Condition="'$(wpath)' == ''">$(MSBuildProjectDirectory)</wpath>
     </PropertyGroup>
     <Target Name="header">
-        <Message Text="%0D%0AGetNuTool - Version: $(GetNuTool)%0D%0A=========%0D%0A" Importance="high" />
+        <Message Text="%0D%0AGetNuTool v$(GetNuTool) - github.com/3F%0D%0A=========%0D%0A" Importance="high" />
     </Target>
 
 </Project>

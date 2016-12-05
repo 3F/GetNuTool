@@ -4,9 +4,11 @@ The lightweight non-binary NuGet Client as a portable & embeddable tool for work
 (it does not require any additional extensions).
 
 [![Build status](https://ci.appveyor.com/api/projects/status/rv65lbks5frc4k52/branch/master?svg=true)](https://ci.appveyor.com/project/3Fs/getnutool/branch/master)
+[![release-src](https://img.shields.io/github/release/3F/GetNuTool.svg)](https://github.com/3F/GetNuTool/releases/latest)
+[![License](https://img.shields.io/badge/License-MIT-74A5C2.svg)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
 
 ```bash
-> gnt                                           # Executable version - full logic inside single script .bat/.cmd
+> gnt                                           # Executable version - full logic inside single script
 > msbuild gnt.core                              # Full & Compact versions to execute via MSBuild
 [NuGet gnt.raw("/t:pack /p:ngin=\"7z.Libs\"")]  # Compiled variant via vssbe
 ```
@@ -14,7 +16,7 @@ The lightweight non-binary NuGet Client as a portable & embeddable tool for work
 [just try](https://github.com/3F/GetNuTool/releases/download/v1.5/gnt.bat) this:
 ```bash
 gnt /p:ngpackages="Conari;regXwild"             # To get `Conari` & `regXwild` packages
-gnt /t:pack /p:ngin="bin\DllExport"             # To create new NuGet package from `bin\DllExport` files
+gnt /t:pack /p:ngin="bin\DllExport"             # To create new NuGet package from `bin\DllExport` .nuspec
 gnt /p:ngpackages="LunaRoad/1.4.1"              # To get `LunaRoad` package v1.4.1
 msbuild gnt.core /p:ngconfig="packages.config"  # Use `packages.config`
 ```
@@ -27,19 +29,23 @@ msbuild gnt.core /p:ngconfig="packages.config"  # Use `packages.config`
 
 The [MIT License (MIT)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
 
+```
+Copyright (c) 2015-2016 Denis Kuzmin <entry.reg@gmail.com>
+```
+
 [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=entry%2ereg%40gmail%2ecom&lc=US&item_name=3F%2dOpenSource%20%5b%20github%2ecom%2f3F&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
 
 
 ## Why GetNuTool ?
 
-Primarily this to providing tools for service of your projects and libraries, the build processes, debugging, etc. For all that should be used as a tool for all projects (solution-level) or for each.
+Primarily this to providing tools and service of your projects, libraries, the build processes, debugging, etc. For all that should be used as a tool for all projects ([solution-level](https://github.com/NuGet/Home/issues/1521)) or for each.
 
 * The best examples:
     * [vsSBE.CI.MSBuild](https://www.nuget.org/packages/vsSBE.CI.MSBuild/)
     * [7z.Libs](https://www.nuget.org/packages/7z.Libs/)
     * [ILAsm](https://www.nuget.org/packages/ILAsm/)
 
-**But!** How about to consider it like a more lightweight powerful nuget client for getting packages or for new packaging. No, seriously, we already use it for many projects like:
+**But!** How about to consider it like a more lightweight & powerful nuget client for getting packages or for new packaging. No, seriously, we already use it for many projects like:
 
 * [Conari](https://github.com/3F/Conari)
 * [DllExport](https://github.com/3F/DllExport)
@@ -70,7 +76,7 @@ So you can use this as you want, for example, automatically getting tool above f
 * Creating new (packing) NuGet packages as `.nupkg` by using `.nuspec`
 * Wrapping of any package in one executable file, for example:
     * CI.MSBuild **in one click** ~10 Kb: **[get.CIM.bat](https://github.com/3F/vsSolutionBuildEvent/releases/download/release_v0.12.10/get.CIM.bat)**
-* Via our `.packer` can be easy embedded inside of any scripts.
+* With our `.packer` can be easy embedded inside of any scripts.
 
 ## Commands
 
@@ -82,7 +88,7 @@ Settings:
 
 Property   | Description                                                             | Default values
 -----------|-------------------------------------------------------------------------|-----------------
-ngconfig   | Where to look the packages.config files.                                | v1.0+ `.nuget\packages.config`
+ngconfig   | Where to look the packages.config files.                                | v1.5.1+ `packages.config`, v1.0 - v1.5: `.nuget\packages.config`
 ngserver   | NuGet server.                                                           | v1.0+ `https://www.nuget.org/api/v2/package/`
 ngpackages | List of packages. Use it first if defined, otherwise find via ngconfig  | v1.0+ *empty*
 ngpath     | Common path for all packages.                                           | v1.0+ `packages`
@@ -124,7 +130,7 @@ packages.config:
   <package id="ident.second" version="15.0" output="path" />
 </packages>
 ```
-**Note:** Attributes for v1.2+ is now are case sensitive. Use lowercase for `id`, `version`, `output` ...
+**Note:** Attributes for v1.2+ are case sensitive now. Use lowercase for `id`, `version`, `output` ...
 
 #### Format of ngconfig
 
@@ -164,7 +170,7 @@ debug    | false (by default), true | `v1.3+` To display additional information 
 *note: `v1.4+` also provides executable variant of GetNuTool.*
 
 ```bash
-> gnt /p:ngpackages="DllExport" 
+> gnt /p:ngpackages="Conari" 
 > msbuild gnt.core /p:ngpackages="DllExport" 
 ```
 
@@ -180,9 +186,7 @@ debug    | false (by default), true | `v1.3+` To display additional information 
 
 #### Paths to MSBuild Tools
 
-Use our MSBuild searcher - [msbuild](https://github.com/3F/GetNuTool/blob/master/msbuild.bat) for more convenience.
-
-*but, just a note where to find the msbuild tools by default:*
+*Use our msbuild-searcher and have fun. But just a note where to find the MSBuild tools by default:*
 
 * All available versions on your machine: `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions`
 
@@ -222,7 +226,7 @@ The GetNuTool now is part of [NuGetComponent](http://vssbe.r-eg.net/doc/Scripts/
 
 The `gnt.bat` is already contains `gnt.core` logic. It stored **inside script**.
 
-To build manually this version, you should use our packer from [here](https://github.com/3F/GetNuTool/tree/master/embedded) if needed.
+To build this version you should use our packer from [here](https://github.com/3F/GetNuTool/tree/master/embedded).
 
 ```bash
 > packing
@@ -232,9 +236,11 @@ To build manually this version, you should use our packer from [here](https://gi
 > msbuild embedded/.packer /p:core="path to minified core" /p:output="output file"
 ```
 
-Then you can use simply:
+Now, you can use it simply:
 
 ```bash
+> gnt ...
 > gnt /p:ngpackages="Conari"
 ```
+
 **note:** you do not need the `gnt.core` or something else ! the final script provides all of what you need as non-binary tool ~10 Kb.

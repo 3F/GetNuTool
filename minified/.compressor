@@ -71,6 +71,18 @@
                         var copyr   = Regex.Match(content, @"(Copyright[^$]+?)$", RegexOptions.Multiline).Groups[1].Value.Trim();
                         var vers    = Regex.Match(content, @"(GetNuTool[^$]+?)$", RegexOptions.Multiline).Groups[1].Value.Trim();
 
+                        // XML rules - Pre filter
+
+                        /*content = Regex.Replace(
+                                        content,
+                                        @"\s* Required 
+                                           \s* = 
+                                           \s* ['""] \s*
+                                            .*?
+                                           \s* ['""] \s*",
+                                        "",
+                                        RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);*/
+
                         // protect strings
 
                         var strings = new Dictionary<uint, string>();
@@ -92,9 +104,13 @@
                                                 delegate(Match m)
                                                 {
                                                     var data = m.Groups[0].Value;
+
                                                     data = Regex.Replace(data, @"\s*\/\*.+?\*\/\s*", "", RegexOptions.Singleline);
                                                     data = Regex.Replace(data, @"\s*//[^$]+?$", "", RegexOptions.Multiline);
+                                                    data = Regex.Replace(data, @"\s+const\s+[sS]tring\s+", " var ");
+                                                    data = Regex.Replace(data, @"\s+\w+\s+(\w+)\s+(in|=)\s+", " var $1 $2 ");
                                                     data = Regex.Replace(data, @"\s*([{}()=+\-\[\]*?!@,;.])\s*", "$1");
+
                                                     return data;
                                                 }, 
                                                 RegexOptions.Singleline);
@@ -102,9 +118,13 @@
                         // common rules
 
                         content = content.Replace("\r", "").Replace("\n", "");
+                        content = Regex.Replace(content, @"\s{2,}", " ");
+
+                        // XML rules
+
                         content = Regex.Replace(content, @"<!--.+?-->", "");
                         content = Regex.Replace(content, @">\s+<", "><");
-                        content = Regex.Replace(content, @"\s{2,}", " ");
+                        content = Regex.Replace(content, @"\s+\/>", "/>");
                         content = Regex.Replace(content, @"<\?xml.+?\?>", String.Format("<!-- {0} --><!-- {1} -->", vers, copyr));
 
                         // recover strings
