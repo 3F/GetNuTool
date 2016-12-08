@@ -375,7 +375,7 @@
     <Target Name="Build" DependsOnTargets="get" />
     
     <PropertyGroup>
-        <GetNuTool>1.5</GetNuTool>
+        <GetNuTool>1.6</GetNuTool>
         <wpath Condition="'$(wpath)' == ''">$(MSBuildProjectDirectory)</wpath>
     </PropertyGroup>
     <Target Name="header">

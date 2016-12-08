@@ -11,7 +11,7 @@ The lightweight non-binary NuGet Client as a portable & embeddable tool for work
 [NuGet gnt.raw("/t:pack /p:ngin=\"7z.Libs\"")]  # Compiled variant via vssbe
 ```
 
-[just try](https://github.com/3F/GetNuTool/releases/download/v1.5/gnt.bat) this:
+[just try](https://github.com/3F/GetNuTool/releases/download/v1.6/gnt.bat) this:
 ```bash
 gnt /p:ngpackages="Conari;regXwild"             # To get `Conari` & `regXwild` packages
 gnt /t:pack /p:ngin="bin\DllExport"             # To create new NuGet package from `bin\DllExport` .nuspec
@@ -86,7 +86,7 @@ Settings:
 
 Property   | Description                                                             | Default values
 -----------|-------------------------------------------------------------------------|-----------------
-ngconfig   | Where to look the packages.config files.                                | v1.5.1+ `packages.config`, v1.0 - v1.5: `.nuget\packages.config`
+ngconfig   | Where to look the packages.config files.                                | v1.6+ `packages.config`, v1.0 - v1.5: `.nuget\packages.config`
 ngserver   | NuGet server.                                                           | v1.0+ `https://www.nuget.org/api/v2/package/`
 ngpackages | List of packages. Use it first if defined, otherwise find via ngconfig  | v1.0+ *empty*
 ngpath     | Common path for all packages.                                           | v1.0+ `packages`
@@ -138,8 +138,8 @@ packages.config:
 
 multiple:
 
-* `;` - v1.5.1+ 
-* `|` - v1.0+ (obsolete)
+* `;` - v1.6+ 
+* `|` - v1.0+ (*obsolete and can be removed in new versions*)
 
 ```bash
 /p:ngconfig="debug.config;release.config;..."
@@ -253,5 +253,5 @@ Now, you can use it simply:
 
 key             | Description                                             | Sample
 ----------------|---------------------------------------------------------|----------------
-`-unpack`       | To generate minified version from executable. `v1.5.1+` | `gnt -unpack`
-`-msbuild` path | To use specific msbuild if needed. `v1.5.1+`            | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages="Conari"`
+`-unpack`       | To generate minified version from executable. `v1.6+`   | `gnt -unpack`
+`-msbuild` path | To use specific msbuild if needed. `v1.6+`              | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages="Conari"`

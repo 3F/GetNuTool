@@ -1,31 +1,63 @@
 GetNuTool
-____________________
+- - - - -
+
+[v1.6]
+
+    * NEW: Executable version. Implemented `-unpack` command. 
+           To generate minified version from executable.
+           ```
+           gnt -unpack
+           ```
+           
+    * NEW: Executable version. Implemented `-msbuild` command.
+           To use specific msbuild for executable version.
+           ```
+           gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages="Conari"
+           ```
+           
+    * NEW: Added ';' splitter for .config files.
+           The `|` now is marked as obsolete and can be removed in new versions.
+           
+    * NEW: MSBuild-helper with `-notamd64` option.
+           Related issue: https://github.com/3F/vsSolutionBuildEvent/issues/38
+           
+    * FIXED: Part of unhandled exceptions has been changed on messages to stderr:
+            `The "PrepareList" task failed unexpectedly / FileNotFoundException`
+             The "NGPack" task - DirectoryNotFoundException & The "NGDownload" task - WebException 404
+             
+    * CHANGED: Value of `ngconfig` property now is `packages.config` by default.
 
 [v1.5]
+
     * FIXED: error MSB4018 `Value cannot be null`, if the `/p:wpath` key is not defined.
 
 [v1.4]
+
     * NEW: Added `/p:wpath` key to define working directory.
     * NEW: Support of executable package.
     * NEW: MSBuild searcher.
 
 [v1.3]
+
     * NEW: Added `/p:debug` to display additional information from selected command.
     * CHANGED: Compact output for processed files.
     * CHANGED: CA2202 -> sout
 
 [v1.2]
+
     * NEW: Packing packages into .nupkg by using .nuspec
     * CHANGED: The `get` & `pack` commands for calling of main features.
     * CHANGED: Attributes of packages.config is now are case sensitive. Use lowercase for `id`, `version`, `output`
     * CHANGED: For `get` command: ignoring technical data from package like: /_rels, /package, etc.
 
 [v1.1]
+
     * FIXED: Incorrect path to Microsoft.Build.Tasks.dll with new MSBuild 14.0
     * NEW: Compact version - `gnt-compact.core`
     * CHANGED: Ignoring downloading if this folder is already exists. Remove folder to avoid restriction.
 
 [v1.0]
+
     * The first point - lightweight non-binary tool for getting the NuGet packages via MSBuild Tool
     
 
