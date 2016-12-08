@@ -2,14 +2,15 @@
 <!-- 
     Copyright (c) 2015-2016  Denis Kuzmin [ entry.reg@gmail.com ]
     
-    Distributed under the MIT license
-    (see accompanying file LICENSE or a copy at http://opensource.org/licenses/MIT)
+    Distributed under the MIT License
+    ( see accompanying file LICENSE )
 -->
 
 <!--
     GetNuTool - github.com/3F/GetNuTool
     ========================
-    The lightweight non-binary tool for work with NuGet packages via basic MSBuild Tools (without additional extensions etc.)
+    The lightweight non-binary NuGet Client as a portable & embeddable tool for work with NuGet packages via basic MSBuild.
+    All versions and documentation here:
     https://github.com/3F/GetNuTool/blob/master/README.md
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
