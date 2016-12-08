@@ -108,7 +108,7 @@
                                                     data = Regex.Replace(data, @"\s*\/\*.+?\*\/\s*", "", RegexOptions.Singleline);
                                                     data = Regex.Replace(data, @"\s*//[^$]+?$", "", RegexOptions.Multiline);
                                                     data = Regex.Replace(data, @"\s+const\s+[sS]tring\s+", " var ");
-                                                    data = Regex.Replace(data, @"\s+\w+\s+(\w+)\s+(in|=)\s+", " var $1 $2 ");
+                                                    data = Regex.Replace(data, @"([;(){}]\s*)\w+\s+(\w+)\s+(in|=)\s+", " $1 var $2 $3 ");
                                                     data = Regex.Replace(data, @"\s*([{}()=+\-\[\]*?!@,;.])\s*", "$1");
 
                                                     return data;

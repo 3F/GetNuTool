@@ -135,8 +135,14 @@ packages.config:
 ```bash
 /p:ngconfig=".nuget/packages.config"
 ```
+
 multiple:
+
+* `;` - v1.5.1+ 
+* `|` - v1.0+ (obsolete)
+
 ```bash
+/p:ngconfig="debug.config;release.config;..."
 /p:ngconfig=".nuget/packages.config|project1/packages.config|project2/packages.config|..."
 ```
 

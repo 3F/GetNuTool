@@ -63,6 +63,7 @@
                     Result = plist;
                     return true;
                 }
+                var _err = Console.Error;
 
                 Action<string, Queue<string>> h = delegate(string cfg, Queue<string> list)
                 {
@@ -73,7 +74,8 @@
                         var output  = pkg.Attribute("output");
 
                         if(id == null) {
-                            throw new ArgumentException(String.Format("Not found: 'id' in '{0}'", cfg));
+                            _err.WriteLine("Some 'id' does not exist in '{0}'", cfg);
+                            return; // throw new ArgumentException();
                         }
                         var link = id.Value;
 
@@ -90,15 +92,18 @@
                 };
 
                 var ret = new Queue<string>();
-                foreach(var cfg in config.Split('|')) {
+                foreach(var cfg in config.Split('|', ';')) {
                     var lcfg = Path.Combine(wpath, cfg ?? "");
                     if(File.Exists(lcfg)) {
                         h(lcfg, ret);
                     }
+                    else {
+                        _err.WriteLine(".config '{0}' was not found.", lcfg);
+                    }
                 }
 
                 if(ret.Count < 1) {
-                    Console.WriteLine("List of packages is empty. Use .config or /p:ngpackages=\"...\"\n");
+                    _err.WriteLine("List of packages is empty. Use .config or /p:ngpackages=\"...\"\n");
                 }
                 else {
                     Result = String.Join(";", ret.ToArray());
@@ -155,9 +160,15 @@
 
                     string temp = Path.Combine(Path.GetTempPath(), name);
                     using(var l = new WebClient()) {
-                        l.Headers.Add("User-Agent", "GetNuTool");
-                        l.UseDefaultCredentials = true;
-                        l.DownloadFile(url + link, temp);
+                        try {
+                            l.Headers.Add("User-Agent", "GetNuTool");
+                            l.UseDefaultCredentials = true;
+                            l.DownloadFile(url + link, temp);
+                        }
+                        catch(Exception ex) {
+                            Console.Error.WriteLine(ex.Message);
+                            return;
+                        }
                     }
 
                     Console.WriteLine("Extracting into `{0}`", output);
@@ -245,21 +256,29 @@
                         Console.WriteLine(s, p);
                     }
                 };
+                var _err = Console.Error;
 
-                dir  = Path.Combine(wpath, dir);
+                dir = Path.Combine(wpath, dir);
+                if(!Directory.Exists(dir)) {
+                    _err.WriteLine("`{0}` was not found.", dir);
+                    return false;
+                }
+
                 dout = Path.Combine(wpath, dout ?? "");
 
                 // Get metadata
 
                 var nuspec = Directory.GetFiles(dir, "*" + EXT_NUSPEC, SearchOption.TopDirectoryOnly).FirstOrDefault();
                 if(nuspec == null) {
-                    throw new FileNotFoundException(String.Format("The {0} file is not found in `{1}`", EXT_NUSPEC, dir));
+                    _err.WriteLine("{0} was not found in `{1}`", EXT_NUSPEC, dir);
+                    return false; // throw new FileNotFoundException();
                 }
                 Console.WriteLine("Found {0}: `{1}`", EXT_NUSPEC, nuspec);
 
                 var root = XDocument.Load(nuspec).Root.Elements().FirstOrDefault(x => x.Name.LocalName == TAG_META);
                 if(root == null) {
-                    throw new FileNotFoundException(String.Format("The `{0}` not contains {1}.", nuspec, TAG_META));
+                    _err.WriteLine("{0} does not contain {1}.", nuspec, TAG_META);
+                    return false; // throw new FileNotFoundException();
                 }
 
                 var metadata = new Dictionary<string, string>();
@@ -273,7 +292,8 @@
                                                                 @"^\w+([_.-]\w+)*$", 
                                                                 RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture))
                 {
-                    throw new FormatException(String.Format("The data format of `{0}` is not correct.", ID));
+                    _err.WriteLine("The format of `{0}` is not correct.", ID);
+                    return false; // throw new FormatException();
                 }
                 new Version(metadata[VER]); // check with System.Version
 
@@ -335,13 +355,15 @@
                         return (metadata.ContainsKey(key))? metadata[key] : "";
                     };
 
-                    package.PackageProperties.Creator           = getmeta("authors");
-                    package.PackageProperties.Description       = getmeta("description");
-                    package.PackageProperties.Identifier        = metadata[ID];
-                    package.PackageProperties.Version           = metadata[VER];
-                    package.PackageProperties.Keywords          = getmeta("tags");
-                    package.PackageProperties.Title             = getmeta("title");
-                    package.PackageProperties.LastModifiedBy    = "GetNuTool v" + vtool;
+                    var _p = package.PackageProperties;
+
+                    _p.Creator          = getmeta("authors");
+                    _p.Description      = getmeta("description");
+                    _p.Identifier       = metadata[ID];
+                    _p.Version          = metadata[VER];
+                    _p.Keywords         = getmeta("tags");
+                    _p.Title            = getmeta("title");
+                    _p.LastModifiedBy   = "GetNuTool v" + vtool;
                 }
 
             ]]></Code>
