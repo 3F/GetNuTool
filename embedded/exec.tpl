@@ -7,8 +7,11 @@ set gntcore=gnt.core
 set $tpl.corevar$="%temp%\%random%%random%%gntcore%"
 
 set args=%*
-if "%args:~0,7%"=="-unpack" goto unpack
-if "%args:~0,8%"=="-msbuild" goto ufound
+set a=%args:~0,30%
+set a=%a:"=%
+
+if "%a:~0,7%"=="-unpack" goto unpack
+if "%a:~0,8%"=="-msbuild" goto ufound
 
 for %%v in (14.0, 12.0, 15.0, 4.0, 3.5, 2.0) do (
     for /F "usebackq tokens=2* skip=2" %%a in (
@@ -47,3 +50,4 @@ echo Generate minified version in %$tpl.corevar$% ...
 $gnt.core.logic$
 
 :exit
+exit /B 0

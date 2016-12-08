@@ -43,7 +43,7 @@
         "$type": "net.r_eg.vsSBE.Events.ModeScript, vsSolutionBuildEvent",
         "Type": "Script",
         "Command__": [
-          "#[File scall(\"packing.bat\", \"\", 400)]"
+          "#[IO writeLine(STDOUT):#[File sout(\"packing.bat\", \"\", 400)]]"
         ]
       }
     }
@@ -69,7 +69,7 @@
           "                \"minified/gnt.core\", ",
           "                \"caller/gnt.bat\"",
           "               }, ",
-          "               \"$(odir)versions/02. caller/\", true)]",
+          "               \"$(odir)versions/02. wrapper/\", true)]",
           "",
           "#[IO copy.file({ \"README.md\", \"changelog.txt\" }, \"$(odir)doc/\", true)]",
           "               ",
@@ -78,6 +78,23 @@
           "                \"LICENSE\"",
           "               },",
           "               \"$(odir)\", true)]"
+        ]
+      }
+    },
+    {
+      "Enabled": true,
+      "Name": "ActZip",
+      "Caption": "Create Zip archive",
+      "SupportMSBuild": true,
+      "SupportSBEScripts": true,
+      "IgnoreIfBuildFailed": true,
+      "BuildType": "Common",
+      "Confirmation": false,
+      "Mode": {
+        "$type": "net.r_eg.vsSBE.Events.ModeScript, vsSolutionBuildEvent",
+        "Type": "Script",
+        "Command__": [
+          "#[7z pack.directory(\"$(dbin)raw\", \"$(dbin)GetNuTool.zip\")]"
         ]
       }
     }

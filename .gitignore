@@ -4,6 +4,7 @@ obj
 .vs
 /packages
 /minified/gnt-min.core
-/minified/gnt.core
+/minified/gnt.core*
 .nupkg
 /embedded/gnt.bat
+/embedded/gnt.core*

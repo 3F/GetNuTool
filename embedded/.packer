@@ -28,8 +28,7 @@
         <TaskCoreDllPath Condition="Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll</TaskCoreDllPath>
         <TaskCoreDllPath Condition="'$(TaskCoreDllPath)' == '' and Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll</TaskCoreDllPath>
     </PropertyGroup>
-    
-    <!-- Prepares list for downloader below -->
+
     <UsingTask
         TaskName="Packing"
         TaskFactory="CodeTaskFactory"

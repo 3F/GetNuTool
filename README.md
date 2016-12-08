@@ -1,11 +1,9 @@
-# GetNuTool
+# [GetNuTool](https://github.com/3F/GetNuTool)
 
 The lightweight non-binary NuGet Client as a portable & embeddable tool for work with NuGet packages via basic MSBuild 
 (it does not require any additional extensions).
 
-[![Build status](https://ci.appveyor.com/api/projects/status/rv65lbks5frc4k52/branch/master?svg=true)](https://ci.appveyor.com/project/3Fs/getnutool/branch/master)
-[![release-src](https://img.shields.io/github/release/3F/GetNuTool.svg)](https://github.com/3F/GetNuTool/releases/latest)
-[![License](https://img.shields.io/badge/License-MIT-74A5C2.svg)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
+[![Build status](https://ci.appveyor.com/api/projects/status/rv65lbks5frc4k52/branch/master?svg=true)](https://ci.appveyor.com/project/3Fs/getnutool/branch/master) [![release-src](https://img.shields.io/github/release/3F/GetNuTool.svg)](https://github.com/3F/GetNuTool/releases/latest) [![License](https://img.shields.io/badge/License-MIT-74A5C2.svg)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
 
 ```bash
 > gnt                                           # Executable version - full logic inside single script
@@ -176,7 +174,7 @@ debug    | false (by default), true | `v1.3+` To display additional information 
 
 ```bash
 > msbuild gnt.core
-> msbuild gnt.core /p:ngpackages="7z.Libs/15.12.0;vsSBE.CI.MSBuild/1.5.1:../packages/CI.MSBuild"
+> msbuild gnt.core /p:ngpackages="7z.Libs/16.04.0;vsSBE.CI.MSBuild/1.6.12010:../packages/CI.MSBuild"
 ```
 
 ```bash
@@ -186,7 +184,7 @@ debug    | false (by default), true | `v1.3+` To display additional information 
 
 #### Paths to MSBuild Tools
 
-*Use our msbuild-searcher and have fun. But just a note where to find the MSBuild tools by default:*
+*Use our [msbuild-helper](https://github.com/3F/GetNuTool/blob/master/msbuild.bat) and have fun. But just a note where to find the MSBuild tools by default:*
 
 * All available versions on your machine: `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions`
 
