@@ -2,7 +2,7 @@
 
 set msbuild=msbuild.bat
 
-call %msbuild% minified/.compressor /p:core="../gnt.core" /p:output="gnt.core" /nologo /v:m /m:4 %* || goto err
+call %msbuild% minified/.compressor /p:core="../logic.targets" /p:output="gnt.core" /nologo /v:m /m:4 %* || goto err
 
 goto exit
 

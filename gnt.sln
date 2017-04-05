@@ -1,8 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
+MinimumVisualStudioVersion = 10.0.30319.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".gnt", ".gnt", "{D221D332-2A57-44F9-B866-F7C00C29032D}"
 	ProjectSection(SolutionItems) = preProject
-		gnt.core = gnt.core
+		logic.targets = logic.targets
 	EndProjectSection
 EndProject
+Global
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

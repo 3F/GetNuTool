@@ -61,7 +61,7 @@
         "$type": "net.r_eg.vsSBE.Events.ModeScript, vsSolutionBuildEvent",
         "Type": "Script",
         "Command__": [
-          "#[IO copy.file(\"gnt.core\", \"$(odir)core/gnt.core\", true)]",
+          "#[IO copy.file(\"logic.targets\", \"$(odir)core/gnt.core\", true)]",
           "#[IO copy.file(\"minified/gnt.core\", \"$(odir)core-minified/gnt.core\", true)]",
           "#[IO copy.file(\"embedded/gnt.bat\", \"$(odir)versions/01. executable/gnt.bat\", true)]",
           "",

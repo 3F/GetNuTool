@@ -3,7 +3,7 @@
 set msbuild=msbuild.bat
 
 
-call %msbuild% gnt.core /p:ngconfig="packages.config" /nologo /v:m /m:4 || goto err
+call %msbuild% logic.targets /p:ngconfig="packages.config" /nologo /v:m /m:4 || goto err
 call %msbuild% -notamd64 "gnt.sln" /l:"packages\vsSBE.CI.MSBuild\bin\CI.MSBuild.dll" /v:m /m:4
 
 goto exit

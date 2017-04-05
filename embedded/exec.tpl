@@ -1,6 +1,6 @@
 @echo off
 :: GetNuTool - Executable version
-:: Copyright (c) 2015-2016  Denis Kuzmin [ entry.reg@gmail.com ]
+:: Copyright (c) 2015-2017  Denis Kuzmin [ entry.reg@gmail.com ]
 :: https://github.com/3F/GetNuTool
 
 set gntcore=gnt.core

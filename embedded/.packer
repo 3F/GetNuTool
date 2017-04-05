@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (c) 2015-2016  Denis Kuzmin (reg) [ entry.reg@gmail.com ]
+    Copyright (c) 2015-2017  Denis Kuzmin (reg) [ entry.reg@gmail.com ]
     
     Distributed under the GetNuTool license
     https://github.com/3F/GetNuTool
@@ -13,7 +13,7 @@
 
     <!-- Main settings -->
     <PropertyGroup>
-        <core Condition="'$(core)' == ''">..\gnt.core</core>
+        <core Condition="'$(core)' == ''">..\logic.targets</core>
         <output Condition="'$(output)' == ''">gnt.bat</output>
         <maxline Condition="'$(maxline)' == ''">1577</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
     </PropertyGroup>
