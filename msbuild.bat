@@ -10,54 +10,52 @@ setlocal enableDelayedExpansion
 ::      msbuild <args> - to select any available instance.
 ::
 
-set args=%*
+set args=%* 
 set notamd64=0
 
 set a=%args:~0,30%
 set a=%a:"=%
 
-if "%a:~0,9%"=="-notamd64" (
+if "%a:~0,10%"=="-notamd64 " (
     call :popa %1
     shift
     set notamd64=1
 )
 
-for %%v in (14.0, 12.0, 15.0, 4.0, 3.5, 2.0) do (
+for %%v in (14.0, 12.0, 4.0, 3.5, 2.0) do (
     for /F "usebackq tokens=2* skip=2" %%a in (
         `reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions\%%v" /v MSBuildToolsPath 2^> nul`
     ) do if exist %%b (
 
         if NOT "%notamd64%" == "1" (
-            set msbuild=%%b\msbuild.exe
+            set msbuildexe=%%b\MSBuild.exe
             goto found
         )
 
         :: 7z & amd64\msbuild - https://github.com/3F/vsSolutionBuildEvent/issues/38
-        set _amd=..\msbuild.exe
+        set _amd=..\MSBuild.exe
         if exist "%%b/!_amd!" (
-            set msbuild=%%b\!_amd!
+            set msbuildexe=%%b\!_amd!
         ) else ( 
-            set msbuild=%%b\msbuild.exe
+            set msbuildexe=%%b\MSBuild.exe
         )
         goto found
     )
 )
 
 echo MSBuild was not found, try: ` "full_path_to_msbuild.exe" arguments ` 1>&2
-goto exit
+exit /B 2
 
 
 :found
 
-set msbuild="%msbuild%"
+set msbuildexe="%msbuildexe%"
+echo MSBuild Tools: %msbuildexe% 
 
-echo MSBuild Tools: %msbuild% 
+%msbuildexe% %args%
 
-%msbuild% %args%
-
-:popa
-call set args=%%args:%1^=%%
 exit /B 0
 
-:exit
+:popa
+call set args=%%args:%1 ^=%%
 exit /B 0

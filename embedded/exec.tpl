@@ -6,39 +6,38 @@
 set gntcore=gnt.core
 set $tpl.corevar$="%temp%\%random%%random%%gntcore%"
 
-set args=%*
+set args=%* 
 set a=%args:~0,30%
 set a=%a:"=%
 
-if "%a:~0,7%"=="-unpack" goto unpack
-if "%a:~0,8%"=="-msbuild" goto ufound
+if "%a:~0,8%"=="-unpack " goto unpack
+if "%a:~0,9%"=="-msbuild " goto ufound
 
-for %%v in (14.0, 12.0, 15.0, 4.0, 3.5, 2.0) do (
+for %%v in (14.0, 12.0, 4.0, 3.5, 2.0) do (
     for /F "usebackq tokens=2* skip=2" %%a in (
         `reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions\%%v" /v MSBuildToolsPath 2^> nul`
     ) do if exist %%b (
-        set msbuild="%%b\msbuild.exe"
+        set msbuildexe="%%b\MSBuild.exe"
         goto found
     )
 )
 echo MSBuild was not found, try: gnt -msbuild "fullpath" args 1>&2
-goto exit
-
+exit /B 2
 
 :ufound
 call :popa %1
 shift
-set msbuild=%1
+set msbuildexe=%1
 call :popa %1
 
 :found
 call :core
-%msbuild% %$tpl.corevar$% /nologo /p:wpath="%~dp0/" /v:m %args%
+%msbuildexe% %$tpl.corevar$% /nologo /p:wpath="%~dp0/" /v:m %args%
 del /Q/F %$tpl.corevar$%
-goto exit
+exit /B 0
 
 :popa
-call set args=%%args:%1^=%%
+call set args=%%args:%1 ^=%%
 exit /B 0
 
 :unpack
@@ -49,5 +48,4 @@ echo Generate minified version in %$tpl.corevar$% ...
 <nul set /P ="">%$tpl.corevar$%
 $gnt.core.logic$
 
-:exit
 exit /B 0
