@@ -41,7 +41,7 @@ call set args=%%args:%1 ^=%%
 exit /B 0
 
 :unpack
-set $tpl.corevar$=%~dp0\%gntcore%
+set $tpl.corevar$="%~dp0\%gntcore%"
 echo Generate minified version in %$tpl.corevar$% ...
 
 :core
