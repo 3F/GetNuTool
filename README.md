@@ -1,6 +1,6 @@
 # [GetNuTool](https://github.com/3F/GetNuTool)
 
-The lightweight non-binary NuGet Client as a portable & embeddable tool for work with NuGet packages via basic MSBuild 
+The lightweight NuGet Client as a portable & embeddable tool for work with NuGet packages via basic MSBuild 
 (it does not require any additional extensions).
 
 [![Build status](https://ci.appveyor.com/api/projects/status/rv65lbks5frc4k52/branch/master?svg=true)](https://ci.appveyor.com/project/3Fs/getnutool/branch/master) [![release-src](https://img.shields.io/github/release/3F/GetNuTool.svg)](https://github.com/3F/GetNuTool/releases/latest) [![License](https://img.shields.io/badge/License-MIT-74A5C2.svg)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
@@ -19,9 +19,13 @@ gnt /p:ngpackages="LunaRoad/1.4.1"              # To get `LunaRoad` package v1.4
 msbuild gnt.core /p:ngconfig="packages.config"  # Use `packages.config`
 ```
 
-**Download:** [/releases](https://github.com/3F/GetNuTool/releases) ( [latest](https://github.com/3F/GetNuTool/releases/latest) ) - *Full version, Minified version, Compiled variant, Executable version*
+**Download:** [/releases](https://github.com/3F/GetNuTool/releases) [ **[latest](https://github.com/3F/GetNuTool/releases/latest)** ] - *Full version, Minified version, Compiled variant, Executable version*
 
-* Demo project: [GetNuTool v1.5 `get` & `pack` commands in use](https://ci.appveyor.com/project/3Fs/vssolutionbuildevent/build/build-178)
+* Demo: [GetNuTool v1.5 `get` & `pack` commands in use](https://ci.appveyor.com/project/3Fs/vssolutionbuildevent/build/build-178)
+
+## Projects that based on GetNuTool core
+
+* [hMSBuild](https://github.com/3F/hMSBuild) - A lightweight tool (compiled batch file ~19 Kb that can be embedded inside any scripts or other batch files) - an easy helper for searching of available MSBuild tools. https://github.com/3F/hMSBuild
 
 ## License
 
@@ -188,19 +192,9 @@ debug    | false (by default), true | `v1.3+` To display additional information 
 > msbuild gnt.core /t:pack /p:ngin="D:\tmp\7z.Libs" /p:ngout="newdir/"
 ```
 
-#### Paths to MSBuild Tools
+#### Path to MSBuild Tools
 
-*Use our [msbuild-helper](https://github.com/3F/GetNuTool/blob/master/msbuild.bat) and have fun. But just a note where to find the MSBuild tools by default:*
-
-* All available versions on your machine: `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions`
-
-```bash
-"C:\Program Files (x86)\MSBuild\14.0\bin\msbuild.exe"
-"C:\Program Files (x86)\MSBuild\12.0\bin\msbuild.exe"
-C:\Windows\Microsoft.NET\Framework\v4.0.30319\msbuild.exe
-C:\Windows\Microsoft.NET\Framework64\v4.0.30319\msbuild.exe
-+GAC_32, GAC_64, ...
-```
+*If you need, try [hMSBuild](https://github.com/3F/hMSBuild) and have fun.*
 
 ## Compact & Minified versions
 

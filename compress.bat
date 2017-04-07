@@ -1,13 +1,12 @@
 @echo off
 
-set msbuild=msbuild.bat
+set msbuild=netmsb
 
 call %msbuild% minified/.compressor /p:core="../logic.targets" /p:output="gnt.core" /nologo /v:m /m:4 %* || goto err
 
-goto exit
+exit /B 0
 
 :err
 
 echo. Build failed. 1>&2
-
-:exit
+exit /B 1
