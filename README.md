@@ -17,6 +17,7 @@ gnt /p:ngpackages="Conari;regXwild"             # To get `Conari` & `regXwild` p
 gnt /t:pack /p:ngin="bin\DllExport"             # To create new NuGet package from `bin\DllExport` .nuspec
 gnt /p:ngpackages="LunaRoad/1.4.1"              # To get `LunaRoad` package v1.4.1
 msbuild gnt.core /p:ngconfig="packages.config"  # Use `packages.config`
+gnt /p:ngserver="https://chocolatey.org/api/v2/package/" /p:ngpackages="putty.portable/0.69"
 ```
 
 **Download:** [/releases](https://github.com/3F/GetNuTool/releases) [ **[latest](https://github.com/3F/GetNuTool/releases/latest)** ] - *Full version, Minified version, Compiled variant, Executable version*
@@ -69,7 +70,7 @@ So you can use this as you want, for example, automatically getting tool above f
 
 ### Main features
 
-* Getting the all selected `.nupkg` packages from NuGet server from user list with formats below.
+* Getting the all selected `.nupkg` packages from any NuGet server (+Chocolatey) from user list with formats below.
     * Two formats: list from `.config` files or direct from string.
 * Extracting the all data from `.nupkg` into path by default or specific for each package.
     * +Custom naming for each package with ignoring for already downloaded packages.
@@ -78,7 +79,9 @@ So you can use this as you want, for example, automatically getting tool above f
 * Creating new (packing) NuGet packages as `.nupkg` by using `.nuspec`
 * Wrapping of any package in one executable file, for example:
     * CI.MSBuild **in one click** ~10 Kb: **[get.CIM.bat](https://github.com/3F/vsSolutionBuildEvent/releases/download/release_v0.12.10/get.CIM.bat)**
-* With our `.packer` can be easy embedded inside of any scripts.
+* With our `.packer` can be easy embedded inside of any scripts, like [hMSBuild](https://github.com/3F/hMSBuild)
+* A lot of versions for your comfortable work - Full version, Minified version, Compiled variant, Executable version.
+* ...
 
 ## Commands
 

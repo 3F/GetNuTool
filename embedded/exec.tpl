@@ -6,7 +6,7 @@
 set gntcore=gnt.core
 set $tpl.corevar$="%temp%\%random%%random%%gntcore%"
 
-set args=%* 
+set "args=%* "
 set a=%args:~0,30%
 set a=%a:"=%
 
