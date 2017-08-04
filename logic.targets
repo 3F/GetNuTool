@@ -295,7 +295,7 @@
                     _err.WriteLine("The format of `{0}` is not correct.", ID);
                     return false; // throw new FormatException();
                 }
-                new Version(metadata[VER]); // check with System.Version
+                //new Version(metadata[VER]); // check with System.Version
 
                 // Format package
 
