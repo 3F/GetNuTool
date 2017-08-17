@@ -151,19 +151,19 @@
 
                 Action<string, string, string> get = delegate(string link, string name, string path)
                 {
-                    string output = Path.GetFullPath(loc(path ?? name));
-                    if(Directory.Exists(output)) {
-                        Console.WriteLine("`{0}` is already exists. /pass `{1}`", name, output);
+                    var to = Path.GetFullPath(loc(path ?? name));
+                    if(Directory.Exists(to)) {
+                        Console.WriteLine("`{0}` is already exists: \"{1}\"", name, to);
                         return;
                     }
                     Console.Write("Getting `{0}` ... ", link);
 
-                    string temp = Path.Combine(Path.GetTempPath(), name);
+                    var tmp = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
                     using(var l = new WebClient()) {
                         try {
                             l.Headers.Add("User-Agent", "GetNuTool");
                             l.UseDefaultCredentials = true;
-                            l.DownloadFile(url + link, temp);
+                            l.DownloadFile(url + link, tmp);
                         }
                         catch(Exception ex) {
                             Console.Error.WriteLine(ex.Message);
@@ -171,17 +171,17 @@
                         }
                     }
 
-                    Console.WriteLine("Extracting into `{0}`", output);
-                    using(Package package = ZipPackage.Open(temp, FileMode.Open, FileAccess.Read))
+                    Console.WriteLine("Extracting into \"{0}\"", to);
+                    using(var pkg = ZipPackage.Open(tmp, FileMode.Open, FileAccess.Read))
                     {
-                        foreach(PackagePart part in package.GetParts()) 
+                        foreach(var part in pkg.GetParts()) 
                         {
                             var uri = Uri.UnescapeDataString(part.Uri.OriginalString);
                             if(ignore.Any(x => uri.StartsWith(x, StringComparison.Ordinal))) {
                                 continue;
                             }
 
-                            var dest = Path.Combine(output, uri.TrimStart('/'));
+                            var dest = Path.Combine(to, uri.TrimStart('/'));
                             dbg("- `{0}`", uri);
 
                             var dir = Path.GetDirectoryName(dest);
@@ -189,20 +189,24 @@
                                 Directory.CreateDirectory(dir);
                             }
 
-                            using(Stream source = part.GetStream(FileMode.Open, FileAccess.Read))
-                            using(FileStream target = File.OpenWrite(dest)) {
-                                source.CopyTo(target);
-                            } 
-                        } 
+                            using(Stream src = part.GetStream(FileMode.Open, FileAccess.Read))
+                            using(var target = File.OpenWrite(dest))
+                            {
+                                try {
+                                    src.CopyTo(target);
+                                }
+                                catch(FileFormatException ex) { dbg("[x]?crc: {0}", dest); }
+                            }
+                        }
                     }
-                    dbg("Done.{0}", Environment.NewLine);
+                    File.Delete(tmp);
                 };
 
                 //Format: id/version[:path];id2/version[:path];...
 
-                foreach(var package in plist.Split(';'))
+                foreach(var pkg in plist.Split(';'))
                 {
-                    var ident   = package.Split(':');
+                    var ident   = pkg.Split(':');
                     var link    = ident[0];
                     var path    = (ident.Length > 1) ? ident[1] : null;
                     var name    = link.Replace('/', '.');
@@ -295,7 +299,6 @@
                     _err.WriteLine("The format of `{0}` is not correct.", ID);
                     return false; // throw new FormatException();
                 }
-                //new Version(metadata[VER]); // check with System.Version
 
                 // Format package
 
@@ -313,12 +316,12 @@
                 }
 
                 Console.WriteLine("Started packing `{0}` ...", pout);
-                using(Package package = Package.Open(pout, FileMode.Create))
+                using(var pkg = Package.Open(pout, FileMode.Create))
                 {
                     // manifest relationship
 
                     Uri manifestUri = new Uri(String.Format("/{0}{1}", metadata[ID], EXT_NUSPEC), UriKind.Relative);
-                    package.CreateRelationship(manifestUri, TargetMode.Internal, MANIFEST_URL);
+                    pkg.CreateRelationship(manifestUri, TargetMode.Internal, MANIFEST_URL);
 
                     // content
 
@@ -341,7 +344,7 @@
                         var escaped = String.Join("/", pUri.Split('\\', '/').Select(p => Uri.EscapeDataString(p)));
                         Uri uri     = PackUriHelper.CreatePartUri(new Uri(escaped, UriKind.Relative));
 
-                        PackagePart part = package.CreatePart(uri, DEF_CONTENT_TYPE, CompressionOption.Maximum);
+                        var part = pkg.CreatePart(uri, DEF_CONTENT_TYPE, CompressionOption.Maximum);
 
                         using (Stream tstream = part.GetStream())
                         using(var fs = new FileStream(file, FileMode.Open, FileAccess.Read)) {
@@ -349,13 +352,13 @@
                         }
                     }
 
-                    // metadata for package
+                    // metadata
 
                     Func<string, string> getmeta = delegate(string key) {
                         return (metadata.ContainsKey(key))? metadata[key] : "";
                     };
 
-                    var _p = package.PackageProperties;
+                    var _p = pkg.PackageProperties;
 
                     _p.Creator          = getmeta("authors");
                     _p.Description      = getmeta("description");
