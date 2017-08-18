@@ -1,15 +1,16 @@
 @echo off
 
-set msbuild="%~dp0\..\netmsb.bat"
-
+if not exist "%~dp0\gnt.bat" goto err
 echo SHA-1 test has been started.
 
+set msbuild="%~dp0\..\netmsb.bat"
+
 call "%~dp0\gnt" -unpack || goto err
-call %msbuild% "%~dp0\sha1_comparer.targets" /p:core1="%~dp0\../minified/gnt.core" /p:core2="%~dp0\gnt.core" /nologo /v:m /m:4 || goto err
+call %msbuild% "%~dp0\sha1_comparer.targets" /p:core1="%~dp0\gnt.min.core" /p:core2="%~dp0\gnt.core" /nologo /v:m /m:4 || goto err
 
 exit /B 0
 
 :err
 
-echo. Build failed. 1>&2
+echo Failed. 1>&2
 exit /B 1
