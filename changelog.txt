@@ -1,7 +1,19 @@
 GetNuTool :: https://github.com/3F/GetNuTool
 - - - - -
 
-[v1.6]
+[v1.6.1] 2017.08.18
+
+    * FIXED: Fixed problem "Input string was not in a correct format" when used version with release type, 
+             e.g.: 1.2.3-alpha, 1.2.3-beta-2, 1.2.3-rc ...
+             
+    * FIXED: Avoids errors with possible incorrect CRC & Compressed size info. Issue #3
+    * FIXED: Fixed problems with paths and whitespace characters for `-unpack` command in executable version.
+    * CHANGED: Removed '15.0' from searching by registry key as an unused way for all new VS2017+
+    * CHANGED: 'MSBuild was not found' now returns (0x2) ERROR_FILE_NOT_FOUND
+    * CHANGED: Ñhanged variable name %msbuild% to %msbuildexe% that was related for Issue #2
+    * CHANGED: Improved comparing arguments for executable version.
+    
+[v1.6] 2016.12.08
 
     * NEW: Executable version. Implemented `-unpack` command. 
            To generate minified version from executable.

@@ -11,7 +11,7 @@ The lightweight NuGet Client as a portable & embeddable tool for work with NuGet
 [NuGet gnt.raw("/t:pack /p:ngin=\"7z.Libs\"")]  # Compiled variant via vssbe
 ```
 
-[just try](https://github.com/3F/GetNuTool/releases/download/v1.6/gnt.bat) this:
+[just try](https://3F.github.io/GetNuTool/releases/latest/gnt/) this:
 ```bash
 gnt /p:ngpackages="Conari;regXwild"             # To get `Conari` & `regXwild` packages
 gnt /t:pack /p:ngin="bin\DllExport"             # To create new NuGet package from `bin\DllExport` .nuspec
