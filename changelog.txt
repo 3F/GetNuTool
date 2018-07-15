@@ -10,7 +10,7 @@ GetNuTool :: https://github.com/3F/GetNuTool
     * FIXED: Fixed problems with paths and whitespace characters for `-unpack` command in executable version.
     * CHANGED: Removed '15.0' from searching by registry key as an unused way for all new VS2017+
     * CHANGED: 'MSBuild was not found' now returns (0x2) ERROR_FILE_NOT_FOUND
-    * CHANGED: Ñhanged variable name %msbuild% to %msbuildexe% that was related for Issue #2
+    * CHANGED: Changed variable name %msbuild% to %msbuildexe% that was related for Issue #2
     * CHANGED: Improved comparing arguments for executable version.
     
 [v1.6] 2016.12.08

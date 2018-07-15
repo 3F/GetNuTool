@@ -1,7 +1,7 @@
 # [GetNuTool](https://github.com/3F/GetNuTool)
 
-The lightweight NuGet Client as a portable & embeddable tool for work with NuGet packages via basic MSBuild 
-(it does not require any additional extensions).
+Embeddable Package Manager. NuGet / Chocolatey Client. And the lightweight portable tool for work with packages.
+*(via basic MSBuild that does not require any additional extensions, dotnet-cli, powershell, ...)*
 
 [![Build status](https://ci.appveyor.com/api/projects/status/rv65lbks5frc4k52/branch/master?svg=true)](https://ci.appveyor.com/project/3Fs/getnutool/branch/master) [![release-src](https://img.shields.io/github/release/3F/GetNuTool.svg)](https://github.com/3F/GetNuTool/releases/latest) [![License](https://img.shields.io/badge/License-MIT-74A5C2.svg)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
 
@@ -24,16 +24,17 @@ gnt /p:ngserver="https://chocolatey.org/api/v2/package/" /p:ngpackages="putty.po
 
 * Demo: [GetNuTool v1.5 `get` & `pack` commands in use](https://ci.appveyor.com/project/3Fs/vssolutionbuildevent/build/build-178)
 
-## Projects that based on GetNuTool core
+## Projects on GetNuTool core
 
 * [hMSBuild](https://github.com/3F/hMSBuild) - A lightweight tool (compiled batch file ~19 Kb that can be embedded inside any scripts or other batch files) - an easy helper for searching of available MSBuild tools. https://github.com/3F/hMSBuild
+* [DllExport Manager](https://github.com/3F/DllExport/wiki/DllExport-Manager) - *It was based on GetNuTool core that's Cross-Platform Embeddable Package Manager that requires only MSBuild. Finally it just aggregates calling to Wizard that was based on [MvsSln](https://github.com/3F/MvsSln).*
 
 ## License
 
 The [MIT License (MIT)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
 
 ```
-Copyright (c) 2015-2017 Denis Kuzmin <entry.reg@gmail.com>
+Copyright (c) 2015-2018 Denis Kuzmin <entry.reg@gmail.com> :: github.com/3F
 ```
 
 [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=entry%2ereg%40gmail%2ecom&lc=US&item_name=3F%2dOpenSource%20%5b%20github%2ecom%2f3F&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
@@ -41,14 +42,14 @@ Copyright (c) 2015-2017 Denis Kuzmin <entry.reg@gmail.com>
 
 ## Why GetNuTool ?
 
-Primarily this to providing tools and service of your projects, libraries, the build processes, debugging, etc. For all that should be used as a tool for all projects ([solution-level](https://github.com/NuGet/Home/issues/1521)) or for each.
+Initially this was developed for providing tools to service projects, libraries, the build processes, debugging, etc. As an tool for all projects ([solution-level](https://github.com/NuGet/Home/issues/1521)) or for each separately.
 
 * The best examples:
     * [vsSBE.CI.MSBuild](https://www.nuget.org/packages/vsSBE.CI.MSBuild/)
     * [7z.Libs](https://www.nuget.org/packages/7z.Libs/)
     * [ILAsm](https://www.nuget.org/packages/ILAsm/)
 
-**But!** How about to consider it like a more lightweight & powerful nuget client for getting packages or for new packaging. No, seriously, we already use it for many projects like:
+**But!** How about to consider all this like a more lightweight & powerful nuget client for getting packages or for packaging new. No, seriously, we already use it for many projects like:
 
 * [Conari](https://github.com/3F/Conari)
 * [DllExport](https://github.com/3F/DllExport)
