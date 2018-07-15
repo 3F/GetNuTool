@@ -135,6 +135,7 @@
                 if(plist == null) {
                     return false;
                 }
+                ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
                 // to ignore from package
                 var ignore = new string[] { "/_rels/", "/package/", "/[Content_Types].xml" };
