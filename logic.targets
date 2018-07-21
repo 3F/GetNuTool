@@ -9,7 +9,7 @@
 <!--
     GetNuTool - github.com/3F/GetNuTool
     ========================
-    The lightweight non-binary NuGet Client as a portable & embeddable tool for work with NuGet packages via basic MSBuild.
+    Embeddable Package Manager.
     All versions and documentation here:
     https://github.com/3F/GetNuTool/blob/master/README.md
 -->
@@ -203,11 +203,11 @@
                     File.Delete(tmp);
                 };
 
-                //Format: id/version[:path];id2/version[:path];...
+                //Format: id/version[:path];id2/version[:D:/path];...
 
                 foreach(var pkg in plist.Split(';'))
                 {
-                    var ident   = pkg.Split(':');
+                    var ident   = pkg.Split(new char[] { ':' }, 2);
                     var link    = ident[0];
                     var path    = (ident.Length > 1) ? ident[1] : null;
                     var name    = link.Replace('/', '.');
