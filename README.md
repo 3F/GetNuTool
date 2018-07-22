@@ -99,14 +99,18 @@ ngserver   | NuGet server.                                                      
 ngpackages | List of packages. Use it first if defined, otherwise find via ngconfig  | v1.0+ *empty*
 ngpath     | Common path for all packages.                                           | v1.0+ `packages`
 wpath      |`v1.4+` To define working directory.                                     | v1.4+ *The absolute path of the directory where the GetNuTool is located.*
+proxycfg   | `v1.6.2+` To configure connection via proxy.                            | v1.6.2+ *empty*. Format: [usr[:pwd]@]host[:port]
 
 Samples:
 
 ```bash
-> msbuild gnt.core /p:ngpath="special-packages/new"
+msbuild gnt.core /p:ngpath="special-packages/new"
 ```
 ```bash
-> msbuild gnt.core /p:ngconfig=".nuget/packages.config" /p:ngpath="../packages"
+msbuild gnt.core /p:ngconfig=".nuget/packages.config" /p:ngpath="../packages"
+```
+```bash
+gnt /p:ngpackages="Conari" /p:proxycfg="guest:1234@10.0.2.15:7428"
 ```
 
 #### Format of packages list

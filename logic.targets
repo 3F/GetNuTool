@@ -28,7 +28,7 @@
         <PrepareList config="$(ngconfig)" plist="$(ngpackages)" wpath="$(wpath)">
             <Output PropertyName="plist" TaskParameter="Result" />
         </PrepareList>
-        <NGDownload plist="$(plist)" url="$(ngserver)" wpath="$(wpath)" defpath="$(ngpath)" debug="$(debug)" />
+        <NGDownload plist="$(plist)" url="$(ngserver)" wpath="$(wpath)" defpath="$(ngpath)" proxy="$(proxycfg)" debug="$(debug)" />
     </Target>
     <Target Name="pack" DependsOnTargets="header">
         <NGPack dir="$(ngin)" dout="$(ngout)" wpath="$(wpath)" vtool="$(GetNuTool)" debug="$(debug)" />
@@ -121,6 +121,7 @@
             <url ParameterType="System.String" Required="true" />
             <wpath ParameterType="System.String" />
             <defpath ParameterType="System.String" />
+            <proxy ParameterType="System.String" />
             <debug ParameterType="System.Boolean" />
         </ParameterGroup>
 
@@ -145,7 +146,23 @@
                         Console.WriteLine(s, p);
                     }
                 };
-                
+
+                Func<string, WebProxy> getProxy = delegate(string cfg)
+                {
+                    var auth = cfg.Split('@');
+                    if(auth.Length <= 1) {
+                        return new WebProxy(auth[0], false);
+                    }
+
+                    var login = auth[0].Split(':');
+                    return new WebProxy(auth[1], false) {
+                        Credentials = new NetworkCredential(
+                            login[0], 
+                            (login.Length > 1) ? login[1] : null
+                        )
+                    };
+                };
+
                 Func<string, string> loc = delegate(string p) {
                     return Path.Combine(wpath, p ?? "");
                 };
@@ -160,8 +177,13 @@
                     Console.Write("Getting `{0}` ... ", link);
 
                     var tmp = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-                    using(var l = new WebClient()) {
-                        try {
+                    using(var l = new WebClient())
+                    {
+                        try
+                        {
+                            if(proxy != null) {
+                                l.Proxy = getProxy(proxy);
+                            }
                             l.Headers.Add("User-Agent", "GetNuTool");
                             l.UseDefaultCredentials = true;
                             l.DownloadFile(url + link, tmp);
