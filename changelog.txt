@@ -1,6 +1,16 @@
 GetNuTool :: https://github.com/3F/GetNuTool
 - - - - -
 
+[v1.6.2] 2018.08.05
+
+    * FIXED: Bug when the output path for packages may contain `:` 
+             e.g. like absolute path from %cd% ~ D:\path\...
+             
+    * FIXED: Possible 'The request was aborted: Could not create SSL/TLS secure channel.'
+             Related issue: https://github.com/3F/DllExport/issues/77#issuecomment-405055379
+             
+    * NEW: Implemented proxy support via `$(proxycfg)`. Issue #5
+
 [v1.6.1] 2017.08.18
 
     * FIXED: Fixed problem "Input string was not in a correct format" when used version with release type, 

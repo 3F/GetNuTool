@@ -20,7 +20,7 @@ msbuild gnt.core /p:ngconfig="packages.config"  # Use `packages.config`
 gnt /p:ngserver="https://chocolatey.org/api/v2/package/" /p:ngpackages="putty.portable/0.69"
 ```
 
-**Download:** [/releases](https://github.com/3F/GetNuTool/releases) [ **[latest](https://github.com/3F/GetNuTool/releases/latest)** ] - *Full version, Minified version, Compiled variant, Executable version*
+**Download:** [/releases](https://github.com/3F/GetNuTool/releases) [ **[latest stable](https://github.com/3F/GetNuTool/releases/latest)** ] - *Full version, Minified version, Compiled variant, Executable version*
 
 * Demo: [GetNuTool v1.5 `get` & `pack` commands in use](https://ci.appveyor.com/project/3Fs/vssolutionbuildevent/build/build-178)
 
@@ -37,7 +37,7 @@ The [MIT License (MIT)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
 Copyright (c) 2015-2018 Denis Kuzmin <entry.reg@gmail.com> :: github.com/3F
 ```
 
-[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=entry%2ereg%40gmail%2ecom&lc=US&item_name=3F%2dOpenSource%20%5b%20github%2ecom%2f3F&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
+[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://r-eg.net/Donation/)
 
 
 ## Why GetNuTool ?
