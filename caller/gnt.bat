@@ -1,4 +1,7 @@
 @echo off
+:: GetNuTool via batch
+:: Copyright (c) 2015-2018  Denis Kuzmin [ entry.reg@gmail.com ]
+:: https://github.com/3F/GetNuTool
 
 set gntcore=gnt.core
 
@@ -11,7 +14,7 @@ for %%v in (4.0, 14.0, 12.0, 3.5, 2.0) do (
     )
 )
 
-echo MSBuild was not found, try: ` "full_path_to_msbuild.exe" %gntcore% arguments` 1>&2
+echo MSBuild was not found. Try: "full_path_to_msbuild.exe" %gntcore% arguments` 1>&2
 exit /B 2
 
 :found
@@ -21,4 +24,4 @@ exit /B 2
 %msbuildexe% %gntcore% /nologo /v:m /m:4 %*
 REM /noconlog
 
-exit /B 0
+exit /B %ERRORLEVEL%

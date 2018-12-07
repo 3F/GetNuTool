@@ -37,7 +37,7 @@ The [MIT License (MIT)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
 Copyright (c) 2015-2018 Denis Kuzmin <entry.reg@gmail.com> :: github.com/3F
 ```
 
-[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://r-eg.net/Donation/)
+[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif) ☕](https://3F.github.io/Donation/)
 
 
 ## Why GetNuTool ?

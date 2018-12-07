@@ -6,43 +6,88 @@
 set gntcore=gnt.core
 set $tpl.corevar$="%temp%\%random%%random%%gntcore%"
 
-set "args=%* "
-set a=%args:~0,30%
-set a=%a:"=%
+if "%~1"=="-unpack" goto unpack
 
-if "%a:~0,8%"=="-unpack " goto unpack
-if "%a:~0,9%"=="-msbuild " goto ufound
+set args=%*
+
+:: Escaping '^' is not identical for all cases (gnt ... vs call gnt ...).
+if defined __p_call if defined args set args=%args:^^=^%
+
+:: When ~ %args%  (disableDelayedExpansion)
+:: # call gnt  ^  - ^^
+:: #      gnt  ^  - ^
+:: # call gnt  ^^ - ^^^^
+:: #      gnt  ^^ - ^^
+
+:: When ~ !args! and "!args!"
+:: # call gnt  ^  - ^
+:: #      gnt  ^  - empty
+:: # call gnt  ^^ - ^^
+:: #      gnt  ^^ - ^
+
+:: Do not use: ~ "%args%" or %args%  + (enableDelayedExpansion)
+
+set msbuildexe=%__p_msb%
+if defined msbuildexe goto found
+
+if "%~1"=="-msbuild" goto ufound
 
 for %%v in (4.0, 14.0, 12.0, 3.5, 2.0) do (
     for /F "usebackq tokens=2* skip=2" %%a in (
         `reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions\%%v" /v MSBuildToolsPath 2^> nul`
     ) do if exist %%b (
-        set msbuildexe="%%b\MSBuild.exe"
+        set msbuildexe="%%~b\MSBuild.exe"
         goto found
     )
 )
-echo MSBuild was not found, try: gnt -msbuild "fullpath" args 1>&2
+echo MSBuild was not found. Try -msbuild "fullpath" args 1>&2
 exit /B 2
 
 :ufound
-call :popa %1
 shift
 set msbuildexe=%1
-call :popa %1
+shift
+
+set esc=%args:!= #__b_ECL## %
+setlocal enableDelayedExpansion
+
+set esc=!esc:%%=%%%%!
+
+:_eqp
+for /F "tokens=1* delims==" %%a in ("!esc!") do (
+    if "%%~b"=="" (
+        call :nqa !esc!
+        exit /B %ERRORLEVEL%
+    )
+    set esc=%%a #__b_EQ## %%b
+)
+goto _eqp
+:nqa
+shift & shift
+
+set "args="
+:_ra
+set args=!args! %1
+shift & if not "%~2"=="" goto _ra
+
+set args=!args: #__b_EQ## ==!
+
+setlocal disableDelayedExpansion
+set args=%args: #__b_ECL## =!%
 
 :found
 call :core
-%msbuildexe% %$tpl.corevar$% /nologo /p:wpath="%~dp0/" /v:m %args%
-del /Q/F %$tpl.corevar$%
-exit /B 0
+%msbuildexe% %$tpl.corevar$% /nologo /p:wpath="%~dp0/" /v:m /m:4 %args%
 
-:popa
-call set args=%%args:%1 ^=%%
-exit /B 0
+set "msbuildexe="
+set ret=%ERRORLEVEL%
+
+del /Q/F %$tpl.corevar$%
+exit /B %ret%
 
 :unpack
 set $tpl.corevar$="%~dp0\%gntcore%"
-echo Generate minified version in %$tpl.corevar$% ...
+echo Generating minified version in %$tpl.corevar$% ...
 
 :core
 <nul set /P ="">%$tpl.corevar$%

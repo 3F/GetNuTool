@@ -12,5 +12,5 @@ exit /B 0
 
 :err
 
-echo Failed. 1>&2
+echo Failed SHA-1. 1>&2
 exit /B 1
