@@ -53,6 +53,7 @@ Initially this was developed for providing tools to service projects, libraries,
 
 * [Conari](https://github.com/3F/Conari)
 * [DllExport](https://github.com/3F/DllExport)
+* [MvsSln](https://github.com/3F/MvsSln)
 * [vsSolutionBuildEvent](https://github.com/3F/vsSolutionBuildEvent)
 * [LunaRoad](https://github.com/3F/LunaRoad)
 * [vsCommandEvent](https://github.com/3F/vsCommandEvent)
@@ -115,13 +116,24 @@ gnt /p:ngpackages="Conari" /p:proxycfg="guest:1234@10.0.2.15:7428"
 
 #### Format of packages list
 
-Attribute | Description
-----------|-------------
-id        | Identifier of package.
-version   | Version of package.
-output    | Optional path for getting package.
+```
+id[/version][:output]|id2[/version][:output]|...
+```
 
-Property: 
+Attribute | Description                                 | Example
+----------|---------------------------------------------|------------------------------
+id        | Identifier of package.                      | [Conari](https://www.nuget.org/packages/Conari)
+version   | **(Optional)** Version of package.          | `1.3.0` or `1.3-beta2` or `1.3-RC` etc
+output    | **(Optional)** Path to write package data.  | `../tests/ConariForTest`
+
+Multiple packages:
+
+Delimiter | Description
+----------|-------------
+ `;`      | `id1;id2;id3` Optional, starting from 1.7+. Means usage as an delimiter **only when** the `|` is not found.
+ `|`      | `id1:dir;name|id2` Package **id1** into directory **dir;name** and package **id2** in `ngpath` path.
+
+To use via arguments: 
 
 ```bash
 /p:ngpackages="id[/version][:output]"
@@ -131,7 +143,7 @@ Property:
 /p:ngpackages="id[/version][:output];id2[/version][:output];..."
 ```
 
-packages.config:
+To use via packages.config:
     
 ```xml
 
@@ -148,10 +160,10 @@ packages.config:
 /p:ngconfig=".nuget/packages.config"
 ```
 
-multiple:
+Multiple config files via delimiters:
 
-* `;` - v1.6+ 
-* `|` - v1.0+ (*obsolete and can be removed in new versions*)
+* `;` - v1.6+ (Optional, starting from 1.7+. Means usage as an delimiter **only when** the `|` is not found.)
+* `|` - v1.0+ 
 
 ```bash
 /p:ngconfig="debug.config;release.config;..."
@@ -253,7 +265,7 @@ Now, you can use it simply:
 
 ### Additional arguments
 
-key             | Description                                             | Sample
-----------------|---------------------------------------------------------|----------------
-`-unpack`       | To generate minified version from executable. `v1.6+`   | `gnt -unpack`
-`-msbuild` path | To use specific msbuild if needed. `v1.6+`              | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages="Conari"`
+ First key to gnt | Description                                             | Sample
+------------------|---------------------------------------------------------|----------------
+ `-unpack`        | To generate minified version from executable. `v1.6+`   | `gnt -unpack`
+ `-msbuild` path  | To use specific msbuild if needed. `v1.6+`              | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages="Conari"`

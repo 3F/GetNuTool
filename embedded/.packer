@@ -15,7 +15,7 @@
     <PropertyGroup>
         <core Condition="'$(core)' == ''">..\logic.targets</core>
         <output Condition="'$(output)' == ''">gnt.bat</output>
-        <maxline Condition="'$(maxline)' == ''">1777</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
+        <maxline Condition="'$(maxline)' == ''">1820</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
     </PropertyGroup>
 
     <!-- Entry point -->
@@ -90,6 +90,60 @@
                         return false;
                     };
 
+                    Func<char[], int, Func<int, bool>, string[]> gencomb = (char[] _dict, int _size, Func<int, bool> _rule0) =>
+                    {
+                        var combination = new char[_size];
+                        var set         = new List<string>((int)Math.Pow(_dict.Length, _size));
+
+                        int pos = 0;
+                        Action generator = null;
+                        generator = () =>
+                        {
+                            for(int i = 0, lim = _size - 1; i < _dict.Length; ++i)
+                            {
+                                if(pos == 0 && !_rule0(i)) {
+                                    continue;
+                                }
+
+                                if(pos < lim) {
+                                    combination[pos] = _dict[i];
+                                    ++pos;
+                                    generator();
+                                    --pos;
+                                }
+                                else {
+                                    combination[pos] = _dict[i];
+                                    set.Add(new String(combination.ToArray()));
+                                }
+                            }
+                        };
+
+                        generator();
+                        return set.ToArray();
+                    };
+
+                    var variables = new Dictionary<string, string>();
+
+                    var cdict = new[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+                                        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+                                        'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3',
+                                        '4', '5', '6', '7', '8', '9', '_' };
+
+                    var vdict = gencomb(cdict, 1, (int i) => { return char.IsLetter(cdict[i]) || cdict[i] == '_'; });
+
+                    // to skip processing for:
+                    var exword      = new[] { "" };
+                    int skipFirst   = 110;
+                    
+                    const string rlexemes = @"(?:
+                                                (?'wrd'
+                                                    Console\s*\.\s*WriteLine
+                                                )
+                                                |
+                                                (?'ld'%%?0[aA])?
+                                                (?'cls'[a-z0-9A-Z_\-]+)
+                                              )";
+
                     using(StreamReader reader = new StreamReader(core, System.Text.Encoding.UTF8, true))
                     {
                         var content = reader.ReadToEnd();
@@ -109,16 +163,103 @@
                         //content = content.Replace("!", "^^!");
 
                         // Protecting data outside strings only:
-                        content = Regex.Replace(content, @"\|", (Match m) => isInsideString(m.Index, scalc(content)) ? m.Value : "^" + m.Value);
+                        content = Regex.Replace(content, @"\|", (m) => isInsideString(m.Index, scalc(content)) ? m.Value : "^" + m.Value);
 
-                        // Secondly, keep in mind where placed all strings.
-                        // We will work without double quotes, so we should correctly define all pairs of "..." per line
+                        // lexemes via vars
+
+                        var lstat = new Dictionary<string, int>();
+                        foreach(Match m in Regex.Matches(content, rlexemes, RegexOptions.IgnorePatternWhitespace))
+                        {
+                            var wrd = m.Groups["wrd"];
+                            var cls = m.Groups["cls"];
+
+                            var vname = wrd.Success ? wrd.Value : cls.Value;
+
+                            if(vname.Length < 4) { // minimal is 3: %a%
+                                continue;
+                            }
+
+                            if(exword.Contains(vname)) {
+                                continue;
+                            }
+
+                            if(!lstat.ContainsKey(vname)) {
+                                lstat[vname] = -1 * (vname.Length + 7); //for init: set a= + length + &
+                            }
+                            lstat[vname] += (vname.Length - 3); //for use: %a%
+                        }
+                        
+                        uint uniqVars = 0;
+                        variables.Clear();
+                        var prio = lstat.Where(x => x.Value > 0).OrderByDescending(x => x.Value).Take(vdict.Length);
+                        var defv = "";
+
+                        content = Regex.Replace(content, rlexemes, (m) => 
+                        {
+                            if(m.Index < skipFirst) {
+                                return m.Value;
+                            }
+
+                            var wrd = m.Groups["wrd"];
+                            var cls = m.Groups["cls"];
+                            var ld  = m.Groups["ld"].Value;
+
+                            var vname = wrd.Success ? wrd.Value : cls.Value;
+
+                            if(prio.All(x => x.Key != vname)) {
+                                return m.Value;
+                            }
+
+                            if(variables.ContainsKey(vname)) {
+                                return ld + variables[vname];
+                            }
+
+                            if(uniqVars + 1 > vdict.Length) {
+                                throw new OverflowException("vdict does not contain data for new vars");
+                            }
+
+                            var nv = vdict[uniqVars++];
+
+                            variables[vname] = String.Format("%{0}%", nv);
+
+                            defv += String.Format("set {0}={1}&", nv, vname);
+                            return ld + variables[vname];
+                        },
+                        RegexOptions.IgnorePatternWhitespace);
+
+                        
+                        // We'll work without double quotes, so we should define all pairs of "..." per line
 
                         var strings = scalc(content);
 
                         // Now, we should split long strings
 
                         var lines = new List<string>();
+                        
+                        // Protecting from some symbols in zero position via moving to the end of the previous line
+                        Action<int, int> safeAdd = delegate(int idx, int l)
+                        {
+                            int lofs = idx;
+                            while( (content[lofs] == ' ' || content[lofs] == ')' || content[lofs] == '=')
+                                   ||
+                                   //TODO: lexemes via vars %a%, %ab%, ... + escaped %%data
+                                   (content[lofs] == '%' || content[Math.Min(lofs + 1, content.Length - 1)] == '%') 
+                                )
+                            {
+                                ++lofs;
+                            }
+
+                            int ofsdelta = lofs - idx;
+                            if(ofsdelta > 0)
+                            {
+                                lines[lines.Count - 1] += content.Substring(idx, ofsdelta);
+                                lines.Add(content.Substring(lofs, l - ofsdelta));
+                                return;
+                            }
+
+                            lines.Add(content.Substring(idx, l));
+                        };
+                        
                         for(int i = 0, len = maxline; i < content.Length; i += len)
                         {
                             int rlen = Math.Min(content.Length - i, len);
@@ -132,7 +273,7 @@
                                 {
                                     int repos = ((ifq.Key + ifq.Value) - rpos);
 
-                                    lines.Add(content.Substring(i, rlen + repos));
+                                    safeAdd(i, rlen + repos);
                                     i += repos;
 
                                     added = true;
@@ -144,20 +285,17 @@
                                 continue;
                             }
 
-                            // we don't see strings, but we also have escape chars as ^ + char above
+                            // Protecting from escaped chars as ^ + char above
 
-                            int esc     = rpos - 1; // the end of the previous line that should be checked on `^` char
-                            int lchar   = Math.Min(rpos, content.Length - 1);
-                            if(content.Length > esc && (content.ElementAt(esc) == '^' || content.ElementAt(lchar) == ' ')) {
+                            int esc = rpos - 1; // the end of the previous line that should be checked on `^` char
+                            if(content.Length > esc && content[esc] == '^') {
                                 rlen += 1;
-                                lines.Add(content.Substring(i, rlen));
+                                safeAdd(i, rlen);
                                 i += 1;
                                 continue;
                             }
-
-                            // TODO: the line cannot be started with: ` `(space), `=`, `"`
-
-                            lines.Add(content.Substring(i, rlen)); // simply add new line without processing
+                            
+                            safeAdd(i, rlen);
                         }
 
                         // Now we can define, how it should be written into external file
@@ -179,6 +317,10 @@
                             
                             content += ldata;
                         }
+
+                        // definition of lexemes
+
+                        content = defv.Substring(0, defv.Length - 1) + "\r\n" + content;
 
                         // Finally, format script to work with gnt.core
 

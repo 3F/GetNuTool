@@ -43,6 +43,7 @@
             <Using Namespace="System" />
             <Using Namespace="System.Collections.Generic" />
             <Using Namespace="System.IO" />
+            <Using Namespace="System.Linq" />
             <Using Namespace="System.Text.RegularExpressions" />
             <Code Type="Fragment" Language="cs">
                 <![CDATA[
@@ -64,6 +65,86 @@
                                               )",
                                               symbol);
                     };
+
+                    Func<char[], int, Func<int, bool>, string[]> gencomb = (char[] _dict, int _size, Func<int, bool> _rule0) =>
+                    {
+                        var combination = new char[_size];
+                        var set         = new List<string>((int)Math.Pow(_dict.Length, _size));
+
+                        int pos = 0;
+                        Action generator = null;
+                        generator = () =>
+                        {
+                            for(int i = 0, lim = _size - 1; i < _dict.Length; ++i)
+                            {
+                                if(pos == 0 && !_rule0(i)) {
+                                    continue;
+                                }
+
+                                if(pos < lim) {
+                                    combination[pos] = _dict[i];
+                                    ++pos;
+                                    generator();
+                                    --pos;
+                                }
+                                else {
+                                    combination[pos] = _dict[i];
+                                    set.Add(new String(combination.ToArray()));
+                                }
+                            }
+                        };
+
+                        generator();
+                        return set.ToArray();
+                    };
+
+                    var variables = new Dictionary<string, string>();
+
+                    var cdict = new[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+                                        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+                                        'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3',
+                                        '4', '5', '6', '7', '8', '9', '_' };
+
+                    Func<int, bool> rule = (int i) => { return char.IsLetter(cdict[i]) || cdict[i] == '_'; };
+                    var vdict1 = gencomb(cdict, 1, rule);
+                    var vdict2 = gencomb(cdict, 2, rule);
+                    
+                    var vdict = new string[vdict1.Length + vdict2.Length];
+                    vdict1.CopyTo(vdict, 0);
+                    vdict2.CopyTo(vdict, vdict1.Length);
+
+                    // to skip processing for:
+                    var exvar = new string[] { "true", "false" };
+
+                    // https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/
+                    var rsvwords = new[] { "do", "in", "is", "as", "if", "by", "on" };
+
+                    const string VTYPE  = @"(?:
+                                                (?'type'
+                                                    [a-z_]
+                                                    (?:
+                                                        [a-z_0-9]+<[a-z_0-9<, >]+>
+                                                        |
+                                                        [a-z_0-9]+
+                                                    )
+                                                )
+                                                \s+
+                                                (?'name'[a-z_0-9]+)
+                                                \s*
+                                                (?'lim'
+                                                    (?:[+\-*\/]?=|\s+in\s+|[,)]|\s*;)
+                                                )
+                                            |
+                                                (?: 
+                                                (?'fl'\(\s*\(\s*)(?'flambda'[^)]+?)\)?\s* 
+                                                |
+                                                (?'vl'\(\s*)(?'vlambda'[^=\s])\s*
+                                                )=>
+                                            )
+                                            ";
+
+                    const string VNAME  = "[a-z_0-9]+"; // [a-z_][a-z_0-9]+
+
 
                     using(StreamReader reader = new StreamReader(core, System.Text.Encoding.UTF8, true))
                     {
@@ -96,29 +177,134 @@
                                                     return String.Format("!s{0}!", ident);
                                                 },
                                                 RegexOptions.IgnorePatternWhitespace);
+                        
+                        // code
+                        
+                        content = Regex.Replace(content, @"<!\[CDATA\[.+?\]\]>", (Match m) =>
+                        {
+                            var data = m.Groups[0].Value;
 
-                        // C# code
+                            // comments
 
-                        content = Regex.Replace(content, 
-                                                @"<!\[CDATA\[.+?\]\]>", 
-                                                delegate(Match m)
-                                                {
-                                                    var data = m.Groups[0].Value;
+                            data = Regex.Replace(data, @"\s*\/\*.+?\*\/\s*", "", RegexOptions.Singleline);
+                            data = Regex.Replace(data, @"\s*\/\/.+?$", "", RegexOptions.Multiline);
 
-                                                    data = Regex.Replace(data, @"\s*\/\*.+?\*\/\s*", "", RegexOptions.Singleline);
-                                                    data = Regex.Replace(data, @"\s*//[^$]+?$", "", RegexOptions.Multiline);
-                                                    data = Regex.Replace(data, @"\s+const\s+[sS]tring\s+", " var ");
-                                                    data = Regex.Replace(data, @"([;(){}]\s*)\w+\s+(\w+)\s+(in|=)\s+", " $1 var $2 $3 ");
-                                                    data = Regex.Replace(data, @"\s*([{}()=+\-\[\]*?!@,;.])\s*", "$1");
+                            // shorten variables
+                            // TODO: sorting by popularity of usage for 1 byte priority
 
-                                                    return data;
-                                                }, 
-                                                RegexOptions.Singleline);
+                            variables.Clear();
+                            uint uniqVars = 0;
+
+                            Func<Match, string, string, string, string> shname = delegate(Match _m, string l, string vname, string r)
+                            {
+                                if(!Regex.IsMatch(vname, "^[a-z_]")) {
+                                    return _m.Value;
+                                }
+
+                                if(exvar.Contains(vname)) {
+                                    return _m.Value;
+                                }
+
+                                if(variables.ContainsKey(vname)) {
+                                    return l + variables[vname] + r;
+                                }
+
+                                if(uniqVars + 1 > vdict.Length) {
+                                    throw new OverflowException("vdict does not contain data for new vars");
+                                }
+                                
+                                do {
+                                    variables[vname] = vdict[uniqVars++];
+                                } 
+                                while(rsvwords.Contains(variables[vname]));
+
+                                return l + variables[vname] + r;
+                            };
+
+                            data = Regex.Replace
+                            (
+                                data,
+                                VTYPE,
+                                (Match _m) =>
+                                {
+                                    var vname = _m.Groups["name"];
+                                    
+                                    if(vname.Success) {
+                                        return shname(_m, _m.Groups["type"].Value + " ", vname.Value, _m.Groups["lim"].Value);
+                                    }
+
+                                    var flambda = _m.Groups["flambda"];
+                                    if(flambda.Success) {
+                                        return Regex.Replace(flambda.Value, VNAME, __m => shname(__m, _m.Groups["fl"].Value, __m.Value, "=>"));
+                                    }
+
+                                    var vlambda = _m.Groups["vlambda"];
+                                    if(vlambda.Success) {
+                                        return Regex.Replace(vlambda.Value, VNAME, __m => shname(__m, _m.Groups["vl"].Value, __m.Value, "=>"));
+                                    }
+
+                                    return _m.Value;
+                                },
+                                RegexOptions.IgnorePatternWhitespace | RegexOptions.IgnoreCase
+                            );
+
+                            // using of variables
+                            data = Regex.Replace
+                            (
+                                data,
+                                @"(?'def'^|\s+in\s+|(?<==)>|[={};:\[(,?+\-])
+                                    \s*
+                                    (?'name'"+ VNAME + @")
+                                    (?'exc'[<>]*)?
+                                ", 
+                                (Match _m) =>
+                                {
+                                    var def     = _m.Groups["def"].Value;
+                                    var vname   = _m.Groups["name"].Value;
+                                    var exc     = _m.Groups["exc"].Value;
+
+                                    if(exc.IndexOfAny(new[] { '<', '>' }) != -1) {
+                                        return _m.Value;
+                                    }
+
+                                    if(!Regex.IsMatch(vname, "^[a-z_]")) {
+                                        return _m.Value;
+                                    }
+
+                                    if(!variables.ContainsKey(vname)) {
+                                        return def + vname + exc;
+                                    }
+                                    return def + variables[vname] + exc;
+                                },
+                                RegexOptions.IgnorePatternWhitespace | RegexOptions.IgnoreCase | RegexOptions.Multiline
+                            );
+                            
+                            // CDATA rules
+
+                            data = Regex.Replace(data, @"([\s;},])String([\s.(]+)", "$1string$2");
+                            data = Regex.Replace(data, @"[sS]tring\s*\.\s*Empty", "\"\"");
+                            data = Regex.Replace(data, @"\s*const\s+[sS]tring\s+", "var ");
+                            data = Regex.Replace(data, @"(?<![,\( ])[sS]tring\s+(?'def'[^;]+)", (_m) => 
+                            {
+                                var def = _m.Groups["def"].Value;
+                                if(def.IndexOf('=') == -1) {
+                                    return _m.Value;
+                                }
+                                return "var " + def;
+                            });
+
+                            data = Regex.Replace(data, @"([;(){}]\s*)\w+\s+(\w+)\s+(in|=)\s+", " $1 var $2 $3 ");
+                            data = Regex.Replace(data, @"\s*([{}()=+\-\[\]*?!@,;.])\s*", "$1");
+
+                            return data;
+                        }, 
+                        RegexOptions.Singleline);
 
                         // common rules
 
                         content = content.Replace("\r", "").Replace("\n", "");
                         content = Regex.Replace(content, @"\s{2,}", " ");
+                        content = Regex.Replace(content, @"\s*([=,()\[\];:.&|{}\/<>]+)\s*", "$1");
 
                         // XML rules
 
@@ -129,10 +315,41 @@
 
                         // recover strings
 
-                        content = Regex.Replace(content, @"!s(\d+)!", delegate (Match m) {
+                        content = Regex.Replace(content, @"!s(\d+)!", (Match m) => {
                             return strings[uint.Parse(m.Groups[1].Value)];
                         });
 
+                        // xml Tasknames
+
+                        variables.Clear();
+                        uint uniqt = 0;
+                        content = Regex.Replace(content, @"TaskName\s*=\s*""(?'name'\S+)""", (_m) => 
+                        {
+                            var tname = _m.Groups["name"].Value;
+                            
+                            variables[tname] = vdict[uniqt++];
+
+                            return "TaskName=\"" + variables[tname] + "\"";
+                        });
+
+                        content = Regex.Replace(content, @"(?'l'<\/?)(?'name'[a-z0-9A-Z\-_]+)", (_m) => 
+                        {
+                            var tname = _m.Groups["name"].Value;
+                            
+                            if(variables.ContainsKey(tname)) {
+                                return _m.Groups["l"].Value + variables[tname];
+                            }
+                            
+                            return _m.Value;
+                        });
+
+                        // XML rules - Post filter
+
+                        content = Regex.Replace(content, @"\s+ParameterType\s*=\s*""System.String""\s*", " ");
+                        content = Regex.Replace(content, @"\s+Required\s*=\s*""\S+""\s*", " ");
+                        content = Regex.Replace(content, @"\s+(\/)?>", "$1>");
+                        content = Regex.Replace(content, @"'\s*==\s*'", "'=='");
+                        
                         using(TextWriter writer = new StreamWriter(output, false, new UTF8Encoding(false))) {
                             writer.Write(content);
                         }
