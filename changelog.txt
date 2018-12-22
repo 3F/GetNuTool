@@ -1,6 +1,26 @@
 GetNuTool :: https://github.com/3F/GetNuTool
 - - - - -
 
+[v1.7] 2018.12.22
+
+    * NEW:  New logic to specify multiple packages and config files via delimiters. 
+            Now main core just ignores `;` when `|` is found.
+            https://github.com/3F/GetNuTool/issues/7#issuecomment-445486968
+            
+            Read the documentation.
+            
+    * FIXED: Fixed problems with special symbols in path. Issue #7 
+            ```
+             ' &!~`@#$^(+)_=%-;[.]{,}
+            ```
+    
+    * CHANGED: Batch version now uses safe logic for work with special symbols from `-msbuild` key.
+    * CHANGED: Fully updated compression for generating more lightweight distribution. 
+               Useful for projects like DllExport, hMSBuild, and so on.
+               
+               New way for argument passing into the main core.
+               
+    
 [v1.6.2] 2018.08.05
 
     * FIXED: Bug when the output path for packages may contain `:` 

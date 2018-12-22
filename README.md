@@ -11,7 +11,8 @@ Embeddable Package Manager. NuGet / Chocolatey Client. And the lightweight porta
 [NuGet gnt.raw("/t:pack /p:ngin=\"7z.Libs\"")]  # Compiled variant via vssbe
 ```
 
-[just try](https://3F.github.io/GetNuTool/releases/latest/gnt/) this:
+just try it:
+
 ```bash
 gnt /p:ngpackages="Conari;regXwild"             # To get `Conari` & `regXwild` packages
 gnt /t:pack /p:ngin="bin\DllExport"             # To create new NuGet package from `bin\DllExport` .nuspec
@@ -22,12 +23,18 @@ gnt /p:ngserver="https://chocolatey.org/api/v2/package/" /p:ngpackages="putty.po
 
 **Download:** [/releases](https://github.com/3F/GetNuTool/releases) [ **[latest stable](https://github.com/3F/GetNuTool/releases/latest)** ] - *Full version, Minified version, Compiled variant, Executable version*
 
-* Demo: [GetNuTool v1.5 `get` & `pack` commands in use](https://ci.appveyor.com/project/3Fs/vssolutionbuildevent/build/build-178)
+* (Windows) Latest stable compiled batch-script [ [gnt.bat](https://3F.github.io/GetNuTool/releases/latest/gnt/) ]
 
-## Projects on GetNuTool core
+* [nightly builds](https://ci.appveyor.com/project/3Fs/getnutool/history) (`/artifacts` page) - It can be unstable or not work at all. Use this for tests of latest changes. *Artifacts [older than 6 months](https://www.appveyor.com/docs/packaging-artifacts/#artifacts-retention-policy) you can also find as `Pre-release` with mark `🎲 Nightly build` on [GitHub Releases](https://github.com/3F/GetNuTool/releases) page.*
 
-* [hMSBuild](https://github.com/3F/hMSBuild) - A lightweight tool (compiled batch file ~19 Kb that can be embedded inside any scripts or other batch files) - an easy helper for searching of available MSBuild tools. https://github.com/3F/hMSBuild
+### Projects on GetNuTool core
+
+* [hMSBuild](https://github.com/3F/hMSBuild) - Compiled text-based embeddable pure batch-scripts for searching of available MSBuild tools. VS2017+, VS2015, VS2013, VS2010, other versions from .NET Framework. Contains gnt.core for work with NuGet packages and more...
 * [DllExport Manager](https://github.com/3F/DllExport/wiki/DllExport-Manager) - *It was based on GetNuTool core that's Cross-Platform Embeddable Package Manager that requires only MSBuild. Finally it just aggregates calling to Wizard that was based on [MvsSln](https://github.com/3F/MvsSln).*
+
+### Demo use
+
+* [GetNuTool v1.5 `get` & `pack` commands in use](https://ci.appveyor.com/project/3Fs/vssolutionbuildevent/build/build-178)
 
 ## License
 
@@ -126,12 +133,12 @@ id        | Identifier of package.                      | [Conari](https://www.n
 version   | **(Optional)** Version of package.          | `1.3.0` or `1.3-beta2` or `1.3-RC` etc
 output    | **(Optional)** Path to write package data.  | `../tests/ConariForTest`
 
-Multiple packages:
+Multiple packages via delimiters:
 
-Delimiter | Description
-----------|-------------
- `;`      | `id1;id2;id3` Optional, starting from 1.7+. Means usage as an delimiter **only when** the `|` is not found.
- `|`      | `id1:dir;name|id2` Package **id1** into directory **dir;name** and package **id2** in `ngpath` path.
+* `;`
+    * `id1;id2;id3` Optional, starting from 1.7+. Means usage as an delimiter **only when** the `|` is not found.
+* `|`
+    * `id1:dir;name|id2` Package **id1** into directory **dir;name** and package **id2** in `ngpath` path.
 
 To use via arguments: 
 
