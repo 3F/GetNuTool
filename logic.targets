@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
     Copyright (c) 2015-2018,2020  Denis Kuzmin [ x-3F@outlook.com ]
-    
     Licensed under the MIT License
-    ( see accompanying file LICENSE )
 -->
 
 <!--
     GetNuTool - github.com/3F/GetNuTool
-    ========================
+    =========
     Embeddable Package Manager.
-    All versions and documentation here:
     https://github.com/3F/GetNuTool/blob/master/README.md
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -100,12 +97,12 @@
                         h(lcfg, ret);
                     }
                     else {
-                        _err.WriteLine(".config '{0}' was not found.", lcfg);
+                        _err.WriteLine(".config '{0}' is not found.", lcfg);
                     }
                 }
 
                 if(ret.Count < 1) {
-                    _err.WriteLine("Empty list. Use .config or /p:ngpackages=\"...\"\n");
+                    _err.WriteLine("Empty list. Use .config or /p:ngpackages\n");
                 }
                 else {
                     Result = String.Join("|", ret.ToArray());
@@ -151,12 +148,18 @@
                 Func<string, WebProxy> getProxy = delegate(string cfg)
                 {
                     var auth = cfg.Split('@');
-                    if(auth.Length <= 1) {
-                        return new WebProxy(auth[0], false);
+                    if(auth.Length <= 1)
+                    {
+                        return new WebProxy(auth[0], false) { 
+                            UseDefaultCredentials = true // Below `WebClient.UseDefaultCredentials = true` will not affect for this default proxy,
+                                                         // thus we need also configure proxy for CredentialCache.DefaultCredentials use.
+                                                         // https://github.com/3F/DllExport/issues/133
+                        };
                     }
 
                     var login = auth[0].Split(':');
-                    return new WebProxy(auth[1], false) {
+                    return new WebProxy(auth[1], false)
+                    {
                         Credentials = new NetworkCredential(
                             login[0], 
                             (login.Length > 1) ? login[1] : null
@@ -172,7 +175,7 @@
                 {
                     var to = Path.GetFullPath(loc(path ?? name));
                     if(Directory.Exists(to)) {
-                        Console.WriteLine("`{0}` is already exists: \"{1}\"", name, to);
+                        Console.WriteLine("`{0}` already exists: \"{1}\"", name, to);
                         return;
                     }
                     Console.Write("Getting `{0}` ... ", link);
@@ -284,7 +287,7 @@
 
                 dir = Path.Combine(wpath, dir);
                 if(!Directory.Exists(dir)) {
-                    _err.WriteLine("`{0}` was not found.", dir);
+                    _err.WriteLine("`{0}` is not found.", dir);
                     return false;
                 }
 
@@ -294,7 +297,7 @@
 
                 var nuspec = Directory.GetFiles(dir, "*" + EXT_NUSPEC, SearchOption.TopDirectoryOnly).FirstOrDefault();
                 if(nuspec == null) {
-                    _err.WriteLine("{0} was not found in `{1}`", EXT_NUSPEC, dir);
+                    _err.WriteLine("{0} is not found in `{1}`", EXT_NUSPEC, dir);
                     return false; // throw new FileNotFoundException();
                 }
                 Console.WriteLine("Found {0}: `{1}`", EXT_NUSPEC, nuspec);
@@ -316,7 +319,7 @@
                                                                 @"^\w+([_.-]\w+)*$", 
                                                                 RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture))
                 {
-                    _err.WriteLine("The format of `{0}` is not correct.", ID);
+                    _err.WriteLine("The format `{0}` is not correct.", ID);
                     return false; // throw new FormatException();
                 }
 
@@ -335,7 +338,7 @@
                     pout = Path.Combine(dout, pout);
                 }
 
-                Console.WriteLine("Started packing `{0}` ...", pout);
+                Console.WriteLine("Creating nupkg `{0}` ...", pout);
                 using(var pkg = Package.Open(pout, FileMode.Create))
                 {
                     // manifest relationship
