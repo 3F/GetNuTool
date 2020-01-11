@@ -82,14 +82,14 @@
           "{",
           "    #[var bSha1 = #[IO sout(\"git\", \"rev-parse --short HEAD\")]]",
           "    ",
-          "    #[$(pVerPrintFile = \"$(pVerPrintFile)_$(bSha1)\")]",
+          "    #[$(pVerPrintFile = \"$(pVerPrintFile)+$(bSha1)\")]",
           "}",
           "else {",
           "    #[$(bSha1 = '-')]",
           "}]",
           "",
           "#[( $(reltype) == \"PublicRelease\" ) {",
-          "    #[$(pVerPrintApp = \"$(pVer).$(revBuild)_$(bSha1)\")]",
+          "    #[$(pVerPrintApp = \"$(pVer).$(revBuild)+$(bSha1)\")]",
           "}",
           "else {",
           "    #[$(pVerPrintApp = $(pVer))]",
@@ -180,7 +180,7 @@
         "$type": "net.r_eg.vsSBE.Events.ModeScript, vsSolutionBuildEvent",
         "Type": "Script",
         "Command__": [
-          "#[7z pack.directory(\"$(dbin)raw\", \"$(dbin)GetNuTool_v$(pVerPrintFile).zip\")]",
+          "#[7z pack.directory(\"$(dbin)raw\", \"$(dbin)GetNuTool.$(pVerPrintFile).zip\")]",
           "",
           "#[IO copy.file(\"$(odir)versions/01. executable/gnt.bat\", \"$(dbin)gnt.bat\", true)]"
         ]

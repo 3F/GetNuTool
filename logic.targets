@@ -148,13 +148,8 @@
                 Func<string, WebProxy> getProxy = delegate(string cfg)
                 {
                     var auth = cfg.Split('@');
-                    if(auth.Length <= 1)
-                    {
-                        return new WebProxy(auth[0], false) { 
-                            UseDefaultCredentials = true // Below `WebClient.UseDefaultCredentials = true` will not affect for this default proxy,
-                                                         // thus we need also configure proxy for CredentialCache.DefaultCredentials use.
-                                                         // https://github.com/3F/DllExport/issues/133
-                        };
+                    if(auth.Length <= 1) {
+                        return new WebProxy(auth[0], false);
                     }
 
                     var login = auth[0].Split(':');
@@ -188,8 +183,14 @@
                             if(!String.IsNullOrEmpty(proxy)) {
                                 l.Proxy = getProxy(proxy);
                             }
+
                             l.Headers.Add("User-Agent", "GetNuTool $(GetNuTool)");
                             l.UseDefaultCredentials = true;
+
+                            // `WebClient.Credentials` will not affect for used proxy: https://github.com/3F/DllExport/issues/133
+                            if(l.Proxy.Credentials == null) { // when no proxy key or when getProxy() uses auth[0]
+                                l.Proxy.Credentials = CredentialCache.DefaultCredentials;
+                            }
                             l.DownloadFile(url + link, tmp);
                         }
                         catch(Exception ex) {
