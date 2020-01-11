@@ -1,36 +1,39 @@
 # [GetNuTool](https://github.com/3F/GetNuTool)
 
-Embeddable Package Manager. NuGet / Chocolatey Client. And the lightweight portable tool for work with packages.
-*(via basic MSBuild that does not require any additional extensions, dotnet-cli, powershell, ...)*
+Embeddable Package Manager. NuGet / Chocolatey Client. And the lightweight portable tool for work with packages. *(pure implementation **without** powershell or dotnet-cli)*
 
-[![Build status](https://ci.appveyor.com/api/projects/status/rv65lbks5frc4k52/branch/master?svg=true)](https://ci.appveyor.com/project/3Fs/getnutool/branch/master) [![release-src](https://img.shields.io/github/release/3F/GetNuTool.svg)](https://github.com/3F/GetNuTool/releases/latest) [![License](https://img.shields.io/badge/License-MIT-74A5C2.svg)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
+[![Build status](https://ci.appveyor.com/api/projects/status/gw8tij2230gwkqs6/branch/master?svg=true)](https://ci.appveyor.com/project/3Fs/getnutool-github/branch/master)
+[![release](https://img.shields.io/github/release/3F/GetNuTool.svg)](https://github.com/3F/GetNuTool/releases/latest) 
+[![License](https://img.shields.io/badge/License-MIT-74A5C2.svg)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
 
 ```bash
 > gnt                                           # Executable version - full logic inside single script
 > msbuild gnt.core                              # Full & Compact versions to execute via MSBuild
-[NuGet gnt.raw("/t:pack /p:ngin=\"7z.Libs\"")]  # Compiled variant via vssbe
+[NuGet gnt.raw("/t:pack /p:ngin=\"7z.Libs\"")]  # Compiled variant via SobaScript
 ```
 
 just try it:
 
 ```bash
 gnt /p:ngpackages="Conari;regXwild"             # To get `Conari` & `regXwild` packages
-gnt /t:pack /p:ngin="bin\DllExport"             # To create new NuGet package from `bin\DllExport` .nuspec
-gnt /p:ngpackages="LunaRoad/1.4.1"              # To get `LunaRoad` package v1.4.1
-msbuild gnt.core /p:ngconfig="packages.config"  # Use `packages.config`
-gnt /p:ngserver="https://chocolatey.org/api/v2/package/" /p:ngpackages="putty.portable/0.69"
+gnt /t:pack /p:ngin="bin\DllExport"             # To create new NuGet package from .nuspec
+msbuild gnt.core /p:ngpackages="LuNari/1.6.0"   # To get `LuNari` package v1.6.0
+gnt /p:ngconfig="packages.config"               # Use `packages.config`
+gnt /p:ngpackages="putty.portable/0.69"
+    /p:ngserver="https://chocolatey.org/api/v2/package/"
 ```
 
 **Download:** [/releases](https://github.com/3F/GetNuTool/releases) [ **[latest stable](https://github.com/3F/GetNuTool/releases/latest)** ] - *Full version, Minified version, Compiled variant, Executable version*
 
 * (Windows) Latest stable compiled batch-script [ [gnt.bat](https://3F.github.io/GetNuTool/releases/latest/gnt/) ]
 
-* [nightly builds](https://ci.appveyor.com/project/3Fs/getnutool/history) (`/artifacts` page) - It can be unstable or not work at all. Use this for tests of latest changes. *Artifacts [older than 6 months](https://www.appveyor.com/docs/packaging-artifacts/#artifacts-retention-policy) you can also find as `Pre-release` with mark `🎲 Nightly build` on [GitHub Releases](https://github.com/3F/GetNuTool/releases) page.*
+* CI builds: [`/artifacts` page](https://ci.appveyor.com/project/3Fs/getnutool-github/history) ( [old CI](https://ci.appveyor.com/project/3Fs/getnutool/history) ) or find as `Pre-release` with mark `🎲 Nightly build` on [GitHub Releases](https://github.com/3F/GetNuTool/releases) page.
+
 
 ### Projects on GetNuTool core
 
 * [hMSBuild](https://github.com/3F/hMSBuild) - Compiled text-based embeddable pure batch-scripts for searching of available MSBuild tools. VS2017+, VS2015, VS2013, VS2010, other versions from .NET Framework. Contains gnt.core for work with NuGet packages and more...
-* [DllExport Manager](https://github.com/3F/DllExport/wiki/DllExport-Manager) - *It was based on GetNuTool core that's Cross-Platform Embeddable Package Manager that requires only MSBuild. Finally it just aggregates calling to Wizard that was based on [MvsSln](https://github.com/3F/MvsSln).*
+* [.NET DllExport Manager](https://github.com/3F/DllExport/wiki/DllExport-Manager) - *It was based on GetNuTool core that's Cross-Platform Embeddable Package Manager that requires only MSBuild. Finally it just aggregates calling to Wizard that was based on [MvsSln](https://github.com/3F/MvsSln).*
 
 ### Demo use
 
@@ -38,44 +41,47 @@ gnt /p:ngserver="https://chocolatey.org/api/v2/package/" /p:ngpackages="putty.po
 
 ## License
 
-The [MIT License (MIT)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
+Licensed under the [MIT License (MIT)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
 
 ```
-Copyright (c) 2015-2018 Denis Kuzmin <entry.reg@gmail.com> :: github.com/3F
+Copyright (c) 2015-2018,2020  Denis Kuzmin < x-3F@outlook.com > GitHub/3F
 ```
 
-[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif) ☕](https://3F.github.io/Donation/)
+GetNuTool contributors: https://github.com/3F/GetNuTool/graphs/contributors
 
+[ [ ☕ Donate ](https://3F.github.com/Donation/) ]
+
+We're waiting for your awesome contributions!
 
 ## Why GetNuTool ?
 
-Initially this was developed for providing tools to service projects, libraries, the build processes, debugging, etc. As an tool for all projects ([solution-level](https://github.com/NuGet/Home/issues/1521)) or for each separately.
+It was initially developed to provide tool for servicing projects, libraries, and other related build processes as the tool for all projects at once ([solution-level](https://github.com/NuGet/Home/issues/1521)) and for each separately.
 
-* The best examples:
+* Best examples:
     * [vsSBE.CI.MSBuild](https://www.nuget.org/packages/vsSBE.CI.MSBuild/)
     * [7z.Libs](https://www.nuget.org/packages/7z.Libs/)
     * [ILAsm](https://www.nuget.org/packages/ILAsm/)
 
-**But!** How about to consider all this like a more lightweight & powerful nuget client for getting packages or for packaging new. No, seriously, we already use it for many projects like:
+But! You can also consider it like a more lightweight but still powerful nuget client for receiving packages or for creating new. Seriously, we already use it for many projects like:
 
 * [Conari](https://github.com/3F/Conari)
 * [DllExport](https://github.com/3F/DllExport)
 * [MvsSln](https://github.com/3F/MvsSln)
 * [vsSolutionBuildEvent](https://github.com/3F/vsSolutionBuildEvent)
-* [LunaRoad](https://github.com/3F/LunaRoad)
+* [LuNari](https://github.com/3F/LuNari)
 * [vsCommandEvent](https://github.com/3F/vsCommandEvent)
 * [regXwild](https://github.com/3F/regXwild)
 * ...
 
-*Because it easy, and works well.*
+*Because it easy, open, and free.*
 
 #### Restoring packages inside Visual Studio IDE
 
-The GetNuTool can't use events from Visual Studio **by default**. However, it can be combined with other our tool for complex work with **lot of events** of VS IDE & MSBuild:
+GetNuTool can't use events from Visual Studio **by default**. However, it can be combined with other tool for complex work with **lot of events** of VS IDE & MSBuild:
 
-* [vsSolutionBuildEvent](https://visualstudiogallery.msdn.microsoft.com/0d1dbfd7-ed8a-40af-ae39-281bfeca2334/) - https://github.com/3F/vsSolutionBuildEvent
+* [https://github.com/3F/vsSolutionBuildEvent](https://github.com/3F/vsSolutionBuildEvent)
 
-So you can use this as you want, for example, automatically getting tool above for complex scripting in MSBuild & Visual Studio as unified engine., etc.
+Thus, you can use this as you want, for example, automatically getting tool above for complex scripting in MSBuild & Visual Studio as unified engine and so on.
 
 ### Main features
 
@@ -87,8 +93,8 @@ So you can use this as you want, for example, automatically getting tool above f
 * [NuGet events](http://docs.nuget.org/create/Creating-and-Publishing-a-Package#automatically-running-powershell-scripts-during-package-installation-and-removal) *(Init.ps1, Install.ps1, Uninstall.ps1)* currently are not considered. Call it manually from `/tools`.
 * Creating new (packing) NuGet packages as `.nupkg` by using `.nuspec`
 * Wrapping of any package in one executable file, for example:
-    * CI.MSBuild **in one click** ~10 Kb: **[get.CIM.bat](https://github.com/3F/vsSolutionBuildEvent/releases/download/release_v0.12.10/get.CIM.bat)**
-* With our `.packer` can be easy embedded inside of any scripts, like [hMSBuild](https://github.com/3F/hMSBuild)
+    * vsSolutionBuildEvent **in one click** ~9 Kb: **[get-vsSBE.1.14.0.bat](https://github.com/3F/vsSolutionBuildEvent/releases/download/1.14/get-vsSBE.1.14.0.bat)**
+* With our `.packer` can be easily embedded inside of any scripts, such for pure batch-script [hMSBuild](https://github.com/3F/hMSBuild)
 * A lot of versions for your comfortable work - Full version, Minified version, Compiled variant, Executable version.
 * ...
 
@@ -211,11 +217,11 @@ debug    | false (by default), true | `v1.3+` To display additional information 
 
 ```bash
 > msbuild gnt.core
-> msbuild gnt.core /p:ngpackages="7z.Libs/16.04.0;vsSBE.CI.MSBuild/1.6.12010:../packages/CI.MSBuild"
+> msbuild gnt.core /p:ngpackages="7z.Libs/16.04.0;vsSolutionBuildEvent/1.14.0:../packages/CI.MSBuild"
 ```
 
 ```bash
-> msbuild gnt.core /t:pack /p:ngin="app\LunaRoad"
+> msbuild gnt.core /t:pack /p:ngin="app\LuNari"
 > msbuild gnt.core /t:pack /p:ngin="D:\tmp\7z.Libs" /p:ngout="newdir/"
 ```
 
@@ -268,7 +274,7 @@ Now, you can use it simply:
 > gnt /p:ngpackages="Conari"
 ```
 
-**note:** you do not need the `gnt.core` or something else ! the final script provides all of what you need as non-binary tool ~10 Kb.
+**note:** you do not need the `gnt.core` or something else ! the final script provides all of what you need as non-binary tool ~9 Kb.
 
 ### Additional arguments
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (c) 2015-2018  Denis Kuzmin [ entry.reg@gmail.com ]
+    Copyright (c) 2015-2018,2020  Denis Kuzmin [ x-3F@outlook.com ]
     
-    Distributed under the MIT License
+    Licensed under the MIT License
     ( see accompanying file LICENSE )
 -->
 
@@ -402,7 +402,7 @@
         <wpath Condition="'$(wpath)' == ''">$(MSBuildProjectDirectory)</wpath>
     </PropertyGroup>
     <Target Name="header">
-        <Message Text="%0D%0AGetNuTool $(GetNuTool) - github.com/3F%0D%0A=========%0D%0A" Importance="high" />
+        <Message Text="%0D%0AGetNuTool $(GetNuTool)%0D%0A(c) 2015-2018,2020  Denis Kuzmin [ x-3F@outlook.com ] GitHub/3F%0D%0A" Importance="high" />
     </Target>
 
 </Project>
