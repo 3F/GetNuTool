@@ -134,34 +134,27 @@
         "$type": "net.r_eg.vsSBE.Events.ModeScript, vsSolutionBuildEvent",
         "Type": "Script",
         "Command__": [
-          "#[IO copy.file(\"$(dobj)core\", \"$(odir)core/gnt.core\", true)]",
-          "#[IO copy.file(\"$(dobj)gnt.min.core\", \"$(odir)core-minified/gnt.core\", true)]",
-          "#[IO copy.file(\"$(dobj)gnt.bat\", \"$(odir)versions/01. executable/gnt.bat\", true)]",
-          "#[IO copy.file(\"$(dobj)gnt.bat.map\", \"$(odir)versions/01. executable/gnt.bat.map\", true)]",
+          "#[IO copy.file(\"$(dobj)gnt.min.core\", \"$(odir)core/gnt.core\", true)]",
           "",
-          "#[IO copy.file({",
-          "                \"$(odir)core-minified/gnt.core\", ",
-          "                \"caller/gnt.bat\"",
-          "               }, ",
-          "               \"$(odir)versions/02. wrapper/\", true)]",
+          "##[IO copy.file(\"$(dobj)core\", \"$(odir)core/gnt.core\", true)]",
+          "##[IO copy.file(\"$(dobj)gnt.min.core\", \"$(odir)core-minified/gnt.core\", true)]",
           "",
-          "#[IO copy.file(\"README.md\", \"$(odir)doc/Readme.md\", true)]",
+          "#[IO copy.file(\"$(dobj)gnt.bat\", \"$(odir)executables/batch/gnt.bat\", true)]",
+          "#[IO copy.file(\"$(dobj)gnt.bat.map\", \"$(odir)maps/gnt.bat.map\", true)]",
           "",
-          "#[IO write(\"$(odir)msbuild.bat\"):@echo off",
+          "#[IO copy.file({\"caller/gnt.bat\"}, \"$(odir)wrappers/batch/\", true)]",
+          "",
+          "#[IO copy.file(\"README.md\", \"$(odir)Readme.md\", true)]",
+          "",
+          "##[IO write(\"$(odir)msbuild.bat\"):@echo off",
           "echo.",
-          "echo The MSBuild-helper from GetNuTool is obsolete and was replaced by hMSBuild project.",
+          "echo MSBuild-helper from GetNuTool is obsolete and was replaced by hMSBuild project.",
           "echo Please look here: https://github.com/3F/hMSBuild",
           "echo.",
           "pause",
           "]",
           "",
-          "#[IO copy.file(\"changelog.txt\", \"$(odir)doc/\", true)]",
-          "",
-          "##[IO copy.file({",
-          "                \"msbuild.bat\",",
-          "                \"LICENSE\"",
-          "               },",
-          "               \"$(odir)\", true)]",
+          "#[IO copy.file({ \"changelog.txt\", \".version\", \".gitattributes\" }, \"$(odir)\", true)]",
           "",
           "#[IO copy.file(\"LICENSE\", \"$(odir)License.txt\", true)]"
         ]
@@ -182,7 +175,7 @@
         "Command__": [
           "#[7z pack.directory(\"$(dbin)raw\", \"$(dbin)GetNuTool.$(pVerPrintFile).zip\")]",
           "",
-          "#[IO copy.file(\"$(odir)versions/01. executable/gnt.bat\", \"$(dbin)gnt.bat\", true)]"
+          "#[IO copy.file(\"$(odir)executables/batch/gnt.bat\", \"$(dbin)gnt.bat\", true)]"
         ]
       }
     }

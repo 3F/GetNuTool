@@ -3,7 +3,8 @@
 :: Copyright (c) 2015-2018,2020  Denis Kuzmin [ x-3F@outlook.com ]
 :: https://github.com/3F/GetNuTool
 
-set gntcore=gnt.core
+set gntcore=.\gnt.core
+if not exist %gntcore% goto error
 
 for %%v in (4.0, 14.0, 12.0, 3.5, 2.0) do (
     for /F "usebackq tokens=2* skip=2" %%a in (
@@ -14,7 +15,9 @@ for %%v in (4.0, 14.0, 12.0, 3.5, 2.0) do (
     )
 )
 
-echo MSBuild was not found. Try manually: msbuild %gntcore% {arguments}` 1>&2
+:error
+echo MSBuild or %gntcore% was not found. Try manually: msbuild %gntcore% {arguments}` 1>&2
+
 exit /B 2
 
 :found

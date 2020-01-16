@@ -1,5 +1,36 @@
-GetNuTool :: https://github.com/3F/GetNuTool
+GetNuTool - https://github.com/3F/GetNuTool
 - - - - -
+
+[v1.8] 2020.01.16
+
+    * CHANGED: Changed `%~dp0` to `%cd%` processing for the following in batch version by default:
+    
+               `wpath` property
+               `-unpack` key
+               
+               For some cases you need to update the use of the batch version in your code.
+               Do not hesitate to contact if you have the questions:
+               https://github.com/3F/GetNuTool
+               
+    * CHANGED: Trims whitespaces in optional proxycfg property.
+    
+               Helps to avoid MSB1006 problem for 3rd tools which was based on gnt batch version.
+               That is,
+
+               ~ /p:proxycfg=" !proxy! " will be safely considered as optional value
+               While /p:proxycfg="" will indicate about incorrect or missing data.
+                
+    * FIXED: Fixed post actions when executing gnt core in batch version.
+    
+    * FIXED: "The remote server returned an error: (407) Proxy Authentication Required."
+    
+              Related issue: https://github.com/3F/DllExport/issues/133
+              
+    * NOTE: Official releases via GitHub Releases: 
+            https://github.com/3F/GetNuTool/releases/latest
+              
+    * NOTE: About possible commands and keys: https://github.com/3F/GetNuTool#commands
+            
 
 [v1.7] 2018.12.22
 
