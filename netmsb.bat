@@ -11,7 +11,7 @@ for %%v in (4.0, 3.5, 2.0) do (
         `reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions\%%v" /v MSBuildToolsPath 2^> nul`
     ) do if exist %%b (
     
-        set msbuildexe=%%b\MSBuild.exe
+        set msbuildexe="%%~b\MSBuild.exe"
         goto found
 
     )
@@ -21,6 +21,4 @@ exit /B 2
 
 :found
 
-"!msbuildexe!" %*
-
-exit /B 0
+!msbuildexe! %*
