@@ -128,7 +128,7 @@
                 var url     =@"$(ngserver)";
                 var wpath   =@"$(wpath)";
                 var defpath =@"$(ngpath)";
-                var proxy   =@"$(proxycfg)";
+                var proxy   =@"$(proxycfg)".Trim();
                 var debug   =@"$(debug)" == "true";
 
                 if(plist == null) {
@@ -170,7 +170,7 @@
                 {
                     var to = Path.GetFullPath(loc(path ?? name));
                     if(Directory.Exists(to)) {
-                        Console.WriteLine("`{0}` already exists: \"{1}\"", name, to);
+                        Console.WriteLine("`{0}` was found in \"{1}\"", name, to);
                         return;
                     }
                     Console.Write("Getting `{0}` ... ", link);
