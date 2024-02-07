@@ -12,12 +12,12 @@ call packages\vsSolutionBuildEvent\cim.cmd /v:m /m:7 /p:Configuration=%reltype% 
 
 setlocal enableDelayedExpansion
     cd tests
-    call a initAppVersion
-    call a execute ..\obj\gnt & call a msgOrFailAt 1 "GetNuTool %appversion%" || goto err
-    echo Completed as a !msg[1]!
+    call a initAppVersion Gnt
+    call a execute ..\obj\gnt & call a msgOrFailAt 1 "GetNuTool %appversionGnt%" || goto err
+    call a printMsgAt 1 3F "Completed as a "
 endlocal
 exit /B 0
 
 :err
-echo Failed >&2
+    echo Failed build>&2
 exit /B 1

@@ -4,9 +4,10 @@
 :: Tests. Part of https://github.com/3F/GetNuTool
 
 setlocal enableDelayedExpansion
+call a isNotEmptyOrWhitespaceOrFail %~1 || exit /B1
 
 set /a gcount=!%~1! & set /a failedTotal=!%~2!
-set exec=%~3 & set wdir=%~4
+set "exec=%~3" & set "wdir=%~4"
 
 :::::::::::::::::: :::::::::::::: :::::::::::::::::::::::::
 :: Tests
@@ -29,7 +30,11 @@ set exec=%~3 & set wdir=%~4
 
         call a startTest "" 1 || goto x
             call a msgOrFailAt 0 "" || goto x
-            call a msgOrFailAt 1 "GetNuTool %appversion%" || goto x
+
+            if not defined appversionGnt call a failTest "Empty *appversionGnt" & goto x
+            if not "%appversionGnt%"=="off" (
+                call a msgOrFailAt 1 "GetNuTool %appversionGnt%" || goto x
+            )
             call a msgOrFailAt 2 "github/3F" || goto x
             call a msgOrFailAt 3 "Empty .config + ngpackages" || goto x
         call a completeTest
@@ -40,7 +45,11 @@ set exec=%~3 & set wdir=%~4
 
         call a startTest "/p:debug=true" 1 || goto x
             call a msgOrFailAt 0 "" || goto x
-            call a msgOrFailAt 1 "GetNuTool %appversion%" || goto x
+
+            if not defined appversionGnt call a failTest "Empty *appversionGnt" & goto x
+            if not "%appversionGnt%"=="off" (
+                call a msgOrFailAt 1 "GetNuTool %appversionGnt%" || goto x
+            )
             call a msgOrFailAt 2 "github/3F" || goto x
             call a msgOrFailAt 3 "packages.config is not found" || goto x
             call a msgOrFailAt 4 ".tools\packages.config is not found" || goto x
@@ -447,7 +456,7 @@ call :cleanup
 ::
 :x
 endlocal & set /a %1=%gcount% & set /a %2=%failedTotal%
-if "!failedTotal!"=="0" exit /B 0
+if !failedTotal! EQU 0 exit /B 0
 exit /B 1
 
 :cleanup
