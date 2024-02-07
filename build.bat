@@ -1,7 +1,7 @@
 @echo off
 
 :: max 2047 or 8191 (XP+) characters
-set /a packmaxline=1940
+set /a packmaxline=1900
 
 call .tools\hMSBuild -GetNuTool /p:ngconfig=".tools\packages.config" & (
     if [%~1]==[#] exit /B 0
@@ -12,8 +12,8 @@ call packages\vsSolutionBuildEvent\cim.cmd /v:m /m:7 /p:Configuration=%reltype% 
 
 setlocal enableDelayedExpansion
     cd tests
-    call a InitAppVersion
-    call a Execute ..\obj\gnt & call a msgOrFailAt 1 "GetNuTool %appversion%" || goto err
+    call a initAppVersion
+    call a execute ..\obj\gnt & call a msgOrFailAt 1 "GetNuTool %appversion%" || goto err
     echo Completed as a !msg[1]!
 endlocal
 exit /B 0

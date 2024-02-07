@@ -5,14 +5,15 @@
 if "%~1"=="" echo Empty function name & exit /B 1
 call :%~1 %2 %3 %4 %5 %6 %7 %8 %9 & exit /B !ERRORLEVEL!
 
-:InitAppVersion
+:initAppVersion
     for /F "tokens=*" %%i in (..\.version) do set appversion=%%i
 exit /B 0
 
-:Invoke
+:invoke
     ::  (1) - Command.
     ::  (2) - Input arguments inside "..." via variable.
     :: &[3] - Return code.
+    :: !!0+ - Error code from (1)
 
     set "cmd=%~1 !%2!"
 
@@ -30,14 +31,17 @@ exit /B 0
     if not "%3"=="" set %3=!msg[%msgIdx%]!
 exit /B !msg[%msgIdx%]!
 
-:Execute
+:execute
     ::  (1) - Command.
-    call :Invoke "%~1" nul retcode
+    :: !!0+ - Error code from (1)
+
+    call :invoke "%~1" nul retcode
 exit /B !retcode!
 
-:StartTest
-    :: (1) - Input arguments to core inside "...". Use ` sign to apply " double quotes inside "...".
-    :: [2] - Expected return code. Default, 0.
+:startTest
+    ::  (1) - Input arguments to core inside "...". Use ` sign to apply " double quotes inside "...".
+    ::  [2] - Expected return code. Default, 0.
+    :: !!1  - Error code 1 if app's error code is not equal [2] as expected.
 
     set "cmd=%~1"
     if "%~2"=="" ( set /a exCode=0 ) else set /a exCode=%~2
@@ -52,16 +56,16 @@ exit /B !retcode!
     echo keys: !cmd!
     echo.
 
-    call :Invoke "%wdir%%exec%" cmd retcode
+    call :invoke "%wdir%%exec%" cmd retcode
 
-    if "!retcode!" NEQ "%exCode%" call :FailTest & exit /B 1
+    if "!retcode!" NEQ "%exCode%" call :failTest & exit /B 1
 exit /B 0
 
-:CompleteTest
+:completeTest
     echo [Passed]
 exit /B 0
 
-:FailTest
+:failTest
     set /a "failedTotal+=1"
     call :printStream failed
 exit /B 0
@@ -71,8 +75,8 @@ exit /B 0
 exit /B 0
 
 :contains
-    :: (1)  - input string via variable
-    :: (2)  - substring to check
+    ::  (1) - input string via variable
+    ::  (2) - substring to check
     :: &(3) - result, 1 if found.
 
     set "input=!%~1!"
@@ -86,8 +90,8 @@ exit /B 0
 exit /B 0
 
 :msgAt
-    :: (1)  - index at msg
-    :: (2)  - substring to check
+    ::  (1) - index at msg
+    ::  (2) - substring to check
     :: &(3) - result, 1 if found.
 
     set /a %3=0
@@ -100,25 +104,42 @@ exit /B 0
 exit /B 0
 
 :msgOrFailAt
-    :: (1)  - index at msg
-    :: (2)  - substring to check
+    ::  (1) - index at msg
+    ::  (2) - substring to check
+    :: !!1  - Error code 1 if the message is not found at the specified index.
 
-    call :msgAt %~1 "%~2" n & if .!n! NEQ .1 call :FailTest & exit /B 1
+    call :msgAt %~1 "%~2" n & if .!n! NEQ .1 call :failTest & exit /B 1
 exit /B 0
 
 :checkFs
-    :: (1) - Path to directory that must be available.
-    :: (2) - Path to the file that must exist.
+    ::  (1) - Path to directory that must be available.
+    ::  (2) - Path to the file that must exist.
+    :: !!1  - Error code 1 if the directory or file does not exist.
 
-    if not exist "%~1" call :FailTest & exit /B 1
-    if not exist "%~1\%~2" call :FailTest & exit /B 1
+    if not exist "%~1" call :failTest & exit /B 1
+    if not exist "%~1\%~2" call :failTest & exit /B 1
 exit /B 0
 
 :checkFsBase
-    :: (1) - Path to directory that must be available.
-    :: (2) - Path to the file that must exist.
+    ::  (1) - Path to directory that must be available.
+    ::  (2) - Path to the file that must exist.
+    :: !!1  - Error code 1 if the directory or file does not exist.
 
     call :checkFs "%basePkgDir%%~1" "%~2" || exit /B 1
+exit /B 0
+
+:checkFsNo
+    ::  (1) - Path to the file or directory that must NOT exist.
+    :: !!1  - Error code 1 if the specified path exists.
+
+    if exist "%~1" call :failTest & exit /B 1
+exit /B 0
+
+:checkFsBaseNo
+    ::  (1) - Path to the file or directory that must NOT exist.
+    :: !!1  - Error code 1 if the specified path exists.
+
+    call :checkFsNo "%basePkgDir%%~1" || exit /B 1
 exit /B 0
 
 :unsetDir
@@ -142,6 +163,47 @@ exit /B 0
 exit /B 0
 
 :checkFsNupkg
-    :: (1) - Nupkg file name.
-    if not exist "%~1" call :FailTest & exit /B 1
+    ::  (1) - Nupkg file name.
+    :: !!1  - Error code 1 if the input (1) does not exist.
+
+    if not exist "%~1" call :failTest & exit /B 1
+exit /B 0
+
+:findInStream
+    ::  (1) - substring to check
+    :: &(2) - result, 1 if found.
+
+    for /L %%i in (0,1,!msgIdx!) do (
+        call :msgAt %%i "%~1" n & if .!n! EQU .1 (
+            set /a %2=1
+            exit /B 0
+        )
+    )
+    set /a %2=0
+exit /B 0
+
+:failIfInStream
+    ::  (1) - substring to check
+    :: !!1  - Error code 1 if the input (1) was not found.
+
+    call :findInStream "%~1" n & if .!n! EQU .1 call :failTest & exit /B 1
+exit /B 0
+
+:print
+    :: (1) - Input string.
+
+    echo.[ %TIME% ] %~1
+exit /B 0
+
+:isNotEmptyOrWhitespace
+    :: &(1) - Input variable.
+    :: !!1  - Error code 1 if &(1) is empty or contains only whitespace characters.
+
+    set "_v=!%~1!"
+    if not defined _v exit /B 1
+
+    set _v=%_v: =%
+    if not defined _v exit /B 1
+
+    :: e.g. set a="" not set "a="
 exit /B 0

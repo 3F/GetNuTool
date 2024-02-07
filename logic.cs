@@ -10,23 +10,50 @@
 // NOTE: netfx 4.0+ platforms;
 // NOTE: The default console logger can be disabled and currently exceptions are not caught at the top level; To make the code compact, use `return false` instead
 
-if("$(logo)".Trim() != "no") Console.WriteLine("\nGetNuTool $(GetNuTool)\n(c) 2015-2024  Denis Kuzmin <x-3F@outlook.com> github/3F\n");
+if("$(logo)" != "no") Console.WriteLine("\nGetNuTool $(GetNuTool)\n(c) 2015-2024  Denis Kuzmin <x-3F@outlook.com> github/3F\n");
 
-Action<string, object> DebugMessage = (s, p) =>
+const string MSG_NOTFOUND = "{0} is not found ";
+
+var ignore = new string[] // to ignore from package
 {
-    if("$(debug)".Trim() == "true") Console.WriteLine(s, p);
+    "/_rels/",
+    "/package/",
+    "/[Content_Types].xml"
 };
+
+Action<string, object> DebugMessage = (msg, args) =>
+{
+    if("$(debug)".Trim() == "true") Console.WriteLine(msg, args);
+};
+
+Func<string, XElement> _LoadXml = (input) =>
+{
+    try
+    {
+        return XDocument.Load(input).Root;
+    }
+    catch(Exception ex)
+    {
+        Console.Error.WriteLine(ex.Message);
+        throw;
+    }
+};
+
+Func<string, string[]> _FormatList = (str) => str.Split
+(
+    new[] { str.Contains('|') ? '|' : ';' },
+    StringSplitOptions.RemoveEmptyEntries
+);
 
 if(tmode == "get" || tmode == "grab")
 {
-    string config   =@"$(ngconfig)";
-    string plist    =@"$(ngpackages)";
+    string plist = @"$(ngpackages)";
 
     if(string.IsNullOrEmpty(plist))
     {
         Action<string, Queue<string>> LoadConf = (cfg, list) =>
         {
-            foreach(XElement pkg in XDocument.Load(cfg).Descendants("package"))
+            foreach(XElement pkg in _LoadXml(cfg).Descendants("package"))
             {
                 XAttribute id       = pkg.Attribute("id");
                 XAttribute version  = pkg.Attribute("version");
@@ -53,26 +80,20 @@ if(tmode == "get" || tmode == "grab")
         };
 
         var ret = new Queue<string>();
-        foreach(string cfg in config.Split
-        (
-            new char[] { config.IndexOf('|') != -1 ? '|' : ';' },
-            StringSplitOptions.RemoveEmptyEntries
-        ))
+        foreach(string cfg in _FormatList(@"$(ngconfig)"))
         {
             string lcfg = Path.Combine(@"$(wpath)", cfg);
+
             if(File.Exists(lcfg))
             {
                 LoadConf(lcfg, ret);
             }
-            else
-            {
-                Console.Error.WriteLine(".config {0} is not found", lcfg);
-            }
+            else { DebugMessage(MSG_NOTFOUND, lcfg); }
         }
 
         if(ret.Count < 1)
         {
-            Console.Error.WriteLine("Empty .config + ngpackages\n");
+            Console.Error.WriteLine("Empty .config + ngpackages");
             return false;
         }
 
@@ -82,7 +103,7 @@ if(tmode == "get" || tmode == "grab")
     /* -_-_-_--_-_-_--_-_-_- */
 
     string defpath  =@"$(ngpath)";
-    string proxy    =@"$(proxycfg)".Trim();
+    string proxy    =@"$(proxycfg)";
 
     // https://github.com/3F/DllExport/issues/140
     // Since Tls13 (0x3000) is not available from obsolete assemblies,
@@ -105,10 +126,9 @@ if(tmode == "get" || tmode == "grab")
 
     // drop support for ssl3 + tls1.0 + tls1.1
     // https://learn.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype
-    if("$(ssl3)" != "true") ServicePointManager.SecurityProtocol &= ~(SecurityProtocolType)(48 | 192 | 768);
-
-    // to ignore from package
-    var ignore = new string[] { "/_rels/", "/package/", "/[Content_Types].xml" };
+    if("$(ssl3)" != "true")
+        ServicePointManager.SecurityProtocol &=
+            ~(SecurityProtocolType)(/*Ssl3*/48 | /*Tls*/192 | /*Tls11*/768);
 
     Func<string, WebProxy> GetProxy = (cfg) =>
     {
@@ -167,7 +187,7 @@ if(tmode == "get" || tmode == "grab")
                 l.UseDefaultCredentials = true;
 
                 // `WebClient.Credentials` will not affect for used proxy: https://github.com/3F/DllExport/issues/133
-                if(l.Proxy.Credentials == null) // when no proxy key or when GetProxy() uses auth[0]
+                if(l.Proxy != null && l.Proxy.Credentials == null) // when no proxy key or when GetProxy() uses auth[0]
                 {
                     l.Proxy.Credentials = CredentialCache.DefaultCredentials;
                 }
@@ -211,16 +231,12 @@ if(tmode == "get" || tmode == "grab")
 
     //Format: id/version[:path];id2/version[:D:/path];...
 
-    foreach(string pkg in plist.Split
-    (
-        new char[] { plist.IndexOf('|') != -1 ? '|' : ';' },
-        StringSplitOptions.RemoveEmptyEntries
-    ))
+    foreach(string pkg in _FormatList(plist))
     {
-        var ident   = pkg.Split(new char[] { ':' }, 2);
-        var link    = ident[0];
-        var path    = ident.Length > 1 ? ident[1] : null;
-        var name    = link.Replace('/', '.');
+        string[] ident  = pkg.Split(new[] { ':' }, 2);
+        string link     = ident[0];
+        string path     = ident.Length > 1 ? ident[1] : null;
+        string name     = link.Replace('/', '.');
 
         if(!string.IsNullOrEmpty(defpath))
         {
@@ -233,7 +249,6 @@ if(tmode == "get" || tmode == "grab")
 else if(tmode == "pack")
 {
     const string EXT_NUSPEC = ".nuspec";
-    const string EXT_NUPKG  = ".nupkg";
     const string TAG_META   = "metadata";
 
     // Tags
@@ -243,7 +258,7 @@ else if(tmode == "pack")
     string dir = Path.Combine(@"$(wpath)", @"$(ngin)");
     if(!Directory.Exists(dir))
     {
-        Console.Error.WriteLine("{0} is not found", dir);
+        Console.Error.WriteLine(MSG_NOTFOUND, dir);
         return false;
     }
 
@@ -252,15 +267,15 @@ else if(tmode == "pack")
     string nuspec = Directory.GetFiles(dir, "*" + EXT_NUSPEC).FirstOrDefault();
     if(nuspec == null)
     {
-        Console.Error.WriteLine("{0} is not found {1}", EXT_NUSPEC, dir);
+        Console.Error.WriteLine(MSG_NOTFOUND + dir, EXT_NUSPEC);
         return false;
     }
     Console.WriteLine("{0} use {1}", EXT_NUSPEC, nuspec);
 
-    XElement root = XDocument.Load(nuspec).Root.Elements().FirstOrDefault(x => x.Name.LocalName == TAG_META);
+    XElement root = _LoadXml(nuspec).Elements().FirstOrDefault(x => x.Name.LocalName == TAG_META);
     if(root == null)
     {
-        Console.Error.WriteLine("{0} does not contain {1}", nuspec, TAG_META);
+        Console.Error.WriteLine(MSG_NOTFOUND, TAG_META);
         return false;
     }
 
@@ -287,14 +302,7 @@ else if(tmode == "pack")
 
     // Format package
 
-    var ignore = new string[] // to ignore from package
-    {
-        Path.Combine(dir, "_rels"),
-        Path.Combine(dir, "package"),
-        Path.Combine(dir, "[Content_Types].xml")
-    };
-
-    string pout = string.Format("{0}.{1}{2}", _GetMeta(ID), _GetMeta(VER), EXT_NUPKG);
+    string pout = string.Format("{0}.{1}.nupkg", _GetMeta(ID), _GetMeta(VER));
 
     string dout = Path.Combine(@"$(wpath)", @"$(ngout)");
     if(!string.IsNullOrWhiteSpace(dout))
@@ -318,17 +326,15 @@ else if(tmode == "pack")
 
         foreach(string file in Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories))
         {
-            if(ignore.Any(x => file.StartsWith(x, StringComparison.Ordinal))) continue;
+            if(ignore.Any(x => file.StartsWith
+            (
+                Path.Combine(dir, x.Trim('/')), StringComparison.Ordinal
+            ))) continue;
 
-            string pUri;
-            if(file.StartsWith(dir, StringComparison.OrdinalIgnoreCase))
-            {
-                pUri = file.Substring(dir.Length).TrimStart(Path.DirectorySeparatorChar);
-            }
-            else
-            {
-                pUri = file;
-            }
+            string pUri = file.StartsWith(dir, StringComparison.OrdinalIgnoreCase)
+                        ? file.Substring(dir.Length).TrimStart(Path.DirectorySeparatorChar)
+                        : file;
+
             DebugMessage("+ {0}", pUri);
 
             PackagePart part = pkg.CreatePart
@@ -338,7 +344,7 @@ else if(tmode == "pack")
                 (
                     new Uri
                     (
-                        string.Join("/", pUri.Split('\\', '/').Select(p => Uri.EscapeDataString(p))),
+                        string.Join("/", pUri.Split('\\', '/').Select(Uri.EscapeDataString)),
                         UriKind.Relative
                     )
                 ),

@@ -13,7 +13,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
     <PropertyGroup>
-        <ngconfig Condition="'$(ngconfig)' == ''">packages.config</ngconfig>                        <!-- Where to look the packages.config of solution-level -->
+        <ngconfig Condition="'$(ngconfig)' == ''">packages.config;.tools\packages.config</ngconfig>                        <!-- Where to look the packages.config of solution-level -->
         <ngserver Condition="'$(ngserver)' == ''">https://www.nuget.org/api/v2/package/</ngserver>  <!-- Server by default -->
         <ngpath Condition="'$(ngpath)' == ''">packages</ngpath>                                     <!-- Path by default -->
 
