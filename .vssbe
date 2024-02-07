@@ -1,20 +1,16 @@
 ﻿{
   "Header": {
     "_": [
-      "https://github.com/3F/vsSolutionBuildEvent"
+      " This file for vsSolutionBuildEvent ",
+      " https://github.com/3F/vsSolutionBuildEvent "
     ],
-    "Compatibility": "0.9"
+    "Compatibility": "0.12.4"
   },
   "PreBuild": [
     {
       "Enabled": true,
       "Name": "ActDir",
       "Caption": "To prepare directories",
-      "SupportMSBuild": true,
-      "SupportSBEScripts": true,
-      "IgnoreIfBuildFailed": false,
-      "BuildType": "Common",
-      "Confirmation": false,
       "Mode": {
         "$type": "net.r_eg.vsSBE.Events.ModeScript, vsSolutionBuildEvent",
         "Type": "Script",
@@ -35,9 +31,6 @@
       "Enabled": true,
       "Name": "ActBuild",
       "Caption": "Build core",
-      "SupportMSBuild": true,
-      "SupportSBEScripts": true,
-      "BuildType": "Common",
       "Mode": {
         "$type": "net.r_eg.vsSBE.Events.ModeScript, vsSolutionBuildEvent",
         "Type": "Script",
@@ -100,15 +93,15 @@
           "#[IO copy.file(\"logic.targets\", \"$(dobj)core\", true)]",
           "#[IO replace.Regex(\"$(dobj)core\", \"<GetNuTool>.*?</GetNuTool>\", \"<GetNuTool>$(pVerPrintApp)</GetNuTool>\")]",
           "",
-          "#[IO writeLine(STDOUT):#[File sout(\"netmsb.bat\", \"minified/.compressor /p:core=\\\"../$(dobj)core\\\" /p:output=\\\"../$(dobj)gnt.min.core\\\" /nologo /v:m /m:4\", 400)]]",
+          "#[IO writeLine(STDOUT):#[File sout(\".tools\\hMSBuild.bat\", \"minified/.compressor /p:core=\\\"../$(dobj)core\\\" /p:output=\\\"../$(dobj)gnt.min.core\\\" /nologo /v:m /m:4\", 400)]]",
           "",
-          "#[IO writeLine(STDOUT):#[File sout(\"netmsb.bat\", \"embedded/.packer /p:core=\\\"../$(dobj)gnt.min.core\\\" /p:output=\\\"../$(dobj)gnt.bat\\\" /nologo /v:m /m:4\", 400)]]",
+          "#[IO writeLine(STDOUT):#[File sout(\".tools\\hMSBuild.bat\", \"embedded/.packer /p:core=\\\"../$(dobj)gnt.min.core\\\" /p:output=\\\"../$(dobj)gnt.bat\\\" /p:coreversion=\\\"$(pVer)\\\" /nologo /v:m /m:4\", 400)]]",
           "",
           "",
           "#[\" ",
           "    .compressor for executable version (batch)",
           "\"]",
-          "#[IO writeLine(STDOUT):#[File sout(\"netmsb.bat\", \"embedded/.compressor /p:core=\\\"../$(dobj)gnt.bat\\\" /p:output=\\\"../$(dobj)gnt.minified.bat\\\" /nologo /v:m /m:4\", 400)]]",
+          "#[IO writeLine(STDOUT):#[File sout(\".tools\\hMSBuild.bat\", \"embedded/.compressor /p:core=\\\"../$(dobj)gnt.bat\\\" /p:output=\\\"../$(dobj)gnt.minified.bat\\\" /nologo /v:m /m:4\", 400)]]",
           "#[IO copy.file(\"$(dobj)gnt.bat\", \"$(dobj)gnt.full.bat\", true)]",
           "#[IO copy.file(\"$(dobj)gnt.minified.bat\", \"$(dobj)gnt.bat\", true)]",
           "#[IO delete.files({\"$(dobj)gnt.minified.bat\"})]",
@@ -126,10 +119,7 @@
       "Enabled": true,
       "Name": "ActBin",
       "Caption": "Binaries & tools ...",
-      "SupportMSBuild": true,
-      "SupportSBEScripts": true,
       "IgnoreIfBuildFailed": true,
-      "BuildType": "Common",
       "Mode": {
         "$type": "net.r_eg.vsSBE.Events.ModeScript, vsSolutionBuildEvent",
         "Type": "Script",
@@ -164,11 +154,7 @@
       "Enabled": true,
       "Name": "ActZip",
       "Caption": "Create Zip archive",
-      "SupportMSBuild": true,
-      "SupportSBEScripts": true,
       "IgnoreIfBuildFailed": true,
-      "BuildType": "Common",
-      "Confirmation": false,
       "Mode": {
         "$type": "net.r_eg.vsSBE.Events.ModeScript, vsSolutionBuildEvent",
         "Type": "Script",

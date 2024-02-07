@@ -15,6 +15,7 @@
     <PropertyGroup>
         <core Condition="'$(core)' == ''">..\logic.targets</core>
         <output Condition="'$(output)' == ''">gnt.bat</output>
+        <coreversion Condition="'$(coreversion)' == ''">0</coreversion>
         <maxline Condition="'$(maxline)' == ''">1820</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
     </PropertyGroup>
 
@@ -324,8 +325,12 @@
 
                         // Finally, format script to work with gnt.core
 
-                        using(StreamReader tplreader = new StreamReader("exec.tpl", System.Text.Encoding.UTF8, true)) {
-                            content = tplreader.ReadToEnd().Replace("$gnt.core.logic$", content).Replace("$tpl.corevar$", corevar);
+                        using(StreamReader tplreader = new StreamReader("exec.tpl.bat", System.Text.Encoding.UTF8, true))
+                        {
+                            content = tplreader.ReadToEnd()
+                                        .Replace("$gnt.core.logic$", content)
+                                        .Replace("$tpl.corevar$", corevar)
+                                        .Replace("$core.version$", "$(coreversion)");
                         }
 
                         // 

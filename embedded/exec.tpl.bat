@@ -77,7 +77,7 @@ set args=%args: #__b_ECL## =!%
 
 :found
 call :core
-call %msbuildexe% %$tpl.corevar$% /nologo /p:wpath="%cd%/" /v:m /m:4 %args%
+call %msbuildexe% %$tpl.corevar$% /nologo /p:wpath="%cd%/" /v:m /m:7 %args%
 
 set "msbuildexe="
 set ret=%ERRORLEVEL%

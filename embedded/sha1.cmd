@@ -3,7 +3,7 @@
 if not exist "%~dp0\gnt.bat" goto err
 echo SHA-1 test has been started.
 
-set msbuild="%~dp0\..\netmsb.bat"
+set msbuild="%~dp0\..\.tools\hMSBuild.bat"
 
 setlocal
     cd "%~dp0"
