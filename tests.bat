@@ -3,8 +3,6 @@
 :: run tests by default
 
 setlocal
-    for /F "tokens=*" %%i in (.version) do set appversion=%%i
-
     if exist "core\gnt.core\" (
 
         set "bdir=..\shell\batch\"

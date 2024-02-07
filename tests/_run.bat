@@ -4,15 +4,16 @@
 :: Tests. Part of https://github.com/3F/GetNuTool
 :: Based on https://github.com/3F/hMSBuild
 
+call a InitAppVersion
 setlocal enableDelayedExpansion
 
 :: path to core
-set core=%1
+set exec=%1
 
 :: path to directory where release
 set rdir=%2
 
-call :isEmptyOrWhitespace core _is & if [!_is!]==[1] goto errargs
+call :isEmptyOrWhitespace exec _is & if [!_is!]==[1] goto errargs
 call :isEmptyOrWhitespace rdir _is & if [!_is!]==[1] goto errargs
 
 echo.
@@ -25,10 +26,10 @@ set /a gcount=0
 set /a failedTotal=0
 
 echo. & call :print "Tests - 'keys'"
-call .\keysAndLogicTests gcount failedTotal %core% %rdir%
+call .\keysAndLogicTests gcount failedTotal %exec% %rdir%
 
 @REM echo. & call :print "Tests - 'diffversions'"
-@REM call .\diffversions gcount failedTotal %core% %rdir% %cfull%
+@REM call .\diffversions gcount failedTotal %exec% %rdir% %cfull%
 
 echo.
 echo ################

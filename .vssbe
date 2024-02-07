@@ -26,7 +26,7 @@
           "$(fEmbd = 'embd.bat')",
           "$(fPackMin = '$(dobj)gnt.minified.bat')",
           "",
-          "$(packmaxline = '1960') max 2047 or 8191 (XP+) characters",
+          "#[($(packmaxline) == *Undefined*){ $(packmaxline = '1900') }]",
           "",
           "~ Output structure",
           "",

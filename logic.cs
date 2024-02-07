@@ -72,7 +72,7 @@ if(tmode == "get" || tmode == "grab")
 
         if(ret.Count < 1)
         {
-            Console.Error.WriteLine("Empty .config or ngpackages\n");
+            Console.Error.WriteLine("Empty .config + ngpackages\n");
             return false;
         }
 
