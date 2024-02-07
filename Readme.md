@@ -68,7 +68,7 @@ However! GetNuTool has more powerful ways even for standard NuGet packages provi
 * Install *.nupkg* packages from remote NuGet (or like: chocolatey, ...) servers.
 * Grab or Install any *zipped* packages from direct sources (local, remote http, https, ftp, ...).
 * Controlled unpacking of all received packages. Modes: `get` or `grab`
-* Hash values control using `sha1` for receiving every package if used unsecured channels (~windows xp) etc.
+* Hash values control using [`sha1`](https://en.wikipedia.org/wiki/SHA-1) for receiving every package if used unsecured channels (~windows xp) etc.
 * Creating new NuGet packages *.nupkg* from *.nuspec*.
 * Two supported formats: xml *packages.config* (+extra: output, sha1) and inline records.
 * Inline records and packages.config are fully compatible between, and config has backward compatibility with original packages.config
@@ -254,9 +254,9 @@ gnt.Run(ngpackages: "Fnv1a128");
 
  First key to gnt.bat | Description                                                                   | Example
 ----------------------|-------------------------------------------------------------------------------|----------------
-  ...                 | 1.9+ alias to `ngpackages=...`                                                | `gnt Conari`, `gnt "regXwild;Conari"`
+  ...                 | 1.9+ alias to `ngpackages=...`                                                | `gnt Conari`, `gnt "regXwild;Fnv1a128"`
  `-unpack`            | 1.6+ To generate minified gnt.core from gnt.bat.                              | `gnt -unpack`
- ~~`-msbuild`~~ path  | 1.6 - 1.8 To use specific msbuild. Removed in 1.9, use *hMSBuild* instead     | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages=Conari`
+ ~~`-msbuild`~~ path  | 1.6 - 1.8 To use specific msbuild. Removed in 1.9. Override engine instead    | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages=Conari`
 
 #### Override engine
 
@@ -364,6 +364,21 @@ See also examples from [tests/](tests/keysAndLogicTests.bat)
 ```bat
 git clone https://github.com/3F/GetNuTool.git src
 cd src & build & bin\Release\gnt Conari
+```
+
+### .sha1 official distribution
+
+*GetNuTool* releases are now accompanied by a *.sha1* file in the official distribution; At the same time, commits from which releases are published are signed with the committer's verified signature (GPG).
+
+Make sure you are using official, unmodified, safe versions.
+
+Note: *.sha1* file is a text list of published files with checksums in the format: 
+
+`40-hexadecimal-digits` `<space>` `file`
+
+```
+eead8f5c1fdff2abd4da7d799fbbe694d392c792 path\file
+...
 ```
 
 ## Contributing
