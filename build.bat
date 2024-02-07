@@ -1,7 +1,7 @@
 @echo off
 
 :: max 2047 or 8191 (XP+) characters
-set /a packmaxline=1900
+set /a packmaxline=1940
 
 call .tools\hMSBuild -GetNuTool /p:ngconfig=".tools\packages.config" & (
     if [%~1]==[#] exit /B 0

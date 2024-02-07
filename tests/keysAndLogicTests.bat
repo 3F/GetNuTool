@@ -22,6 +22,9 @@ set exec=%~3 & set wdir=%~4
     :: NOTE: :startTest will use ` as "
     :: It helps to use double quotes inside double quotes " ... `args` ... "
 
+:::::::::::::::::
+    call :cleanup
+
     ::_______ ------ ______________________________________
 
         call a startTest "" 1 || goto x
@@ -87,6 +90,29 @@ set exec=%~3 & set wdir=%~4
             call a checkFsBase "Fnv1a128" "Fnv1a128.nuspec" || goto x
         call a completeTest
         set "ngpackages="
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a unsetPackage Fnv1a128.1.0.0
+
+        call a startTest "Fnv1a128/1.0.0?cccccccccccccccccccccccccccccccccccccccc" 1 || goto x
+            call a msgOrFailAt 1 "Fnv1a128/1.0.0 ... " || goto x
+            call a msgOrFailAt 2 "[x]" || goto x
+            call a sha1At 2 sha1Fnv1a128
+            call a checkFsBaseNo "Fnv1a128.1.0.0/Fnv1a128.nuspec" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a startTest "Fnv1a128/1.0.0?!sha1Fnv1a128!" || goto x
+            call a msgOrFailAt 1 "Fnv1a128/1.0.0 ... " || goto x
+            call a msgOrFailAt 2 "!sha1Fnv1a128! ... !sha1Fnv1a128!" || goto x
+            call a checkFsBase "Fnv1a128.1.0.0" "Fnv1a128.nuspec" || goto x
+        call a completeTest
     ::_____________________________________________________
 
 
@@ -257,14 +283,14 @@ set exec=%~3 & set wdir=%~4
         echo ^<?xml version="1.0" encoding="utf-8"?^>>%config%
         echo ^<packages^>>>%config%
         echo   ^<package id="Conari"/^>>>%config%
-        echo   ^<package id="Fnv1a128" version="1.0.0"/^>>>%config%
+        echo   ^<package id="Fnv1a128" version="1.0.0" sha1="!sha1Fnv1a128!"/^>>>%config%
         echo   ^<package id="LX4Cnh" version="1.1.0" output="__algorithms"/^>>>%config%
         echo ^</packages^>>>%config%
 
         call a startTest "/p:ngconfig=`%config%`" || goto x
-            call a msgOrFailAt 1 "Conari " || goto x
-            call a msgOrFailAt 2 "Fnv1a128" || goto x
-            call a msgOrFailAt 3 "LX4Cnh" || goto x
+            call a msgOrFailAt 1 "Conari use " || goto x
+            call a msgOrFailAt 2 "Fnv1a128.1.0.0 use " || goto x
+            call a msgOrFailAt 3 "LX4Cnh/1.1.0 ... " || goto x
             call a checkFsBase "Conari" "Conari.nuspec" || goto x
             call a checkFsBase "Fnv1a128.1.0.0" "Fnv1a128.nuspec" || goto x
             call a checkFsBase "__algorithms" "LX4Cnh.nuspec" || goto x
@@ -292,6 +318,9 @@ set exec=%~3 & set wdir=%~4
             call a checkFsBase "__algorithms" "LX4Cnh.nuspec" || goto x
             call a checkFsBase "Conari" "Conari.nuspec" || goto x
         call a completeTest
+
+        call a unsetFile %cfg1%
+        call a unsetFile %cfg2%
     ::_____________________________________________________
 
 
@@ -345,7 +374,8 @@ set exec=%~3 & set wdir=%~4
         call a startTest "/p:wpath=%cd%\%basePkgDir%" || goto x
             call a msgOrFailAt 1 "Conari " || goto x
             call a msgOrFailAt 2 "Fnv1a128" || goto x
-            call a msgOrFailAt 3 "LX4Cnh" || goto x
+            call a msgOrFailAt 3 "!sha1Fnv1a128! ... !sha1Fnv1a128!" || goto x
+            call a msgOrFailAt 4 "LX4Cnh" || goto x
         call a completeTest
     ::_____________________________________________________
 
@@ -365,16 +395,63 @@ set exec=%~3 & set wdir=%~4
     ::_____________________________________________________
 
 
+    ::_______ ------ ______________________________________
+
+        call a unsetPackage Fnv1a128.1.0.0
+
+        echo ^<?xml version="1.0" encoding="utf-8"?^>>%config%
+        echo ^<packages^>>>%config%
+        echo   ^<package id="Fnv1a128" version="1.0.0" sha1="cccccccccccccccccccccccccccccccccccccccc"/^>>>%config%
+        echo ^</packages^>>>%config%
+
+        call a startTest "/p:ngconfig=`%config%`" 1 || goto x
+            call a msgOrFailAt 1 "Fnv1a128/1.0.0 ... " || goto x
+            call a msgOrFailAt 2 "[x]" || goto x
+            call a sha1At 2 sha1Fnv1a128
+            call a checkFsBaseNo "Fnv1a128.1.0.0/Fnv1a128.nuspec" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        echo ^<?xml version="1.0" encoding="utf-8"?^>>%config%
+        echo ^<packages^>>>%config%
+        echo   ^<package id="Fnv1a128" version="1.0.0" sha1="!sha1Fnv1a128!"/^>>>%config%
+        echo ^</packages^>>>%config%
+
+        call a startTest "/p:ngconfig=`%config%`" || goto x
+            call a msgOrFailAt 1 "Fnv1a128/1.0.0 ... " || goto x
+            call a msgOrFailAt 2 "!sha1Fnv1a128! ... !sha1Fnv1a128!" || goto x
+            call a checkFsBase "Fnv1a128.1.0.0" "Fnv1a128.nuspec" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a unsetNupkg "%basePkgDir%Huid.nupkg"
+
+        call a startTest "Huid?cccccccccccccccccccccccccccccccccccccccc:Huid.nupkg /t:grab" 1 || goto x
+            call a msgOrFailAt 1 "Huid ... " || goto x
+            call a msgOrFailAt 2 "[x]" || goto x
+            call a checkFsNupkg "%basePkgDir%Huid.nupkg" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+:::::::::::::
+call :cleanup
+
 :::::::::::::::::: :::::::::::::: :::::::::::::::::::::::::
-:: cleanup
-
-    call a unsetPackage
-    call a unsetFile %config%
-    call a unsetDir %artefactsDirName%
-
-::::::::::::::::::
 ::
 :x
 endlocal & set /a %1=%gcount% & set /a %2=%failedTotal%
 if "!failedTotal!"=="0" exit /B 0
 exit /B 1
+
+:cleanup
+    call a unsetPackage
+    call a unsetFile %config%
+    call a unsetDir %artefactsDirName%
+exit /B 0

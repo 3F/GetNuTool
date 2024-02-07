@@ -207,3 +207,15 @@ exit /B 0
 
     :: e.g. set a="" not set "a="
 exit /B 0
+
+:sha1At0
+    ::  (1) - Stream index.
+    :: &(2) - sha1 result.
+    set %2=!msg[%~1]:~4,40!
+exit /B 0
+
+:sha1At
+    ::  (1) - Stream index.
+    :: &(2) - sha1 result.
+    set %2=!msg[%~1]:~45,40!
+exit /B 0

@@ -43,12 +43,10 @@
             <Reference Include="System.Xml.Linq" />
             <Reference Include="WindowsBase" />
             <Using Namespace="System" />
-            <Using Namespace="System.Collections.Generic" />
             <Using Namespace="System.IO" />
             <Using Namespace="System.IO.Packaging" />
             <Using Namespace="System.Linq" />
             <Using Namespace="System.Net" />
-            <Using Namespace="System.Text.RegularExpressions" />
             <Using Namespace="System.Xml.Linq" />
             <Code Type="Fragment" Language="cs">
             <![CDATA[

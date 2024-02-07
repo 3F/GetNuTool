@@ -49,15 +49,18 @@ if(tmode == "get" || tmode == "grab")
 {
     string plist = @"$(ngpackages)";
 
+    var sb = new StringBuilder();
+
     if(string.IsNullOrEmpty(plist))
     {
-        Action<string, Queue<string>> LoadConf = (cfg, list) =>
+        Action<string> LoadConf = (cfg) =>
         {
             foreach(XElement pkg in _LoadXml(cfg).Descendants("package"))
             {
                 XAttribute id       = pkg.Attribute("id");
                 XAttribute version  = pkg.Attribute("version");
                 XAttribute output   = pkg.Attribute("output");
+                XAttribute sha1     = pkg.Attribute("sha1");
 
                 if(id == null)
                 {
@@ -65,39 +68,34 @@ if(tmode == "get" || tmode == "grab")
                     return;
                 }
 
-                string link = id.Value;
+                sb.Append(id.Value);
 
-                if(version != null) link += "/" + version.Value;
+                if(version != null) sb.Append("/" + version.Value);
+                if(sha1 != null) sb.Append("?" + sha1.Value);
+                if(output != null) sb.Append(":" + output.Value);
 
-                if(output != null)
-                {
-                    list.Enqueue(link + ":" + output.Value);
-                    continue;
-                }
-
-                list.Enqueue(link);
+                sb.Append(';');
             }
         };
 
-        var ret = new Queue<string>();
         foreach(string cfg in _FormatList(@"$(ngconfig)"))
         {
             string lcfg = Path.Combine(@"$(wpath)", cfg);
 
             if(File.Exists(lcfg))
             {
-                LoadConf(lcfg, ret);
+                LoadConf(lcfg);
             }
-            else { DebugMessage(MSG_NOTFOUND, lcfg); }
+            else DebugMessage(MSG_NOTFOUND, lcfg);
         }
 
-        if(ret.Count < 1)
+        if(sb.Length < 1)
         {
             Console.Error.WriteLine("Empty .config + ngpackages");
             return false;
         }
 
-        plist = string.Join("|", ret.ToArray());
+        plist = sb.ToString();
     }
 
     /* -_-_-_--_-_-_--_-_-_- */
@@ -153,7 +151,7 @@ if(tmode == "get" || tmode == "grab")
         return path;
     };
 
-    Func<string, string, string, bool> GetLink = (link, name, path) =>
+    Func<string, string, string, string, bool> GetLink = (link, name, path, sha1) =>
     {
         string to = Path.GetFullPath
         (
@@ -202,6 +200,28 @@ if(tmode == "get" || tmode == "grab")
         }
 
         Console.WriteLine(to);
+
+        if(sha1 != null)
+        {
+            Console.Write("{0} ... ", sha1);
+            using(SHA1 algo = System.Security.Cryptography.SHA1.Create())
+            {
+                sb.Clear();
+
+                using(var stream = new FileStream(tmp, FileMode.Open, FileAccess.Read))
+                foreach(byte b in algo.ComputeHash(stream))
+                    sb.Append(b.ToString("x2"));
+
+                Console.Write(sb.ToString());
+                if(!sb.ToString().Equals(sha1, StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("[x]");
+                    return false;
+                }
+                Console.WriteLine();
+            }
+        }
+
         if(grab) return true;
 
         using(Package pkg = ZipPackage.Open(tmp, FileMode.Open, FileAccess.Read))
@@ -229,21 +249,22 @@ if(tmode == "get" || tmode == "grab")
         return true;
     };
 
-    //Format: id/version[:path];id2/version[:D:/path];...
+    //Format: id[/version][?sha1][:path];id2[/version][?sha1][:path];...
 
     foreach(string pkg in _FormatList(plist))
     {
         string[] ident  = pkg.Split(new[] { ':' }, 2);
-        string link     = ident[0];
+        string[] link   = ident[0].Split(new[] { '?' }, 2);
         string path     = ident.Length > 1 ? ident[1] : null;
-        string name     = link.Replace('/', '.');
+        string name     = link[0].Replace('/', '.');
 
         if(!string.IsNullOrEmpty(defpath))
         {
             path = Path.Combine(defpath, path ?? name);
         }
 
-        if(!GetLink(link, name, path) && "$(break)".Trim() != "no") return false;
+        if(!GetLink(link[0], name, path, /*sha1:*/ link.Length > 1 ? link[1] : null)
+            && "$(break)".Trim() != "no") return false;
     }
 }
 else if(tmode == "pack")
@@ -279,7 +300,7 @@ else if(tmode == "pack")
         return false;
     }
 
-    var metadata = new Dictionary<string, string>();
+    var metadata = new System.Collections.Generic.Dictionary<string, string>();
 
     Func<string, string> _GetMeta = (key)
         => metadata.ContainsKey(key) ? metadata[key] : string.Empty;
@@ -290,7 +311,7 @@ else if(tmode == "pack")
     // Validate id; nuget core based rule
 
     if(_GetMeta(ID).Length > 100
-        || !Regex.IsMatch
+        || !System.Text.RegularExpressions.Regex.IsMatch
             (
                 _GetMeta(ID),
                 @"^\w+(?:[_.-]\w+)*$"
