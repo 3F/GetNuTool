@@ -9,13 +9,13 @@ if not exist %gntcore% goto error
 set /a ERROR_FILE_NOT_FOUND=2
 set /a ERROR_CALL_NOT_IMPLEMENTED=120
 
-:: Usage:
+:: Syntax:
 ::  gnt Package
 ::  gnt "Paclage1;Package2"
 ::  gnt <core_arguments>
 ::  gnt <shell_arguments>
 
-if .%1==.-unpack goto off
+if "%~1"=="-unpack" goto off
 
 set args=%*
 setlocal enableDelayedExpansion
@@ -25,13 +25,13 @@ set "first=%~1 "
 set key=!first:~0,1!
 if "!key!" NEQ " " if !key! NEQ / set args=/p:ngpackages=!args!
 
-set "instance=%engine%"
+set "instance=%msb.gnt.cmd%"
 if defined instance goto found
 
-:: Find engine via engine.cmd stub or hMSBuild.bat script https://github.com/3F/hMSBuild
+:: Find engine via msb.gnt.cmd stub or hMSBuild.bat script https://github.com/3F/hMSBuild
 
 set script=hMSBuild
-if exist engine.cmd set script=engine.cmd
+if exist msb.gnt.cmd set script=msb.gnt.cmd
 
 for /F "tokens=*" %%i in ('%script% -only-path 2^>^&1 ^&call echo %%^^ERRORLEVEL%%') do 2>nul (
     if not defined instance ( set instance="%%i" ) else set EXIT_CODE=%%i
@@ -72,7 +72,7 @@ exit /B %ERROR_CALL_NOT_IMPLEMENTED%
 
     call :unset "/help" "-help" "/h" "-h" "/?" "-?"
 
-    call !instance! %gntcore% /nologo /noautorsp %con% /p:wpath="%cd%/" !args!
+    call !instance! %gntcore% /nologo /noautorsp !con! /p:wpath="%cd%/" !args!
 exit /B !ERRORLEVEL!
 
 :unset
