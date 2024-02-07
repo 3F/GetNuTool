@@ -6,9 +6,6 @@
     https://github.com/3F/GetNuTool
 -->
 
-<!--
-    Simple compressor of GetNuTool
--->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
     <!-- Main settings -->
@@ -152,7 +149,6 @@
                                             ";
 
                     const string VNAME  = "[a-z_0-9]+"; // [a-z_][a-z_0-9]+
-
 
                     using(StreamReader reader = new StreamReader(core, System.Text.Encoding.UTF8, true))
                     {
@@ -314,6 +310,19 @@
                         content = Regex.Replace(content, @"\s{2,}", " ");
                         content = Regex.Replace(content, @"\s*([=,()\[\];:.&|{}\/<>]+)\s*", "$1");
 
+                        /* XML */
+
+                        Action<Dictionary<string, string>, int> writeMap = delegate(Dictionary<string, string> vars, int part)
+                        {
+                            using(var wmap = new StreamWriter(string.Format("{0}.{1}.map", output, part), false, new UTF8Encoding(false)))
+                            {
+                                string map = string.Empty;
+                                foreach(var v in vars) map += string.Format("{0}={1}{2}", v.Value, v.Key, Environment.NewLine);
+                                wmap.Write(map);
+                            }
+                        };
+                        writeMap(variables, 0);
+
                         // XML rules
 
                         content = Regex.Replace(content, @"<!--.+?-->", "");
@@ -361,6 +370,8 @@
                         using(TextWriter writer = new StreamWriter(output, false, new UTF8Encoding(false))) {
                             writer.Write(content);
                         }
+
+                        writeMap(variables, 1);
                         Console.WriteLine("Compact version of `{0}` has been created -> `{1}`", core, output);
                     }
                 ]]>

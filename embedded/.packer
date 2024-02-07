@@ -242,6 +242,12 @@
                         },
                         RegexOptions.IgnorePatternWhitespace);
 
+                        using(var wmap = new StreamWriter(output + ".p.map", false, new UTF8Encoding(false)))
+                        {
+                            string map = string.Empty;
+                            foreach(var v in variables) map += string.Format("{0}={1}{2}", v.Value, v.Key, Environment.NewLine);
+                            wmap.Write(map);
+                        }
                         
                         // We'll work without double quotes, so we should define all pairs of "..." per line
 

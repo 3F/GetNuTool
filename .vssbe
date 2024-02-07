@@ -164,8 +164,14 @@
           "",
           "#[IO copy.file(\"$(dobj)gnt.min.core\", \"$(odir)core/gnt.core\", true)]",
           "#[IO copy.file(\"$(dobj)gnt.bat\", \"$(odir)shell/batch/gnt.bat\", true)]",
-          ")]",
-          "#[IO copy.file({\"caller/gnt.bat\"}, \"$(odir)wrappers/batch/\", true)]"
+          "#[IO copy.file({\"caller/gnt.bat\"}, \"$(odir)wrapper/batch/\", true)]",
+          "",
+          "#[IO copy.file",
+          "(",
+          "    { \"$(dobj)*.map\", \"$(dobj)*.map.targets\" },",
+          "    \"$(odir)maps/\",",
+          "    true",
+          ")]"
         ]
       }
     },

@@ -339,26 +339,31 @@
 
                 /* map */
 
-                using(TextWriter wmap = new StreamWriter(core + ".map", false, new UTF8Encoding(false)))
+                using(var wmap = new StreamWriter(core + ".map", false, new UTF8Encoding(false)))
                 {
-                    string map = String.Empty;
-                    foreach(var v in variables) {
-                        map += String.Format("{0}={1}\n", v.Key, v.Value);
-                    }
-
+                    string map = string.Empty;
+                    foreach(var v in variables) map += string.Format("{0}={1}{2}", v.Value, v.Key, Environment.NewLine);
                     wmap.Write(map);
                 }
 
-                // using(StreamReader mtpl = new StreamReader(maptpl, System.Text.Encoding.UTF8, true))
-                // using(TextWriter wmap = new StreamWriter(core + ".map.targets", false, new UTF8Encoding(false)))
-                // {
-                //     string map = String.Empty;
-                //     foreach(var v in variables) {
-                //         map += String.Format("<CreateProperty Value=\"{0}({1})\"><Output TaskParameter=\"Value\" PropertyName=\"{2}\"/></CreateProperty>\r\n", "$", v.Value, v.Key);
-                //     }
-
-                //     wmap.Write(mtpl.ReadToEnd().Replace("{0}", map));
-                // }
+                const string TPL_MAP = ".map.targets";
+                using(StreamReader mtpl = new StreamReader(TPL_MAP, System.Text.Encoding.UTF8, true))
+                using(TextWriter wmap = new StreamWriter(core + TPL_MAP, false, new UTF8Encoding(false)))
+                {
+                    string map = string.Empty;
+                    foreach(var v in variables)
+                    {
+                        map += string.Format
+                        (
+                            "<CreateProperty Value=\"{0}({1})\"><Output TaskParameter=\"Value\" PropertyName=\"{2}\"/></CreateProperty>{3}",
+                            "$",
+                            v.Value,
+                            v.Key,
+                            Environment.NewLine
+                        );
+                    }
+                    wmap.Write(mtpl.ReadToEnd().Replace("{0}", map));
+                }
 
             ]]></Code>
         </Task>
