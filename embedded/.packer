@@ -16,7 +16,7 @@
         <core Condition="'$(core)' == ''">..\logic.targets</core>
         <output Condition="'$(output)' == ''">gnt.bat</output>
         <coreversion Condition="'$(coreversion)' == ''">0</coreversion>
-        <maxline Condition="'$(maxline)' == ''">2020</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
+        <maxline Condition="'$(maxline)' == ''">1920</maxline> <!-- length of line / max 2047 or 8191 (XP+) characters https://support.microsoft.com/en-us/kb/830473 -->
     </PropertyGroup>
 
     <!-- Entry point -->

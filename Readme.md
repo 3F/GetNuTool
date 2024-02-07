@@ -152,26 +152,30 @@ gnt /p:ngserver=D:/local_dir/vsSolutionBuildEvent.SDK10.nupkg /p:ngpackages=: /p
 ```
 
 ```bat
-gnt /p:ngpackages="Conari;LX4cn;Fnv1a128" /p:break=no /p:debug=true
+gnt "Conari;Fnv1a12;LX4Cnh" /p:break=no /p:debug=true
 
-Conari use D:\prg\projects\GetNuTool\GetNuTool\packages\Conari
-LX4cn ... The remote server returned an error: (404) Not Found.
-Fnv1a128 ... D:\prg\projects\GetNuTool\GetNuTool\packages\Fnv1a128
+Conari use D:\prg\projects\GetNuTool\GetNuTool\bin\Release\packages\Conari
+Fnv1a12 ... The remote server returned an error: (404) Not Found.
+LX4Cnh ... D:\prg\projects\GetNuTool\GetNuTool\bin\Release\packages\LX4Cnh
 - /.version
 - /build-info.txt
 - /changelog.txt
-- /Fnv1a128.nuspec
-- /lib/net40/Fnv1a128.dll
-- /lib/net40/Fnv1a128.xml
-- /lib/net472/Fnv1a128.dll
-- /lib/net472/Fnv1a128.xml
-- /lib/net5.0/Fnv1a128.dll
-- /lib/net5.0/Fnv1a128.xml
-- /lib/netcoreapp2.1/Fnv1a128.dll
-- /lib/netcoreapp2.1/Fnv1a128.xml
-- /lib/netstandard2.0/Fnv1a128.dll
-- /lib/netstandard2.0/Fnv1a128.xml
-...
+- /lib/net40/LX4Cnh.dll
+- /lib/net40/LX4Cnh.xml
+- /lib/net472/LX4Cnh.dll
+- /lib/net472/LX4Cnh.xml
+- /lib/net5.0/LX4Cnh.dll
+- /lib/net5.0/LX4Cnh.xml
+- /lib/netcoreapp2.1/LX4Cnh.dll
+- /lib/netcoreapp2.1/LX4Cnh.xml
+- /lib/netstandard2.0/LX4Cnh.dll
+- /lib/netstandard2.0/LX4Cnh.xml
+- /License.txt
+- /LX4Cnh.nuspec
+- /Readme.md
+- /tools/gnt.bat
+- /tools/hMSBuild.bat
+- /tools/LX4Cnh.embd
 ```
 
 #### Format of packages list
@@ -237,6 +241,10 @@ Multiple config files via delimiters:
 Grabs data without unpacking. The available parameters are similar to the `get` command above.
 
 For example:
+
+```bat
+gnt "Huid/1.0.0:src.nupkg" /t:grab
+```
 
 ```bat
 gnt /t:grab /p:ngserver=https://server/netfx4sdk.cmd;ngpackages=:../netfx4sdk.cmd

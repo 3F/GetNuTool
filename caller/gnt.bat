@@ -1,9 +1,9 @@
 @echo off
-:: GetNuTool via batch
+:: GetNuTool /wrapper/batch edition
 :: Copyright (c) 2015-2024  Denis Kuzmin <x-3F@outlook.com> github/3F
 :: https://github.com/3F/GetNuTool
 
-set gntcore=.\gnt.core
+set gntcore=gnt.core
 if not exist %gntcore% goto error
 
 set /a ERROR_FILE_NOT_FOUND=2
@@ -34,7 +34,7 @@ set script=hMSBuild
 if exist engine.cmd set script=engine.cmd
 
 for /F "tokens=*" %%i in ('%script% -only-path 2^>^&1 ^&call echo %%^^ERRORLEVEL%%') do 2>nul (
-    if not defined instance ( set instance="%%i" ) else set /a EXIT_CODE=%%i
+    if not defined instance ( set instance="%%i" ) else set EXIT_CODE=%%i
 )
 
 if .%EXIT_CODE%==.0 if exist !instance! goto found
@@ -58,24 +58,24 @@ for %%v in (4.0, 14.0, 12.0, 3.5, 2.0) do (
 )
 
 :error
-echo Engine or %gntcore% is not found. >&2
-echo Try the full version or call it manually: msbuild %gntcore% ... >&2
+    echo Engine or %gntcore% is not found. >&2
+    echo Try the full version or call it manually: msbuild %gntcore% ... >&2
 exit /B %ERROR_FILE_NOT_FOUND%
 
 :off
-echo This feature is disabled in current version >&2
+    echo This feature is disabled in current version >&2
 exit /B %ERROR_CALL_NOT_IMPLEMENTED%
 
 :found
-set con=/noconlog
-if "%debug%"=="true" set con=/v:q
+    set con=/noconlog
+    if "%debug%"=="true" set con=/v:q
 
-call :unset "/help" "-help" "/h" "-h" "/?" "-?"
+    call :unset "/help" "-help" "/h" "-h" "/?" "-?"
 
-call !instance! %gntcore% /nologo /noautorsp %con% /p:wpath="%cd%/" !args!
+    call !instance! %gntcore% /nologo /noautorsp %con% /p:wpath="%cd%/" !args!
 exit /B %ERRORLEVEL%
 
 :unset
-if defined args set args=!args:%~1=!
-if "%~2" NEQ "" shift & goto unset
+    if defined args set args=!args:%~1=!
+    if "%~2" NEQ "" shift & goto unset
 exit /B 0

@@ -5,6 +5,8 @@ obj
 /packages
 /minified/gnt-min.core
 /minified/gnt.core*
-.nupkg
+*.nupkg
 /embedded/gnt.bat
 /embedded/gnt.core*
+/tests/packages
+/tests/T00LS
