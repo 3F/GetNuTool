@@ -7,17 +7,18 @@ Embeddable Package Manager. NuGet / Chocolatey Client. And the lightweight porta
 [![License](https://img.shields.io/badge/License-MIT-74A5C2.svg)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
 
 ```bash
-> gnt                                           # Executable version - full logic inside single script
+> gnt                                           # Executable versions via single shell script
 > msbuild gnt.core                              # Full & Compact versions to execute via MSBuild
-[NuGet gnt.raw("/t:pack /p:ngin=\"7z.Libs\"")]  # Compiled variant via SobaScript
+[NuGet gnt.raw("/t:pack /p:ngin=7z.Libs")]      # Compiled versions via SobaScript
 ```
 
 🛩 try it
 
 ```bash
-gnt /p:ngpackages="Conari;regXwild"             # To get `Conari` & `regXwild` packages
-gnt /t:pack /p:ngin="bin\DllExport"             # To create new NuGet package from .nuspec
-msbuild gnt.core /p:ngpackages="LuNari/1.6.0"   # To get `LuNari` package v1.6.0
+gnt Fnv1a128                                    # Get `Fnv1a128` package
+gnt /t:pack /p:ngin="bin\DllExport"             # Create new DllExport package
+gnt "Conari;regXwild"                           # Get `Conari` & `regXwild` packages
+msbuild gnt.core /p:ngpackages="LuNari/1.6.0"   # Get `LuNari` package v1.6.0
 gnt /p:ngconfig="packages.config"               # Use `packages.config`
 set ngpackages=Conari & gnt                     # shell scripts
 gnt /p:ngpackages="putty.portable/0.69"         # chocolatey

@@ -15,10 +15,16 @@ set /a ERROR_CALL_NOT_IMPLEMENTED=120
 ::  gnt <core_arguments>
 ::  gnt <shell_arguments>
 
-if "%~1"=="-unpack" goto unpack
+if .%1==.-unpack goto unpack
+if .%1==.-msbuild goto off
 
 set args=%*
 setlocal enableDelayedExpansion
+
+:: +1 space because %first:~0,1% will return literally "~0,1" as value if it's empty
+set "first=%~1 "
+set key=!first:~0,1!
+if "!key!" NEQ " " if !key! NEQ / set args=/p:ngpackages=!args!
 
 set "instance=%engine%"
 if defined instance goto found
@@ -32,7 +38,7 @@ for /F "tokens=*" %%i in ('%script% -only-path 2^>^&1 ^&call echo %%^^ERRORLEVEL
     if not defined instance ( set instance="%%i" ) else set /a EXIT_CODE=%%i
 )
 
-if "%EXIT_CODE%"=="0" if exist !instance! goto found
+if .%EXIT_CODE%==.0 if exist !instance! goto found
 
 :: Find engine via system records
 
@@ -44,7 +50,7 @@ for %%v in (4.0, 14.0, 12.0, 3.5, 2.0) do (
         set instance="%%~b\MSBuild.exe"
         if exist !instance! (
 
-            if not "%%v"=="3.5" if not "%%v"=="2.0" goto found
+            if %%v NEQ 3.5 if %%v NEQ 2.0 goto found
 
             echo Override engine or contact for legacy support %%v
             exit /B %ERROR_CALL_NOT_IMPLEMENTED%
@@ -55,6 +61,10 @@ for %%v in (4.0, 14.0, 12.0, 3.5, 2.0) do (
 echo Engine is not found. Try with hMSBuild 1>&2
 exit /B %ERROR_FILE_NOT_FOUND%
 
+:off
+echo This feature is disabled in current version >&2
+exit /B %ERROR_CALL_NOT_IMPLEMENTED%
+
 :found
 set con=/noconlog
 if "%debug%"=="true" set con=/v:q
@@ -64,7 +74,7 @@ call :core
 endlocal
 call :unset "/help" "-help" "/h" "-h" "/?" "-?"
 
-call !instance! %$tpl.corevar$% /nologo %con% /p:wpath="%cd%/" /m:7 %args%
+call !instance! %$tpl.corevar$% /nologo /noautorsp %con% /p:wpath="%cd%/" !args!
 set EXIT_CODE=%ERRORLEVEL%
 
 del /Q/F %$tpl.corevar$%
@@ -80,5 +90,5 @@ exit /B 0
 
 :unset
 if defined args set args=!args:%~1=!
-if not "%~2"=="" shift & goto unset
+if "%~2" NEQ "" shift & goto unset
 exit /B 0
