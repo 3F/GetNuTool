@@ -16,7 +16,7 @@
         <core Condition="'$(core)' == ''">..\logic.targets</core>
         <output Condition="'$(output)' == ''">gnt.bat</output>
         <coreversion Condition="'$(coreversion)' == ''">0</coreversion>
-        <maxline Condition="'$(maxline)' == ''">1820</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
+        <maxline Condition="'$(maxline)' == ''">1980</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
     </PropertyGroup>
 
     <!-- Entry point -->
@@ -125,12 +125,16 @@
 
                     var variables = new Dictionary<string, string>();
 
-                    var cdict = new[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-                                        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-                                        'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3',
-                                        '4', '5', '6', '7', '8', '9', '_' };
+                    var cdict = new[]
+                    {
+                        '.', ',', ';', ':', '+', '-', '[', ']', '{', '}', '$', '#', '@',
+                        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+                        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+                        'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3',
+                        '4', '5', '6', '7', '8', '9', '_'
+                    };
 
-                    var vdict = gencomb(cdict, 1, (int i) => { return char.IsLetter(cdict[i]) || cdict[i] == '_'; });
+                    var vdict = gencomb(cdict, 1, (int i) => { return !char.IsDigit(cdict[i]); });
 
                     // to skip processing for:
                     var exword      = new[] { "" };
@@ -139,6 +143,13 @@
                     const string rlexemes = @"(?:
                                                 (?'wrd'
                                                     Console\s*\.\s*WriteLine
+                                                    | Console\s*\.\s*Error\s*\.\s*WriteLine
+                                                    | delegate\s*\(\s*string\s+
+                                                    | string\.IsNullOrEmpty\(\s*
+                                                    | string\.IsNullOrWhiteSpace\(\s*
+                                                    | Microsoft\.Build\.Tasks\.
+                                                    | Code\s+Type=""Fragment""\s*Language=""cs""\s*
+                                                    | ServicePointManager\.SecurityProtocol
                                                 )
                                                 |
                                                 (?'ld'%%?0[aA])?
@@ -187,7 +198,7 @@
                             if(!lstat.ContainsKey(vname)) {
                                 lstat[vname] = -1 * (vname.Length + 7); //for init: set a= + length + &
                             }
-                            lstat[vname] += (vname.Length - 3); //for use: %a%
+                            lstat[vname] += (vname.Length - 2); //for use: % + a + %
                         }
                         
                         uint uniqVars = 0;
@@ -309,10 +320,10 @@
                             //content += $"<nul set /P ={line}>> %{corevar}%{Environment.NewLine}";
                             string ldata = String.Format("<nul set /P ={0}>>%{1}%\r\n", line, corevar);
 
-                            if(ldata.Length > 2047) {
+                            if(ldata.Length >= 2047) {
                                 Console.WriteLine("[Warn] Length of line {0}", ldata.Length);
                             }
-                            else if(ldata.Length > 8191) {
+                            else if(ldata.Length >= 8191) {
                                 Console.Error.WriteLine("[Error] Length of line {0}", ldata.Length);
                             }
                             

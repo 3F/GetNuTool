@@ -57,11 +57,10 @@
                 var plist   =@"$(ngpackages)";
                 var wpath   =@"$(wpath)";
 
-                if(!String.IsNullOrEmpty(plist)) {
+                if(!string.IsNullOrEmpty(plist)) {
                     Result = plist;
                     return true;
                 }
-                var _err = Console.Error;
 
                 Action<string, Queue<string>> h = delegate(string cfg, Queue<string> list)
                 {
@@ -72,7 +71,7 @@
                         var output  = pkg.Attribute("output");
 
                         if(id == null) {
-                            _err.WriteLine("'id' does not exist in '{0}'", cfg);
+                            Console.Error.WriteLine("'id' does not exist in '{0}'", cfg);
                             return; // throw new ArgumentException();
                         }
                         var link = id.Value;
@@ -97,15 +96,15 @@
                         h(lcfg, ret);
                     }
                     else {
-                        _err.WriteLine(".config '{0}' is not found.", lcfg);
+                        Console.Error.WriteLine(".config '{0}' is not found.", lcfg);
                     }
                 }
 
                 if(ret.Count < 1) {
-                    _err.WriteLine("Empty list. Use .config or /p:ngpackages\n");
+                    Console.Error.WriteLine("Empty list. Use .config or /p:ngpackages\n");
                 }
                 else {
-                    Result = String.Join("|", ret.ToArray());
+                    Result = string.Join("|", ret.ToArray());
                 }
 
             ]]></Code>
@@ -130,19 +129,39 @@
                 var defpath =@"$(ngpath)";
                 var proxy   =@"$(proxycfg)".Trim();
                 var debug   =@"$(debug)" == "true";
+                var ssl     =@"$(ssl3)" == "true";
 
-                if(plist == null) {
-                    return false;
+                if(plist == null) return false;
+
+                // https://github.com/3F/DllExport/issues/140
+                // Since Tls13 (0x3000) is not available from obsolete assemblies,
+                //    and SecurityProtocolType.SystemDefault (0) is defined only for netfx 4.7+, 4.8;
+                //    We can try to bind this at runtime using the last available environment where this code was executed.
+
+                // NOTE: ServicePointManager.SecurityProtocol = 0 may produce the following problem: An unexpected error occurred on a receive.
+
+                foreach(var s in Enum.GetValues(typeof(SecurityProtocolType)).Cast<SecurityProtocolType>())
+                {
+                    try
+                    {
+                        ServicePointManager.SecurityProtocol |= s;
+                    }
+                    catch(NotSupportedException)
+                    {
+                        // we don't care because property `ssl3` controls legacy protocols
+                    }
                 }
-                ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+
+                // drop support for ssl3 + tls1.0 + tls1.1
+                // https://learn.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype
+                if(!ssl) ServicePointManager.SecurityProtocol &= ~(SecurityProtocolType)(48 | 192 | 768);
 
                 // to ignore from package
                 var ignore = new string[] { "/_rels/", "/package/", "/[Content_Types].xml" };
 
-                Action<string, object> dbg = delegate(string s, object p) {
-                    if(debug) {
-                        Console.WriteLine(s, p);
-                    }
+                Action<string, object> dbg = delegate(string s, object p)
+                {
+                    if(debug) Console.WriteLine(s, p);
                 };
 
                 Func<string, WebProxy> getProxy = delegate(string cfg)
@@ -163,28 +182,28 @@
                 };
 
                 Func<string, string> loc = delegate(string p) {
-                    return Path.Combine(wpath, p ?? String.Empty);
+                    return Path.Combine(wpath, p ?? string.Empty);
                 };
 
                 Action<string, string, string> get = delegate(string link, string name, string path)
                 {
                     var to = Path.GetFullPath(loc(path ?? name));
                     if(Directory.Exists(to)) {
-                        Console.WriteLine("`{0}` was found in \"{1}\"", name, to);
+                        Console.WriteLine("{0} found in {1}", name, to);
                         return;
                     }
-                    Console.Write("Getting `{0}` ... ", link);
+                    Console.Write(link + " ... ");
 
                     var tmp = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
                     using(var l = new WebClient())
                     {
                         try
                         {
-                            if(!String.IsNullOrEmpty(proxy)) {
+                            if(!string.IsNullOrEmpty(proxy)) {
                                 l.Proxy = getProxy(proxy);
                             }
 
-                            l.Headers.Add("User-Agent", "GetNuTool $(GetNuTool)");
+                            l.Headers.Add("User-Agent", "GetNuTool/$(GetNuTool)");
                             l.UseDefaultCredentials = true;
 
                             // `WebClient.Credentials` will not affect for used proxy: https://github.com/3F/DllExport/issues/133
@@ -199,7 +218,7 @@
                         }
                     }
 
-                    Console.WriteLine("Extracting into \"{0}\"", to);
+                    Console.WriteLine(to);
                     using(var pkg = ZipPackage.Open(tmp, FileMode.Open, FileAccess.Read))
                     {
                         foreach(var part in pkg.GetParts()) 
@@ -239,7 +258,7 @@
                     var path    = (ident.Length > 1) ? ident[1] : null;
                     var name    = link.Replace('/', '.');
 
-                    if(!String.IsNullOrEmpty(defpath)) {
+                    if(!string.IsNullOrEmpty(defpath)) {
                         path = Path.Combine(defpath, path ?? name);
                     }
                     get(link, name, path);
@@ -284,11 +303,10 @@
                         Console.WriteLine(s, p);
                     }
                 };
-                var _err = Console.Error;
 
                 dir = Path.Combine(wpath, dir);
                 if(!Directory.Exists(dir)) {
-                    _err.WriteLine("`{0}` is not found.", dir);
+                    Console.Error.WriteLine("`{0}` is not found.", dir);
                     return false;
                 }
 
@@ -298,14 +316,14 @@
 
                 var nuspec = Directory.GetFiles(dir, "*" + EXT_NUSPEC, SearchOption.TopDirectoryOnly).FirstOrDefault();
                 if(nuspec == null) {
-                    _err.WriteLine("{0} is not found in `{1}`", EXT_NUSPEC, dir);
+                    Console.Error.WriteLine("{0} is not found in `{1}`", EXT_NUSPEC, dir);
                     return false; // throw new FileNotFoundException();
                 }
                 Console.WriteLine("Found {0}: `{1}`", EXT_NUSPEC, nuspec);
 
                 var root = XDocument.Load(nuspec).Root.Elements().FirstOrDefault(x => x.Name.LocalName == TAG_META);
                 if(root == null) {
-                    _err.WriteLine("{0} does not contain {1}.", nuspec, TAG_META);
+                    Console.Error.WriteLine("{0} does not contain {1}.", nuspec, TAG_META);
                     return false; // throw new FileNotFoundException();
                 }
 
@@ -320,7 +338,7 @@
                                                                 @"^\w+([_.-]\w+)*$", 
                                                                 RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture))
                 {
-                    _err.WriteLine("The format `{0}` is not correct.", ID);
+                    Console.Error.WriteLine("The format `{0}` is not correct.", ID);
                     return false; // throw new FormatException();
                 }
 
@@ -331,8 +349,8 @@
                                     Path.Combine(dir, "package"),
                                     Path.Combine(dir, "[Content_Types].xml") };
 
-                string pout = String.Format("{0}.{1}{2}", metadata[ID], metadata[VER], EXT_NUPKG);
-                if(!String.IsNullOrWhiteSpace(dout)) {
+                string pout = string.Format("{0}.{1}{2}", metadata[ID], metadata[VER], EXT_NUPKG);
+                if(!string.IsNullOrWhiteSpace(dout)) {
                     if(!Directory.Exists(dout)) {
                         Directory.CreateDirectory(dout);
                     }
@@ -344,7 +362,7 @@
                 {
                     // manifest relationship
 
-                    Uri manifestUri = new Uri(String.Format("/{0}{1}", metadata[ID], EXT_NUSPEC), UriKind.Relative);
+                    Uri manifestUri = new Uri(string.Format("/{0}{1}", metadata[ID], EXT_NUSPEC), UriKind.Relative);
                     pkg.CreateRelationship(manifestUri, TargetMode.Internal, MANIFEST_URL);
 
                     // content
@@ -365,7 +383,7 @@
                         dbg("- `{0}`", pUri);
 
                         // to protect path without separators
-                        var escaped = String.Join("/", pUri.Split('\\', '/').Select(p => Uri.EscapeDataString(p)));
+                        var escaped = string.Join("/", pUri.Split('\\', '/').Select(p => Uri.EscapeDataString(p)));
                         Uri uri     = PackUriHelper.CreatePartUri(new Uri(escaped, UriKind.Relative));
 
                         var part = pkg.CreatePart(uri, DEF_CONTENT_TYPE, CompressionOption.Maximum);
@@ -379,7 +397,7 @@
                     // metadata
 
                     Func<string, string> getmeta = delegate(string key) {
-                        return (metadata.ContainsKey(key))? metadata[key] : String.Empty;
+                        return (metadata.ContainsKey(key))? metadata[key] : string.Empty;
                     };
 
                     var _p = pkg.PackageProperties;

@@ -114,6 +114,7 @@ ngpackages | List of packages. Use it first if defined, otherwise find via ngcon
 ngpath     | Common path for all packages.                                           | v1.0+ `packages`
 wpath      |`v1.4+` To define working directory.                                     | v1.4+ *The absolute path of the directory where the GetNuTool is located.*
 proxycfg   | `v1.6.2+` To configure connection via proxy.                            | v1.6.2+ *empty*. Format: [usr[:pwd]@]host[:port]
+ssl3       | `1.9+` Do not drop legacy ssl3 + tls1.0 + tls1.1 if `true`              | 1.9+ false, only modern tls1.2, tls1.3+
 
 Samples:
 
