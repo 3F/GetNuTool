@@ -82,15 +82,19 @@
 
                 var variables = new Dictionary<string, string>();
 
-                var cdict = new[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-                                    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-                                    'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3',
-                                    '4', '5', '6', '7', '8', '9', '_' };
+                var cdict = new[]
+                {
+                    'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+                    'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+                    'y', 'z', 'a', 'b', 'c', 'd', '0', '1', '2', '3',
+                    '4', '5', '6', '7', '8', '9',
+                    // '_'
+                };
 
                 var vdict = gencomb(cdict, 2, (int i) => { return char.IsLetter(cdict[i]) || cdict[i] == '_'; });
 
                 // to skip processing for:
-                var exvar = new[] { "__p_call", "__p_msb" };
+                var exvar = new[] { "__p_call", "__p_msb", "engine" };
 
                 const string VNAME  = "[a-z_][a-z_0-9]+";
                 const string VERS   = "[Minified version]";
@@ -251,7 +255,7 @@
 
                     content = Regex.Replace(content, @"exit\s*\/B\s*(?'code'\d+)?\s*?", (Match m) => 
                     {
-                        string ret  = "exit/B ";
+                        string ret  = "exit/B";
                         string code = m.Groups["code"].Value;
 
                         if(m.Groups["code"].Success) {
@@ -297,10 +301,33 @@
                     }, 
                     RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
-                    content = Regex.Replace(content, @"(\r\n){2,}", "$1");
                     content = Regex.Replace(content, @"(\r\n)\s*", "$1");
                     content = Regex.Replace(content, @"\s+(\r\n)", "$1");
-                    
+                    content = content.Replace(")\r\n)\r\n", "))");
+                    content = content.Replace("\r\n)", ")");
+                    content = Regex.Replace(content, @"\s*&\s*if\s+", "&if ", RegexOptions.IgnoreCase);
+
+                    content = content.Replace("(\r\n", "(");
+
+                    //TODO: `if` is possible only for `if ... ( ... ) else ...` not `if` ... + & ... `
+                    //      (^[a-z][:/\w\S ]*)\r\n(?![:<])
+                    content = Regex.Replace
+                    (
+                        content,
+                        @"(^(?:set|call|exit|echo|shift|setlocal|endlocal|del)[:/\w\S ]*)\r\n(?![:<])",
+                        "$1&",
+                        RegexOptions.Multiline | RegexOptions.IgnoreCase
+                    );
+
+                    content = Regex.Replace(content, @"\s+in\s*\(([0-9., ]*?)\)\s*do\s*(\()?", (Match mfor) =>
+                    {
+                        return string.Format(" in ({0})do {1}", mfor.Groups[1].Value.Replace(" ", ""), mfor.Groups[2].Value);
+                    },
+                    RegexOptions.IgnoreCase);
+
+                    content = Regex.Replace(content, @"\s*\)\s*(else\s)", ")$1", RegexOptions.IgnoreCase);
+
+
                     //content = content.Replace(" " + APP + " - ", String.Format(" {0} {1} - ", APP, VERS));
 
                     using(TextWriter writer = new StreamWriter(output, false, new UTF8Encoding(false))) {

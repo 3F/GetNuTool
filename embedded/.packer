@@ -16,7 +16,7 @@
         <core Condition="'$(core)' == ''">..\logic.targets</core>
         <output Condition="'$(output)' == ''">gnt.bat</output>
         <coreversion Condition="'$(coreversion)' == ''">0</coreversion>
-        <maxline Condition="'$(maxline)' == ''">2000</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
+        <maxline Condition="'$(maxline)' == ''">2020</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
     </PropertyGroup>
 
     <!-- Entry point -->
@@ -321,7 +321,7 @@
                         foreach(var line in lines)
                         {
                             //content += $"<nul set /P ={line}>> %{corevar}%{Environment.NewLine}";
-                            string ldata = String.Format("<nul set/P ={0}>>%{1}%\r\n", line, corevar);
+                            string ldata = String.Format("<nul set/P={0}>>%{1}%\r\n", line, corevar);
 
                             if(ldata.Length >= 2047) {
                                 Console.WriteLine("[Warn] Length of line {0}", ldata.Length);

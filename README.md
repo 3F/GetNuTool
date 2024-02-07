@@ -351,7 +351,32 @@ Now, you can use it simply:
 
 ### Additional arguments
 
- First key to gnt | Description                                             | Example
-------------------|---------------------------------------------------------|----------------
- `-unpack`        | To generate minified version from executable. `v1.6+`   | `gnt -unpack`
- `-msbuild` path  | To use specific msbuild if needed. `v1.6+`              | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages=Conari`
+ First key to gnt     | Description                                                                             | Example
+----------------------|-----------------------------------------------------------------------------------------|----------------
+ `-unpack`            | `1.6+` To generate minified version from executable.                                    | `gnt -unpack`
+ ~~`-msbuild`~~ path  | `1.6` - `1.8` To use specific msbuild if needed. Removed in 1.9, use *hMSBuild* instead | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages=Conari`
+
+### Override engine
+
+Since the `-msbuild` key was removed in 1.9 as obsolete, you have following ways to override engine search:
+
+Either create `engine.cmd` in the directory from which the call *gnt.bat* is planned; with the following content, for example:
+
+```bat
+@echo msbuild.exe
+```
+
+Or place a full version of [hMSBuild.bat](https://github.com/3F/hMSBuild) (~19 KB) tool instead of *engine.cmd* stub.
+
+
+Or -unpack command:
+
+```bat
+gnt -unpack & msbuild.exe gnt.core {args}
+```
+
+Or `engine` environment variable:
+
+```bat
+set engine=msbuild.exe & gnt {args}
+```

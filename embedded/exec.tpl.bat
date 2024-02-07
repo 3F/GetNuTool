@@ -4,93 +4,81 @@
 :: https://github.com/3F/GetNuTool
 
 set gntcore=gnt.core
-set $tpl.corevar$="%temp%\%random%%random%%gntcore%"
+set $tpl.corevar$="%temp%\%gntcore%$core.version$%random%%random%"
+
+set /a ERROR_FILE_NOT_FOUND=2
+set /a ERROR_CALL_NOT_IMPLEMENTED=120
+
+:: Usage:
+::  gnt Package
+::  gnt "Paclage1;Package2"
+::  gnt <core_arguments>
+::  gnt <shell_arguments>
 
 if "%~1"=="-unpack" goto unpack
 
 set args=%*
+setlocal enableDelayedExpansion
 
-:: Escaping '^' is not identical for all cases (gnt ... vs call gnt ...).
-if defined __p_call if defined args set args=%args:^^=^%
+set "instance=%engine%"
+if defined instance goto found
 
-:: When ~ %args%  (disableDelayedExpansion)
-:: # call gnt  ^  - ^^
-:: #      gnt  ^  - ^
-:: # call gnt  ^^ - ^^^^
-:: #      gnt  ^^ - ^^
+:: Find engine via engine.cmd stub or hMSBuild.bat script https://github.com/3F/hMSBuild
 
-:: When ~ !args! and "!args!"
-:: # call gnt  ^  - ^
-:: #      gnt  ^  - empty
-:: # call gnt  ^^ - ^^
-:: #      gnt  ^^ - ^
+set script=hMSBuild
+if exist engine.cmd set script=engine.cmd
 
-:: Do not use: ~ "%args%" or %args%  + (enableDelayedExpansion)
+for /F "tokens=*" %%i in ('%script% -only-path 2^>^&1 ^&call echo %%^^ERRORLEVEL%%') do 2>nul (
+    if not defined instance ( set instance="%%i" ) else set /a EXIT_CODE=%%i
+)
 
-set msbuildexe=%__p_msb%
-if defined msbuildexe goto found
+if "%EXIT_CODE%"=="0" if exist !instance! goto found
 
-if "%~1"=="-msbuild" goto ufound
+:: Find engine via system records
 
 for %%v in (4.0, 14.0, 12.0, 3.5, 2.0) do (
     for /F "usebackq tokens=2* skip=2" %%a in (
         `reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions\%%v" /v MSBuildToolsPath 2^> nul`
     ) do if exist %%b (
-        set msbuildexe="%%~b\MSBuild.exe"
-        goto found
+
+        set instance="%%~b\MSBuild.exe"
+        if exist !instance! (
+
+            if not "%%v"=="3.5" if not "%%v"=="2.0" goto found
+
+            echo Override engine or contact for legacy support %%v
+            exit /B %ERROR_CALL_NOT_IMPLEMENTED%
+        )
     )
 )
-echo MSBuild was not found. Try -msbuild "fullpath" args 1>&2
-exit /B 2
 
-:ufound
-shift
-set msbuildexe=%1
-shift
-
-set esc=%args:!= #__b_ECL## %
-setlocal enableDelayedExpansion
-
-set esc=!esc:%%=%%%%!
-
-:_eqp
-for /F "tokens=1* delims==" %%a in ("!esc!") do (
-    if "%%~b"=="" (
-        call :nqa !esc!
-        exit /B %ERRORLEVEL%
-    )
-    set esc=%%a #__b_EQ## %%b
-)
-goto _eqp
-:nqa
-shift & shift
-
-set "args="
-:_ra
-set args=!args! %1
-shift & if not "%~2"=="" goto _ra
-
-set args=!args: #__b_EQ## ==!
-
-setlocal disableDelayedExpansion
-set args=%args: #__b_ECL## =!%
+echo Engine is not found. Try with hMSBuild 1>&2
+exit /B %ERROR_FILE_NOT_FOUND%
 
 :found
-call :core
-call %msbuildexe% %$tpl.corevar$% /nologo /noconlog /p:wpath="%cd%/" /v:q /m:7 %args%
+set con=/noconlog
+if "%debug%"=="true" set con=/v:q
 
-set ret=%ERRORLEVEL%
-set "msbuildexe="
+setlocal disableDelayedExpansion
+call :core
+endlocal
+call :unset "/help" "-help" "/h" "-h" "/?" "-?"
+
+call !instance! %$tpl.corevar$% /nologo %con% /p:wpath="%cd%/" /m:7 %args%
+set EXIT_CODE=%ERRORLEVEL%
 
 del /Q/F %$tpl.corevar$%
-exit /B %ret%
+exit /B %EXIT_CODE%
 
 :unpack
 set $tpl.corevar$="%cd%\%gntcore%"
-echo Generating minified version in %$tpl.corevar$% ...
+echo Generating a minified at %cd%\...
 
 :core
-<nul set/P ="">%$tpl.corevar$%
-$gnt.core.logic$
+<nul set/P="">%$tpl.corevar$%&$gnt.core.logic$
+exit /B 0
 
+:unset
+if defined args set args=!args:%~1=!
+if not "%~2"=="" shift & goto unset
 exit /B 0
