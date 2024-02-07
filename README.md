@@ -44,12 +44,12 @@ gnt /p:ngpackages="putty.portable/0.69"
 Licensed under the [MIT License (MIT)](https://github.com/3F/GetNuTool/blob/master/LICENSE)
 
 ```
-Copyright (c) 2015-2018,2020  Denis Kuzmin < x-3F@outlook.com > GitHub/3F
+Copyright (c) 2015-2024  Denis Kuzmin <x-3F@outlook.com> github/3F
 ```
 
 GetNuTool contributors: https://github.com/3F/GetNuTool/graphs/contributors
 
-[ [ ☕ Donate ](https://3F.github.com/Donation/) ]
+[ [ ❤ ](https://3F.github.io/fund) ]
 
 We're waiting for your awesome contributions!
 
