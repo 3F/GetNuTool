@@ -1,17 +1,33 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29613.14
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34408.163
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".gnt", ".gnt", "{D221D332-2A57-44F9-B866-F7C00C29032D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GetNuTool", "GetNuTool", "{D221D332-2A57-44F9-B866-F7C00C29032D}"
 	ProjectSection(SolutionItems) = preProject
+		.version = .version
 		build.bat = build.bat
+		caller.bat = caller.bat
+		changelog.txt = changelog.txt
+		embd.bat = embd.bat
+		logic.cs = logic.cs
 		logic.targets = logic.targets
+		tests.bat = tests.bat
+		vsSolutionBuildEvent.bat = vsSolutionBuildEvent.bat
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{FFA2896B-A6DF-43DB-AB4B-8D3C7AB234C3}"
+	ProjectSection(SolutionItems) = preProject
+		tests\keysAndLogicTests.bat = tests\keysAndLogicTests.bat
+		tests\_run.bat = tests\_run.bat
 	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FFA2896B-A6DF-43DB-AB4B-8D3C7AB234C3} = {D221D332-2A57-44F9-B866-F7C00C29032D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FFF98BCF-06C1-4BF8-88DF-5F04681BC6AB}

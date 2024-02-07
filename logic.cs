@@ -7,11 +7,12 @@
 
 // TODO: This was part of logic.targets separated between Tasks. New structure needs to be reviewed!
 
+// NOTE: netfx 4.0+ platforms;
 // NOTE: The default console logger can be disabled and currently exceptions are not caught at the top level; To make the code compact, use `return false` instead
 
 if("$(logo)".Trim() != "no") Console.WriteLine("\nGetNuTool $(GetNuTool)\n(c) 2015-2024  Denis Kuzmin <x-3F@outlook.com> github/3F\n");
 
-Action<string, object> DebugMessage = delegate(string s, object p)
+Action<string, object> DebugMessage = (s, p) =>
 {
     if("$(debug)".Trim() == "true") Console.WriteLine(s, p);
 };
@@ -23,13 +24,13 @@ if(tmode == "get" || tmode == "grab")
 
     if(string.IsNullOrEmpty(plist))
     {
-        Action<string, Queue<string>> LoadConf = delegate(string cfg, Queue<string> list)
+        Action<string, Queue<string>> LoadConf = (cfg, list) =>
         {
-            foreach(var pkg in XDocument.Load(cfg).Descendants("package"))
+            foreach(XElement pkg in XDocument.Load(cfg).Descendants("package"))
             {
-                var id      = pkg.Attribute("id");
-                var version = pkg.Attribute("version");
-                var output  = pkg.Attribute("output");
+                XAttribute id       = pkg.Attribute("id");
+                XAttribute version  = pkg.Attribute("version");
+                XAttribute output   = pkg.Attribute("output");
 
                 if(id == null)
                 {
@@ -37,7 +38,7 @@ if(tmode == "get" || tmode == "grab")
                     return;
                 }
 
-                var link = id.Value;
+                string link = id.Value;
 
                 if(version != null) link += "/" + version.Value;
 
@@ -52,13 +53,13 @@ if(tmode == "get" || tmode == "grab")
         };
 
         var ret = new Queue<string>();
-        foreach(var cfg in config.Split
+        foreach(string cfg in config.Split
         (
             new char[] { config.IndexOf('|') != -1 ? '|' : ';' },
-            (StringSplitOptions)1
+            StringSplitOptions.RemoveEmptyEntries
         ))
         {
-            var lcfg = Path.Combine(@"$(wpath)", cfg);
+            string lcfg = Path.Combine(@"$(wpath)", cfg);
             if(File.Exists(lcfg))
             {
                 LoadConf(lcfg, ret);
@@ -109,7 +110,7 @@ if(tmode == "get" || tmode == "grab")
     // to ignore from package
     var ignore = new string[] { "/_rels/", "/package/", "/[Content_Types].xml" };
 
-    Func<string, WebProxy> GetProxy = delegate(string cfg)
+    Func<string, WebProxy> GetProxy = (cfg) =>
     {
         var auth = cfg.Split('@');
         if(auth.Length <= 1) return new WebProxy(auth[0], false);
@@ -125,14 +126,14 @@ if(tmode == "get" || tmode == "grab")
         };
     };
 
-    Func<string, string> SetDir = delegate(string path)
+    Func<string, string> SetDir = (path) =>
     {
         string dir = Path.GetDirectoryName(path);
         if(!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         return path;
     };
 
-    Func<string, string, string, bool> GetLink = delegate(string link, string name, string path)
+    Func<string, string, string, bool> GetLink = (link, name, path) =>
     {
         string to = Path.GetFullPath
         (
@@ -183,24 +184,24 @@ if(tmode == "get" || tmode == "grab")
         Console.WriteLine(to);
         if(grab) return true;
 
-        using(var pkg = ZipPackage.Open(tmp, FileMode.Open, FileAccess.Read))
+        using(Package pkg = ZipPackage.Open(tmp, FileMode.Open, FileAccess.Read))
         {
-            foreach(var part in pkg.GetParts())
+            foreach(PackagePartCollection part in pkg.GetParts())
             {
-                var uri = Uri.UnescapeDataString(part.Uri.OriginalString);
+                string uri = Uri.UnescapeDataString(part.Uri.OriginalString);
                 if(ignore.Any(x => uri.StartsWith(x, StringComparison.Ordinal))) continue;
 
-                var dest = Path.Combine(to, uri.TrimStart('/'));
+                string dest = Path.Combine(to, uri.TrimStart('/'));
                 DebugMessage("- {0}", uri);
 
                 using(Stream src = part.GetStream(FileMode.Open, FileAccess.Read))
-                using(var target = File.OpenWrite(SetDir(dest)))
+                using(FileStream target = File.OpenWrite(SetDir(dest)))
                 {
                     try
                     {
                         src.CopyTo(target);
                     }
-                    catch(FileFormatException ex) { DebugMessage("[x]?crc: {0}", dest); }
+                    catch(FileFormatException) { DebugMessage("[x]?crc: {0}", dest); }
                 }
             }
         }
@@ -210,15 +211,15 @@ if(tmode == "get" || tmode == "grab")
 
     //Format: id/version[:path];id2/version[:D:/path];...
 
-    foreach(var pkg in plist.Split
+    foreach(string pkg in plist.Split
     (
         new char[] { plist.IndexOf('|') != -1 ? '|' : ';' },
-        (StringSplitOptions)1
+        StringSplitOptions.RemoveEmptyEntries
     ))
     {
         var ident   = pkg.Split(new char[] { ':' }, 2);
         var link    = ident[0];
-        var path    = (ident.Length > 1) ? ident[1] : null;
+        var path    = ident.Length > 1 ? ident[1] : null;
         var name    = link.Replace('/', '.');
 
         if(!string.IsNullOrEmpty(defpath))
@@ -248,15 +249,15 @@ else if(tmode == "pack")
 
     // Get metadata
 
-    var nuspec = Directory.GetFiles(dir, "*" + EXT_NUSPEC, SearchOption.TopDirectoryOnly).FirstOrDefault();
+    string nuspec = Directory.GetFiles(dir, "*" + EXT_NUSPEC).FirstOrDefault();
     if(nuspec == null)
     {
-        Console.Error.WriteLine("{0} is not available: {1}", EXT_NUSPEC, dir);
+        Console.Error.WriteLine("{0} is not found {1}", EXT_NUSPEC, dir);
         return false;
     }
     Console.WriteLine("{0} use {1}", EXT_NUSPEC, nuspec);
 
-    var root = XDocument.Load(nuspec).Root.Elements().FirstOrDefault(x => x.Name.LocalName == TAG_META);
+    XElement root = XDocument.Load(nuspec).Root.Elements().FirstOrDefault(x => x.Name.LocalName == TAG_META);
     if(root == null)
     {
         Console.Error.WriteLine("{0} does not contain {1}", nuspec, TAG_META);
@@ -264,21 +265,23 @@ else if(tmode == "pack")
     }
 
     var metadata = new Dictionary<string, string>();
-    foreach(var tag in root.Elements())
-    {
+
+    Func<string, string> _GetMeta = (key)
+        => metadata.ContainsKey(key) ? metadata[key] : string.Empty;
+
+    foreach(XElement tag in root.Elements())
         metadata[tag.Name.LocalName.ToLower()] = tag.Value;
-    }
 
     // Validate id; nuget core based rule
 
-    if(metadata[ID].Length > 100
+    if(_GetMeta(ID).Length > 100
         || !Regex.IsMatch
             (
-                metadata[ID],
+                _GetMeta(ID),
                 @"^\w+(?:[_.-]\w+)*$"
             ))
     {
-        Console.Error.WriteLine("Incorrect ID " + ID);
+        Console.Error.WriteLine("Invalid id");
         return false;
     }
 
@@ -291,7 +294,7 @@ else if(tmode == "pack")
         Path.Combine(dir, "[Content_Types].xml")
     };
 
-    string pout = string.Format("{0}.{1}{2}", metadata[ID], metadata[VER], EXT_NUPKG);
+    string pout = string.Format("{0}.{1}{2}", _GetMeta(ID), _GetMeta(VER), EXT_NUPKG);
 
     string dout = Path.Combine(@"$(wpath)", @"$(ngout)");
     if(!string.IsNullOrWhiteSpace(dout))
@@ -304,16 +307,16 @@ else if(tmode == "pack")
     }
 
     Console.WriteLine("Creating package {0} ...", pout);
-    using(var pkg = Package.Open(pout, FileMode.Create))
+    using(string pkg = Package.Open(pout, FileMode.Create))
     {
         // manifest relationship
 
-        Uri manifestUri = new Uri(string.Format("/{0}{1}", metadata[ID], EXT_NUSPEC), UriKind.Relative);
+        Uri manifestUri = new Uri(string.Format("/{0}{1}", _GetMeta(ID), EXT_NUSPEC), UriKind.Relative);
         pkg.CreateRelationship(manifestUri, TargetMode.Internal, "http://schemas.microsoft.com/packaging/2010/07/manifest");
 
         // content
 
-        foreach(var file in Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories))
+        foreach(string file in Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories))
         {
             if(ignore.Any(x => file.StartsWith(x, StringComparison.Ordinal))) continue;
 
@@ -328,7 +331,7 @@ else if(tmode == "pack")
             }
             DebugMessage("+ {0}", pUri);
 
-            var part = pkg.CreatePart
+            PackagePart part = pkg.CreatePart
             (
                 // to protect path without separators
                 PackUriHelper.CreatePartUri
@@ -351,19 +354,14 @@ else if(tmode == "pack")
 
         // metadata
 
-        Func<string, string> GetMeta = delegate(string key)
-        {
-            return (metadata.ContainsKey(key))? metadata[key] : string.Empty;
-        };
+        PackageProperties _p = pkg.PackageProperties;
 
-        var _p = pkg.PackageProperties;
-
-        _p.Creator          = GetMeta("authors");
-        _p.Description      = GetMeta("description");
-        _p.Identifier       = metadata[ID];
-        _p.Version          = metadata[VER];
-        _p.Keywords         = GetMeta("tags");
-        _p.Title            = GetMeta("title");
+        _p.Creator          = _GetMeta("authors");
+        _p.Description      = _GetMeta("description");
+        _p.Identifier       = _GetMeta(ID);
+        _p.Version          = _GetMeta(VER);
+        _p.Keywords         = _GetMeta("tags");
+        _p.Title            = _GetMeta("title");
         _p.LastModifiedBy   = "GetNuTool/$(GetNuTool)";
     }
 }

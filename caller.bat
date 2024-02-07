@@ -1,10 +1,10 @@
 @echo off
-:: GetNuTool /shell/batch edition
+:: GetNuTool /wrapper/batch edition
 :: Copyright (c) 2015-2024  Denis Kuzmin <x-3F@outlook.com> github/3F
 :: https://github.com/3F/GetNuTool
 
 set gntcore=gnt.core
-set $tpl.corevar$="%temp%\%gntcore%$core.version$%random%%random%"
+if not exist %gntcore% goto error
 
 set /a ERROR_FILE_NOT_FOUND=2
 set /a ERROR_CALL_NOT_IMPLEMENTED=120
@@ -15,8 +15,7 @@ set /a ERROR_CALL_NOT_IMPLEMENTED=120
 ::  gnt <core_arguments>
 ::  gnt <shell_arguments>
 
-if .%1==.-unpack goto unpack
-if .%1==.-msbuild goto off
+if .%1==.-unpack goto off
 
 set args=%*
 setlocal enableDelayedExpansion
@@ -58,7 +57,9 @@ for %%v in (4.0, 14.0, 12.0, 3.5, 2.0) do (
     )
 )
 
-echo Engine is not found. Try with hMSBuild 1>&2
+:error
+    echo Engine or %gntcore% is not found. >&2
+    echo Try the full version or call it manually: msbuild %gntcore% ... >&2
 exit /B %ERROR_FILE_NOT_FOUND%
 
 :off
@@ -69,24 +70,10 @@ exit /B %ERROR_CALL_NOT_IMPLEMENTED%
     set con=/noconlog
     if "%debug%"=="true" set con=/v:q
 
-    setlocal disableDelayedExpansion
-        call :core
-    endlocal
     call :unset "/help" "-help" "/h" "-h" "/?" "-?"
 
-    call !instance! %$tpl.corevar$% /nologo /noautorsp %con% /p:wpath="%cd%/" !args!
-    set EXIT_CODE=%ERRORLEVEL%
-
-    del /Q/F %$tpl.corevar$%
-exit /B %EXIT_CODE%
-
-:unpack
-set $tpl.corevar$="%cd%\%gntcore%"
-echo Generating a %gntcore% at %cd%\...
-
-:core
-<nul set/P="">%$tpl.corevar$%&$gnt.core.logic$
-exit /B 0
+    call !instance! %gntcore% /nologo /noautorsp %con% /p:wpath="%cd%/" !args!
+exit /B !ERRORLEVEL!
 
 :unset
     if defined args set args=!args:%~1=!
