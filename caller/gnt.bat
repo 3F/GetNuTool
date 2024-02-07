@@ -24,5 +24,5 @@ exit /B 2
 
 :: echo MSBuild Tools: %msbuildexe%
 
-%msbuildexe% %gntcore% /nologo /v:m /m:4 %*
+%msbuildexe% %gntcore% /nologo /v:m /m:7 %*
 REM /noconlog

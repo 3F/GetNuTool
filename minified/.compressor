@@ -55,7 +55,7 @@
                                               (
                                                {0}(?:
                                                      (?:
-                                                        [^{0}\\]
+                                                        [^{0}\\\n]
                                                       |
                                                         \\\\
                                                       |
@@ -204,7 +204,7 @@
 
                             Func<Match, string, string, string, string> shname = delegate(Match _m, string l, string vname, string r)
                             {
-                                if(!Regex.IsMatch(vname, "^[a-z_]")) {
+                                if(!Regex.IsMatch(vname, "^[a-zA-Z_]")) {
                                     return _m.Value;
                                 }
 
@@ -259,7 +259,7 @@
                             data = Regex.Replace
                             (
                                 data,
-                                @"(?'def'^|\s+in\s+|(?<==)>|[!={};:\[(,?+\-])
+                                @"(?'def'^|\s+in\s+|(?<==)>|[!={};:\[(),?+\-])
                                     \s*
                                     (?'name'"+ VNAME + @")
                                     (?'exc'[<>]*)?
@@ -274,7 +274,7 @@
                                         return _m.Value;
                                     }
 
-                                    if(!Regex.IsMatch(vname, "^[a-z_]")) {
+                                    if(!Regex.IsMatch(vname, "^[a-zA-Z_]")) {
                                         return _m.Value;
                                     }
 
@@ -291,7 +291,7 @@
                             data = Regex.Replace(data, @"([\s;},])String([\s.(]+)", "$1string$2");
                             data = Regex.Replace(data, @"[sS]tring\s*\.\s*Empty", "\"\"");
                             data = Regex.Replace(data, @"\s*const\s+[sS]tring\s+", "var ");
-                            data = Regex.Replace(data, @"(?<![,\( ])[sS]tring\s+(?'def'[^;]+)", (_m) => 
+                            data = Regex.Replace(data, @"(?<![,\( ])(?:[sS]tring|bool)\s+(?'def'[^;]+)", (_m) =>
                             {
                                 var def = _m.Groups["def"].Value;
                                 if(def.IndexOf('=') == -1) {

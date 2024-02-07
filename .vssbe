@@ -29,6 +29,20 @@
     },
     {
       "Enabled": true,
+      "Name": "ActCs",
+      "SupportMSBuild": false,
+      "Mode": {
+        "$type": "net.r_eg.vsSBE.Events.ModeScript, vsSolutionBuildEvent",
+        "Type": "Script",
+        "Command__": [
+          "",
+          "initialize without msbuild processing",
+          "#[var cslogic = #[IO get(\"logic.cs\")]]"
+        ]
+      }
+    },
+    {
+      "Enabled": true,
       "Name": "ActBuild",
       "Caption": "Build core",
       "Mode": {
@@ -92,6 +106,14 @@
           "",
           "#[IO copy.file(\"logic.targets\", \"$(dobj)core\", true)]",
           "#[IO replace.Regex(\"$(dobj)core\", \"<GetNuTool>.*?</GetNuTool>\", \"<GetNuTool>$(pVerPrintApp)</GetNuTool>\")]",
+          "",
+          "$ -> $$ to prevent double evaluation",
+          "#[IO replace",
+          "(",
+          "    \"$(dobj)core\",",
+          "    \"return true;\",",
+          "    \"$(cslogic.Replace('$(', '$$('))\"",
+          ")]",
           "",
           "#[IO writeLine(STDOUT):#[File sout(\".tools\\hMSBuild.bat\", \"minified/.compressor /p:core=\\\"../$(dobj)core\\\" /p:output=\\\"../$(dobj)gnt.min.core\\\" /nologo /v:m /m:4\", 400)]]",
           "",

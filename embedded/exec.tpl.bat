@@ -77,10 +77,10 @@ set args=%args: #__b_ECL## =!%
 
 :found
 call :core
-call %msbuildexe% %$tpl.corevar$% /nologo /p:wpath="%cd%/" /v:m /m:7 %args%
+call %msbuildexe% %$tpl.corevar$% /nologo /noconlog /p:wpath="%cd%/" /v:q /m:7 %args%
 
-set "msbuildexe="
 set ret=%ERRORLEVEL%
+set "msbuildexe="
 
 del /Q/F %$tpl.corevar$%
 exit /B %ret%
@@ -90,7 +90,7 @@ set $tpl.corevar$="%cd%\%gntcore%"
 echo Generating minified version in %$tpl.corevar$% ...
 
 :core
-<nul set /P ="">%$tpl.corevar$%
+<nul set/P ="">%$tpl.corevar$%
 $gnt.core.logic$
 
 exit /B 0

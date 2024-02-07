@@ -1,430 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (c) 2015  Denis Kuzmin <x-3F@outlook.com> github/3F
-    Licensed under the MIT License
+ * Copyright (c) 2015  Denis Kuzmin <x-3F@outlook.com> github/3F
+ * Copyright (c) GetNuTool contributors https://github.com/3F/GetNuTool/graphs/contributors
+ * Licensed under the MIT License (MIT).
+ * See accompanying LICENSE file or visit https://github.com/3F/GetNuTool
 -->
 
 <!--
-    GetNuTool - github.com/3F/GetNuTool
-    =========
-    Embeddable Package Manager.
+    Embeddable Package Manager
     https://github.com/3F/GetNuTool/blob/master/README.md
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-    <!-- Default values -->
     <PropertyGroup>
         <ngconfig Condition="'$(ngconfig)' == ''">packages.config</ngconfig>                        <!-- Where to look the packages.config of solution-level -->
         <ngserver Condition="'$(ngserver)' == ''">https://www.nuget.org/api/v2/package/</ngserver>  <!-- Server by default -->
-        <ngpackages Condition="'$(ngpackages)' == ''"></ngpackages>                                 <!-- Packages by default -->
         <ngpath Condition="'$(ngpath)' == ''">packages</ngpath>                                     <!-- Path by default -->
     </PropertyGroup>
 
-    <!-- Entry points -->
-    <Target Name="get" BeforeTargets="Build" DependsOnTargets="header">
-        <PrepareList>
-            <Output PropertyName="plist" TaskParameter="Result" />
-        </PrepareList>
-        <NGDownload plist="$(plist)" />
+    <Target Name="get" BeforeTargets="Build">
+        <Main tmode="get"/>
     </Target>
-    <Target Name="pack" DependsOnTargets="header">
-        <NGPack/>
+    <Target Name="grab">
+        <Main tmode="grab"/>
     </Target>
-    
-    <!-- Tasks settings -->
+    <Target Name="pack">
+        <Main tmode="pack"/>
+    </Target>
+
     <PropertyGroup>
         <TaskCoreDllPath Condition="Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll</TaskCoreDllPath>
         <TaskCoreDllPath Condition="'$(TaskCoreDllPath)' == '' and Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll</TaskCoreDllPath>
     </PropertyGroup>
-    
-    <!-- Prepares list for downloader below -->
-    <UsingTask TaskName="PrepareList" TaskFactory="CodeTaskFactory" AssemblyFile="$(TaskCoreDllPath)">
 
+    <UsingTask TaskName="Main" TaskFactory="CodeTaskFactory" AssemblyFile="$(TaskCoreDllPath)">
         <ParameterGroup>
-            <Result ParameterType="System.String" Output="true" />
+            <tmode ParameterType="System.String" />
         </ParameterGroup>
-
         <Task>
             <Reference Include="System.Xml" />
             <Reference Include="System.Xml.Linq" />
-            <Using Namespace="System" />
-            <Using Namespace="System.Collections.Generic" />
-            <Using Namespace="System.IO" />
-            <Using Namespace="System.Xml.Linq" />
-            <Code Type="Fragment" Language="cs"><![CDATA[
-
-                var config  =@"$(ngconfig)";
-                var plist   =@"$(ngpackages)";
-                var wpath   =@"$(wpath)";
-
-                if(!string.IsNullOrEmpty(plist)) {
-                    Result = plist;
-                    return true;
-                }
-
-                Action<string, Queue<string>> h = delegate(string cfg, Queue<string> list)
-                {
-                    foreach(var pkg in XDocument.Load(cfg).Descendants("package"))
-                    {
-                        var id      = pkg.Attribute("id");
-                        var version = pkg.Attribute("version");
-                        var output  = pkg.Attribute("output");
-
-                        if(id == null) {
-                            Console.Error.WriteLine("'id' does not exist in '{0}'", cfg);
-                            return; // throw new ArgumentException();
-                        }
-                        var link = id.Value;
-
-                        if(version != null) {
-                            link += "/" + version.Value;
-                        }
-
-                        if(output != null) {
-                            list.Enqueue(link + ":" + output.Value);
-                            continue;
-                        }
-                        list.Enqueue(link);
-                    }
-                };
-
-                var ret = new Queue<string>();
-                foreach(var cfg in config.Split(new char[]{config.IndexOf('|') != -1 ? '|' : ';'}, (StringSplitOptions)1))
-                {
-                    var lcfg = Path.Combine(wpath, cfg);
-                    if(File.Exists(lcfg)) {
-                        h(lcfg, ret);
-                    }
-                    else {
-                        Console.Error.WriteLine(".config '{0}' is not found.", lcfg);
-                    }
-                }
-
-                if(ret.Count < 1) {
-                    Console.Error.WriteLine("Empty list. Use .config or /p:ngpackages\n");
-                }
-                else {
-                    Result = string.Join("|", ret.ToArray());
-                }
-
-            ]]></Code>
-        </Task>
-    </UsingTask>
-    
-    <!-- Downloader -->
-    <UsingTask TaskName="NGDownload" TaskFactory="CodeTaskFactory" AssemblyFile="$(TaskCoreDllPath)">
-        <ParameterGroup>
-            <plist ParameterType="System.String" />
-        </ParameterGroup>
-        <Task>
             <Reference Include="WindowsBase" />
             <Using Namespace="System" />
+            <Using Namespace="System.Collections.Generic" />
             <Using Namespace="System.IO" />
             <Using Namespace="System.IO.Packaging" />
-            <Using Namespace="System.Net" />
-            <Code Type="Fragment" Language="cs"><![CDATA[
-                
-                var url     =@"$(ngserver)";
-                var wpath   =@"$(wpath)";
-                var defpath =@"$(ngpath)";
-                var proxy   =@"$(proxycfg)".Trim();
-                var debug   =@"$(debug)" == "true";
-                var ssl     =@"$(ssl3)" == "true";
-
-                if(plist == null) return false;
-
-                // https://github.com/3F/DllExport/issues/140
-                // Since Tls13 (0x3000) is not available from obsolete assemblies,
-                //    and SecurityProtocolType.SystemDefault (0) is defined only for netfx 4.7+, 4.8;
-                //    We can try to bind this at runtime using the last available environment where this code was executed.
-
-                // NOTE: ServicePointManager.SecurityProtocol = 0 may produce the following problem: An unexpected error occurred on a receive.
-
-                foreach(var s in Enum.GetValues(typeof(SecurityProtocolType)).Cast<SecurityProtocolType>())
-                {
-                    try
-                    {
-                        ServicePointManager.SecurityProtocol |= s;
-                    }
-                    catch(NotSupportedException)
-                    {
-                        // we don't care because property `ssl3` controls legacy protocols
-                    }
-                }
-
-                // drop support for ssl3 + tls1.0 + tls1.1
-                // https://learn.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype
-                if(!ssl) ServicePointManager.SecurityProtocol &= ~(SecurityProtocolType)(48 | 192 | 768);
-
-                // to ignore from package
-                var ignore = new string[] { "/_rels/", "/package/", "/[Content_Types].xml" };
-
-                Action<string, object> dbg = delegate(string s, object p)
-                {
-                    if(debug) Console.WriteLine(s, p);
-                };
-
-                Func<string, WebProxy> getProxy = delegate(string cfg)
-                {
-                    var auth = cfg.Split('@');
-                    if(auth.Length <= 1) {
-                        return new WebProxy(auth[0], false);
-                    }
-
-                    var login = auth[0].Split(':');
-                    return new WebProxy(auth[1], false)
-                    {
-                        Credentials = new NetworkCredential(
-                            login[0], 
-                            (login.Length > 1) ? login[1] : null
-                        )
-                    };
-                };
-
-                Func<string, string> loc = delegate(string p) {
-                    return Path.Combine(wpath, p ?? string.Empty);
-                };
-
-                Action<string, string, string> get = delegate(string link, string name, string path)
-                {
-                    var to = Path.GetFullPath(loc(path ?? name));
-                    if(Directory.Exists(to)) {
-                        Console.WriteLine("{0} found in {1}", name, to);
-                        return;
-                    }
-                    Console.Write(link + " ... ");
-
-                    var tmp = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-                    using(var l = new WebClient())
-                    {
-                        try
-                        {
-                            if(!string.IsNullOrEmpty(proxy)) {
-                                l.Proxy = getProxy(proxy);
-                            }
-
-                            l.Headers.Add("User-Agent", "GetNuTool/$(GetNuTool)");
-                            l.UseDefaultCredentials = true;
-
-                            // `WebClient.Credentials` will not affect for used proxy: https://github.com/3F/DllExport/issues/133
-                            if(l.Proxy.Credentials == null) { // when no proxy key or when getProxy() uses auth[0]
-                                l.Proxy.Credentials = CredentialCache.DefaultCredentials;
-                            }
-                            l.DownloadFile(url + link, tmp);
-                        }
-                        catch(Exception ex) {
-                            Console.Error.WriteLine(ex.Message);
-                            return;
-                        }
-                    }
-
-                    Console.WriteLine(to);
-                    using(var pkg = ZipPackage.Open(tmp, FileMode.Open, FileAccess.Read))
-                    {
-                        foreach(var part in pkg.GetParts()) 
-                        {
-                            var uri = Uri.UnescapeDataString(part.Uri.OriginalString);
-                            if(ignore.Any(x => uri.StartsWith(x, StringComparison.Ordinal))) {
-                                continue;
-                            }
-
-                            var dest = Path.Combine(to, uri.TrimStart('/'));
-                            dbg("- `{0}`", uri);
-
-                            var dir = Path.GetDirectoryName(dest);
-                            if(!Directory.Exists(dir)) {
-                                Directory.CreateDirectory(dir);
-                            }
-
-                            using(Stream src = part.GetStream(FileMode.Open, FileAccess.Read))
-                            using(var target = File.OpenWrite(dest))
-                            {
-                                try {
-                                    src.CopyTo(target);
-                                }
-                                catch(FileFormatException ex) { dbg("[x]?crc: {0}", dest); }
-                            }
-                        }
-                    }
-                    File.Delete(tmp);
-                };
-
-                //Format: id/version[:path];id2/version[:D:/path];...
-
-                foreach(var pkg in plist.Split(new char[]{plist.IndexOf('|') != -1 ? '|' : ';'}, (StringSplitOptions)1))
-                {
-                    var ident   = pkg.Split(new char[] { ':' }, 2);
-                    var link    = ident[0];
-                    var path    = (ident.Length > 1) ? ident[1] : null;
-                    var name    = link.Replace('/', '.');
-
-                    if(!string.IsNullOrEmpty(defpath)) {
-                        path = Path.Combine(defpath, path ?? name);
-                    }
-                    get(link, name, path);
-                }
-
-            ]]></Code>
-        </Task>
-    </UsingTask>
-
-    <!-- Packing -->
-    <UsingTask TaskName="NGPack" TaskFactory="CodeTaskFactory" AssemblyFile="$(TaskCoreDllPath)">
-        <Task>
-            <Reference Include="System.Xml" />
-            <Reference Include="System.Xml.Linq" />
-            <Reference Include="WindowsBase" />
-            <Using Namespace="System" />
-            <Using Namespace="System.Collections.Generic" />
-            <Using Namespace="System.IO" />
             <Using Namespace="System.Linq" />
-            <Using Namespace="System.IO.Packaging" />
-            <Using Namespace="System.Xml.Linq" />
+            <Using Namespace="System.Net" />
             <Using Namespace="System.Text.RegularExpressions" />
-            <Code Type="Fragment" Language="cs"><![CDATA[
+            <Using Namespace="System.Xml.Linq" />
+            <Code Type="Fragment" Language="cs">
+            <![CDATA[
 
-                var dir     =@"$(ngin)"; 
-                var dout    =@"$(ngout)";
-                var wpath   =@"$(wpath)";
-                var debug   =@"$(debug)" == "true";
-
-                const string EXT_NUSPEC         = ".nuspec";
-                const string EXT_NUPKG          = ".nupkg";
-                const string TAG_META           = "metadata";
-                const string DEF_CONTENT_TYPE   = "application/octet"; //System.Net.Mime.MediaTypeNames.Application.Octet
-                const string MANIFEST_URL       = "http://schemas.microsoft.com/packaging/2010/07/manifest";
-
-                // Tags
-                const string ID     = "id";
-                const string VER    = "version";
-                
-                Action<string, object> dbg = delegate(string s, object p) {
-                    if(debug) {
-                        Console.WriteLine(s, p);
-                    }
-                };
-
-                dir = Path.Combine(wpath, dir);
-                if(!Directory.Exists(dir)) {
-                    Console.Error.WriteLine("`{0}` is not found.", dir);
-                    return false;
-                }
-
-                dout = Path.Combine(wpath, dout);
-
-                // Get metadata
-
-                var nuspec = Directory.GetFiles(dir, "*" + EXT_NUSPEC, SearchOption.TopDirectoryOnly).FirstOrDefault();
-                if(nuspec == null) {
-                    Console.Error.WriteLine("{0} is not found in `{1}`", EXT_NUSPEC, dir);
-                    return false; // throw new FileNotFoundException();
-                }
-                Console.WriteLine("Found {0}: `{1}`", EXT_NUSPEC, nuspec);
-
-                var root = XDocument.Load(nuspec).Root.Elements().FirstOrDefault(x => x.Name.LocalName == TAG_META);
-                if(root == null) {
-                    Console.Error.WriteLine("{0} does not contain {1}.", nuspec, TAG_META);
-                    return false; // throw new FileNotFoundException();
-                }
-
-                var metadata = new Dictionary<string, string>();
-                foreach(var tag in root.Elements()) {
-                    metadata[tag.Name.LocalName.ToLower()] = tag.Value;
-                }
-
-                // Validate data - rules of nuget core
-
-                if(metadata[ID].Length > 100 || !Regex.IsMatch(metadata[ID], 
-                                                                @"^\w+([_.-]\w+)*$", 
-                                                                RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture))
-                {
-                    Console.Error.WriteLine("The format `{0}` is not correct.", ID);
-                    return false; // throw new FormatException();
-                }
-
-                // Format package
-
-                var ignore = new string[] { // to ignore from package
-                                    Path.Combine(dir, "_rels"),
-                                    Path.Combine(dir, "package"),
-                                    Path.Combine(dir, "[Content_Types].xml") };
-
-                string pout = string.Format("{0}.{1}{2}", metadata[ID], metadata[VER], EXT_NUPKG);
-                if(!string.IsNullOrWhiteSpace(dout)) {
-                    if(!Directory.Exists(dout)) {
-                        Directory.CreateDirectory(dout);
-                    }
-                    pout = Path.Combine(dout, pout);
-                }
-
-                Console.WriteLine("Creating nupkg `{0}` ...", pout);
-                using(var pkg = Package.Open(pout, FileMode.Create))
-                {
-                    // manifest relationship
-
-                    Uri manifestUri = new Uri(string.Format("/{0}{1}", metadata[ID], EXT_NUSPEC), UriKind.Relative);
-                    pkg.CreateRelationship(manifestUri, TargetMode.Internal, MANIFEST_URL);
-
-                    // content
-
-                    foreach(var file in Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories))
-                    {
-                        if(ignore.Any(x => file.StartsWith(x, StringComparison.Ordinal))) {
-                            continue;
-                        }
-
-                        string pUri;
-                        if(file.StartsWith(dir, StringComparison.OrdinalIgnoreCase)) {
-                            pUri = file.Substring(dir.Length).TrimStart(Path.DirectorySeparatorChar);
-                        }
-                        else {
-                            pUri = file;
-                        }
-                        dbg("- `{0}`", pUri);
-
-                        // to protect path without separators
-                        var escaped = string.Join("/", pUri.Split('\\', '/').Select(p => Uri.EscapeDataString(p)));
-                        Uri uri     = PackUriHelper.CreatePartUri(new Uri(escaped, UriKind.Relative));
-
-                        var part = pkg.CreatePart(uri, DEF_CONTENT_TYPE, CompressionOption.Maximum);
-
-                        using (Stream tstream = part.GetStream())
-                        using(var fs = new FileStream(file, FileMode.Open, FileAccess.Read)) {
-                            fs.CopyTo(tstream);
-                        }
-                    }
-
-                    // metadata
-
-                    Func<string, string> getmeta = delegate(string key) {
-                        return (metadata.ContainsKey(key))? metadata[key] : string.Empty;
-                    };
-
-                    var _p = pkg.PackageProperties;
-
-                    _p.Creator          = getmeta("authors");
-                    _p.Description      = getmeta("description");
-                    _p.Identifier       = metadata[ID];
-                    _p.Version          = metadata[VER];
-                    _p.Keywords         = getmeta("tags");
-                    _p.Title            = getmeta("title");
-                    _p.LastModifiedBy   = "GetNuTool $(GetNuTool)";
-                }
+                return true;
 
             ]]></Code>
         </Task>
     </UsingTask>
 
-    <!-- Service settings -->
+    <Target Name="Build" DependsOnTargets="GetNuTool" />
 
-    <Target Name="Build" DependsOnTargets="get" />
-    
     <PropertyGroup>
         <GetNuTool>x</GetNuTool>
         <wpath Condition="'$(wpath)' == ''">$(MSBuildProjectDirectory)</wpath>
     </PropertyGroup>
-    <Target Name="header">
-        <Message Text="%0D%0AGetNuTool $(GetNuTool)%0D%0A(c) 2015-2024  Denis Kuzmin %3Cx-3F@outlook.com%3E github/3F%0D%0A" Importance="high" />
-    </Target>
 
 </Project>

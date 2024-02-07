@@ -12,14 +12,15 @@ Embeddable Package Manager. NuGet / Chocolatey Client. And the lightweight porta
 [NuGet gnt.raw("/t:pack /p:ngin=\"7z.Libs\"")]  # Compiled variant via SobaScript
 ```
 
-just try it:
+🛩 try it
 
 ```bash
 gnt /p:ngpackages="Conari;regXwild"             # To get `Conari` & `regXwild` packages
 gnt /t:pack /p:ngin="bin\DllExport"             # To create new NuGet package from .nuspec
 msbuild gnt.core /p:ngpackages="LuNari/1.6.0"   # To get `LuNari` package v1.6.0
 gnt /p:ngconfig="packages.config"               # Use `packages.config`
-gnt /p:ngpackages="putty.portable/0.69"
+set ngpackages=Conari & gnt                     # shell scripts
+gnt /p:ngpackages="putty.portable/0.69"         # chocolatey
     /p:ngserver="https://chocolatey.org/api/v2/package/"
 ```
 
@@ -53,7 +54,7 @@ GetNuTool contributors: https://github.com/3F/GetNuTool/graphs/contributors
 
 We're waiting for your awesome contributions!
 
-## Why GetNuTool ?
+## Why GetNuTool
 
 It was initially developed to provide tool for servicing projects, libraries, and other related build processes as the tool for all projects at once ([solution-level](https://github.com/NuGet/Home/issues/1521)) and for each separately.
 
@@ -114,9 +115,18 @@ ngpackages | List of packages. Use it first if defined, otherwise find via ngcon
 ngpath     | Common path for all packages.                                           | v1.0+ `packages`
 wpath      |`v1.4+` To define working directory.                                     | v1.4+ *The absolute path of the directory where the GetNuTool is located.*
 proxycfg   | `v1.6.2+` To configure connection via proxy.                            | v1.6.2+ *empty*. Format: [usr[:pwd]@]host[:port]
-ssl3       | `1.9+` Do not drop legacy ssl3 + tls1.0 + tls1.1 if `true`              | 1.9+ false, only modern tls1.2, tls1.3+
+ssl3       | `1.9+` Do not drop legacy ssl3 + tls1.0 + tls1.1 if `true`              | 1.9+ *false*, only modern tls1.2, tls1.3+
+break      | `1.9+` Disable the break on first package error if `no`                 | 1.9+ empty
 
-Samples:
+Fo example:
+
+```bat
+set ngpackages=Conari & call gnt
+```
+
+```bat
+gnt /p:ngpackages="Conari;regXwild;MvsSln"
+```
 
 ```bash
 msbuild gnt.core /p:ngpath="special-packages/new"
@@ -125,7 +135,42 @@ msbuild gnt.core /p:ngpath="special-packages/new"
 msbuild gnt.core /p:ngconfig=".nuget/packages.config" /p:ngpath="../packages"
 ```
 ```bash
-gnt /p:ngpackages="Conari" /p:proxycfg="guest:1234@10.0.2.15:7428"
+gnt /p:ngpackages=Conari /p:proxycfg="guest:1234@10.0.2.15:7428"
+```
+
+A direct link to a remote package via https:
+
+```bash
+gnt /p:ngpackages=:vsSolutionBuildEvent /p:ngserver=https://server/vsSolutionBuildEvent.SDK10.nupkg
+```
+
+A direct link to a local package that will be stored at the top level next to the *gnt*
+
+```bash
+gnt /p:ngserver=D:/local_dir/vsSolutionBuildEvent.SDK10.nupkg /p:ngpackages=: /p:ngpath=SDK10
+```
+
+```bat
+gnt /p:ngpackages="Conari;LX4cn;Fnv1a128" /p:break=no /p:debug=true
+
+Conari use D:\prg\projects\GetNuTool\GetNuTool\packages\Conari
+LX4cn ... The remote server returned an error: (404) Not Found.
+Fnv1a128 ... D:\prg\projects\GetNuTool\GetNuTool\packages\Fnv1a128
+- /.version
+- /build-info.txt
+- /changelog.txt
+- /Fnv1a128.nuspec
+- /lib/net40/Fnv1a128.dll
+- /lib/net40/Fnv1a128.xml
+- /lib/net472/Fnv1a128.dll
+- /lib/net472/Fnv1a128.xml
+- /lib/net5.0/Fnv1a128.dll
+- /lib/net5.0/Fnv1a128.xml
+- /lib/netcoreapp2.1/Fnv1a128.dll
+- /lib/netcoreapp2.1/Fnv1a128.xml
+- /lib/netstandard2.0/Fnv1a128.dll
+- /lib/netstandard2.0/Fnv1a128.xml
+...
 ```
 
 #### Format of packages list
@@ -184,6 +229,22 @@ Multiple config files via delimiters:
 /p:ngconfig=".nuget/packages.config|project1/packages.config|project2/packages.config|..."
 ```
 
+### `grab`
+
+`1.9+`
+
+Grabs data without unpacking. The available parameters are similar to the `get` command above.
+
+For example:
+
+```bat
+gnt /t:grab /p:ngserver=https://server/netfx4sdk.cmd;ngpackages=:../netfx4sdk.cmd
+```
+
+```bat
+gnt /t:grab /p:ngpackages=Fnv1a128:src.nupkg
+```
+
 ### `pack`
 
 The `pack` command. For creating the new .nupkg packages by .nuspec specification. Use it as `/t:pack`
@@ -201,11 +262,22 @@ wpath    |`v1.4+` To define working directory.
 > msbuild gnt.core /t:pack /p:ngin="path to .nuspec" /p:ngout="path for .nupkg"
 ```
 
-## Properties
+## Global Properties
 
-Property | Values                   | Description
----------|--------------------------|------------
-debug    | false (by default), true | `v1.3+` To display additional information from selected command.
+Property | Value
+---------|-------------
+debug    | `true` to add extra info in stream.
+logo     | `no` to hide logo when processing starts.
+
+For example:
+
+```bat
+gnt /t:pack /p:ngin=packages\LX4Cnh /p:debug=true
+```
+
+```bat
+set debug=true & gnt /p:ngpackages="Conari;LX4cn;Fnv1a128" /p:break=no
+```
 
 ## Examples
 
@@ -279,7 +351,7 @@ Now, you can use it simply:
 
 ### Additional arguments
 
- First key to gnt | Description                                             | Sample
+ First key to gnt | Description                                             | Example
 ------------------|---------------------------------------------------------|----------------
  `-unpack`        | To generate minified version from executable. `v1.6+`   | `gnt -unpack`
- `-msbuild` path  | To use specific msbuild if needed. `v1.6+`              | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages="Conari"`
+ `-msbuild` path  | To use specific msbuild if needed. `v1.6+`              | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages=Conari`

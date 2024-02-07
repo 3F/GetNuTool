@@ -16,7 +16,7 @@
         <core Condition="'$(core)' == ''">..\logic.targets</core>
         <output Condition="'$(output)' == ''">gnt.bat</output>
         <coreversion Condition="'$(coreversion)' == ''">0</coreversion>
-        <maxline Condition="'$(maxline)' == ''">1980</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
+        <maxline Condition="'$(maxline)' == ''">2000</maxline> <!-- length of line / max 2047 or 8191 characters https://support.microsoft.com/en-us/kb/830473 -->
     </PropertyGroup>
 
     <!-- Entry point -->
@@ -127,11 +127,13 @@
 
                     var cdict = new[]
                     {
-                        '.', ',', ';', ':', '+', '-', '[', ']', '{', '}', '$', '#', '@',
+                        '-', '[', ']', ';', '.', ',', ':', '+', '{', '}', '_',
                         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
                         'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
                         'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3',
-                        '4', '5', '6', '7', '8', '9', '_'
+                        '4', '5', '6', '7', '8', '9',
+                        '$', '#', '@', '!', '?',
+                        // '`',
                     };
 
                     var vdict = gencomb(cdict, 1, (int i) => { return !char.IsDigit(cdict[i]); });
@@ -148,7 +150,7 @@
                                                     | string\.IsNullOrEmpty\(\s*
                                                     | string\.IsNullOrWhiteSpace\(\s*
                                                     | Microsoft\.Build\.Tasks\.
-                                                    | Code\s+Type=""Fragment""\s*Language=""cs""\s*
+                                                    | \.Trim\(\)
                                                     | ServicePointManager\.SecurityProtocol
                                                 )
                                                 |
@@ -166,16 +168,17 @@
 
                         content = content.Replace("%", "%%");
                         // content = content.Replace("^", "^^"); - today we use it only inside double strings
-                        content = content.Replace("&", "^&");
-                        content = content.Replace("<", "^<");
-                        content = content.Replace(">", "^>");
+
+                        // content = content.Replace("&", "^&");
+                        // content = content.Replace("<", "^<");
+                        // content = content.Replace(">", "^>");
                         // content = content.Replace("|", "^|"); // - don't escape this inside strings ".."
 
                         // Required only when enableDelayedExpansion is active
                         //content = content.Replace("!", "^^!");
 
                         // Protecting data outside strings only:
-                        content = Regex.Replace(content, @"\|", (m) => isInsideString(m.Index, scalc(content)) ? m.Value : "^" + m.Value);
+                        content = Regex.Replace(content, @"[<|>&]", (m) => isInsideString(m.Index, scalc(content)) ? m.Value : "^" + m.Value);
 
                         // lexemes via vars
 
@@ -198,7 +201,7 @@
                             if(!lstat.ContainsKey(vname)) {
                                 lstat[vname] = -1 * (vname.Length + 7); //for init: set a= + length + &
                             }
-                            lstat[vname] += (vname.Length - 2); //for use: % + a + %
+                            lstat[vname] += (vname.Length - 3); //for use: % + a + %
                         }
                         
                         uint uniqVars = 0;
@@ -318,7 +321,7 @@
                         foreach(var line in lines)
                         {
                             //content += $"<nul set /P ={line}>> %{corevar}%{Environment.NewLine}";
-                            string ldata = String.Format("<nul set /P ={0}>>%{1}%\r\n", line, corevar);
+                            string ldata = String.Format("<nul set/P ={0}>>%{1}%\r\n", line, corevar);
 
                             if(ldata.Length >= 2047) {
                                 Console.WriteLine("[Warn] Length of line {0}", ldata.Length);
