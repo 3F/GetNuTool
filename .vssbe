@@ -145,7 +145,6 @@
         "WarningLevel": 4,
         "FilesMode": false,
         "CachingBytecode": false,
-        "LastTime": 0,
         "Command__": [
           "/*",
           "*   Copyright (c) 2015  Denis Kuzmin <x-3F@outlook.com> github/3F",
@@ -519,7 +518,6 @@
         "WarningLevel": 4,
         "FilesMode": false,
         "CachingBytecode": false,
-        "LastTime": 0,
         "Command__": [
           "/*",
           "*   Copyright (c) 2015  Denis Kuzmin <x-3F@outlook.com> github/3F",
@@ -872,7 +870,6 @@
         "WarningLevel": 4,
         "FilesMode": false,
         "CachingBytecode": false,
-        "LastTime": 0,
         "Command__": [
           "/*",
           "*   Copyright (c) 2015  Denis Kuzmin <x-3F@outlook.com> github/3F",
@@ -1029,7 +1026,7 @@
           "                content = Regex.Replace",
           "                (",
           "                    content,",
-          "                    @\"(?'def'call\\s+:\" + VNAME + @\"\\s)(?'args'.+?)(?'eol'&|\\r\\n)\",",
+          "                    @\"(?'def'call\\s+:\" + VNAME + @\"\\s)(?'args'.+?)(?'eol'&|\\||\\r\\n)\",",
           "                    (m) =>",
           "                    {",
           "                        var def     = m.Groups[\"def\"].Value;",
@@ -1155,6 +1152,7 @@
           "                    if(!data.StartsWith(\"Copyright\")",
           "                        && !data.StartsWith(\"GetNuTool\")",
           "                        && !data.StartsWith(\"hMSBuild\")",
+          "                        && !data.StartsWith(\"DllExport\")",
           "                        && !data.StartsWith(\"http\")",
           "                        && !data.StartsWith(\"Based \")",
           "                        && !data.StartsWith(\"---\"))",
@@ -1227,6 +1225,11 @@
           "                    },",
           "                    RegexOptions.Multiline | RegexOptions.IgnoreCase",
           "                );",
+          "                // GetNuTool, Y-84",
+          "                content = Regex.Replace(content, @\"(?<!\\*)&(setlocal\\s.+?DelayedExpansion)\", \"\\r\\n$1\", RegexOptions.IgnoreCase);",
+          "",
+          "                // hMSBuild, Y-50",
+          "                content = Regex.Replace(content, @\"(setlocal\\s.+?DelayedExpansion)&@echo off\", \"$1\", RegexOptions.IgnoreCase);",
           "",
           "                content = Regex.Replace(content, @\"\\)\\s*\\r\\n\\s*\\(\", \")&(\");",
           "",
@@ -1413,7 +1416,6 @@
         "WarningLevel": 4,
         "FilesMode": false,
         "CachingBytecode": false,
-        "LastTime": 0,
         "Command__": [
           "using System.Collections.Generic;",
           "using System.Text;",
@@ -1583,7 +1585,6 @@
         "WarningLevel": 4,
         "FilesMode": false,
         "CachingBytecode": false,
-        "LastTime": 0,
         "Command__": [
           "using System;",
           "using System.IO;",
