@@ -286,7 +286,7 @@ set msb.gnt.cmd=msbuild.exe & gnt {args}
 ## Examples
 
 ```bat
-gnt vsSolutionBuildEvent/1.16.0:../SDK & SDK\GUI
+gnt vsSolutionBuildEvent/1.16.1:../SDK & SDK\GUI
 ```
 
 ```bat
@@ -318,7 +318,7 @@ set ngpackages=Conari & call gnt || echo Failed
 ```
 
 ```bat
-gnt "7z.Libs;vsSolutionBuildEvent/1.16.0:../packages/SDK"
+gnt "7z.Libs;vsSolutionBuildEvent/1.16.1:../packages/SDK"
 ```
 
 Direct link to a remote package via https:

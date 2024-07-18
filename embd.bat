@@ -1,7 +1,7 @@
 @echo off
-:: GetNuTool /shell/batch edition
-:: Copyright (c) 2015-2024  Denis Kuzmin <x-3F@outlook.com> github/3F
-:: https://github.com/3F/GetNuTool
+::! GetNuTool /shell/batch edition
+::! Copyright (c) 2015-2024  Denis Kuzmin <x-3F@outlook.com> github/3F
+::! https://github.com/3F/GetNuTool
 
 set gntcore=gnt.core
 set $tpl.corevar$="%temp%\%gntcore%$core.version$%random%%random%"
