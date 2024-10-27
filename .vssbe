@@ -48,7 +48,7 @@
         "Command__": [
           "",
           "initialize without msbuild processing",
-          "#[var cslogic = #[IO get(\"logic.cs\")]]"
+          "#[var cslogic = #[IO get(\"csharp.cs\")]]"
         ]
       }
     },
@@ -114,7 +114,7 @@
           "",
           "#[\" obj \"]",
           "",
-          "#[IO copy.file(\"logic.targets\", \"$(dobj)core\", true)]",
+          "#[IO copy.file(\"csinit.targets\", \"$(dobj)core\", true)]",
           "#[IO replace.Regex(\"$(dobj)core\", \"<GetNuTool>.*?</GetNuTool>\", \"<GetNuTool>$(pVerPrintApp)</GetNuTool>\")]",
           "",
           "$ -> $$ to prevent double evaluation",
@@ -1119,7 +1119,7 @@
           "",
           "                /* exit/B */",
           "",
-          "                content = Regex.Replace(content, @\"exit\\s*(?:\\/B\\s*?(?'code'\\d+)|\\/B)\\s*?\", (m) =>",
+          "                content = Regex.Replace(content, @\"exit\\s*(?:\\/B\\s*?(?'code'\\d+|(?:!|%)\" +VNAME+ @\"(?:!|%)?)|\\/B)\\s*?\", (m) =>",
           "                {",
           "                    string ret  = \"exit/B\";",
           "                    string code = m.Groups[\"code\"].Value;",
