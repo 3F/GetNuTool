@@ -18,9 +18,9 @@ call a isNotEmptyOrWhitespaceOrFail rdir || exit /B1
 call a initAppVersion Gnt
 
 echo.
-call a cprint 0E  -----------------------
-call a cprint F0  "GetNuTool .bat testing"
-call a cprint 0E  -----------------------
+call a cprint 0E   ----------------
+call a cprint F0  "GetNuTool .bat ~"
+call a cprint 0E   ----------------
 echo.
 
 if "!gcount!" LSS "1" set /a gcount=0
