@@ -12,7 +12,6 @@ Copyright (c) 2015-2024  Denis Kuzmin <x-3F@outlook.com> github/3F
 [![Build status](https://ci.appveyor.com/api/projects/status/gw8tij2230gwkqs6/branch/master?svg=true)](https://ci.appveyor.com/project/3Fs/getnutool-github/branch/master)
 [![release](https://img.shields.io/github/release/3F/GetNuTool.svg)](https://github.com/3F/GetNuTool/releases/latest)
 
-[![Build history](https://buildstats.info/appveyor/chart/3Fs/getnutool-github?buildCount=15&includeBuildsFromPullRequest=true&showStats=true)](https://ci.appveyor.com/project/3Fs/getnutool-github/history)
 
 ```bash
 gnt Fnv1a128                                  # Get Fnv1a128 package
@@ -76,7 +75,7 @@ However! GetNuTool has more powerful ways even for standard NuGet packages provi
 * Request to the server only if the package is not installed.
 * Supports proxy with custom credential.
 * Default settings are overridden through an environment variables: default .config files, NuGet server, etc.
-* The ability to create *one click* ~8 KB .bat wrappers for any packages. Try for example [vsSolutionBuildEvent.1.16.bat](https://github.com/3F/GetNuTool/blob/master/demo/wrappers/vsSolutionBuildEvent.1.16.bat)
+* The ability to create *one click* ~8 KB .bat wrappers for any packages. Try for example [vsSolutionBuildEvent.bat](https://github.com/3F/GetNuTool/blob/master/demo/vsSolutionBuildEvent.bat)
 * Easy integration into any scripts such as pure batch-script [netfx4sdk](https://github.com/3F/netfx4sdk), [DllExport](https://github.com/3F/DllExport/wiki/DllExport-Manager), [hMSBuild](https://github.com/3F/hMSBuild)
 * C# projects support via GetNuTool.cs
 

@@ -8,3 +8,5 @@ obj
 /tests/packages
 /tests/T00LS
 /demo/wrappers/packages
+/demo/packages
+/demo/*.sln
