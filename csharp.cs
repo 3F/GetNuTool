@@ -26,7 +26,10 @@ Action<string, object> DebugMessage = (msg, args) =>
     if("$(debug)" == "true") Console.WriteLine(msg, args);
 };
 
-const string WPATH = @"$(wpath)";
+Func<string, string> NullIfEmpty = (input)
+    => input == string.Empty ? null : input;
+
+string WPATH = NullIfEmpty(@"$(wpath)") ?? @"$(MSBuildProjectDirectory)";
 Environment.CurrentDirectory = WPATH; // important only for .pkg.install.* package scripts
 
 Action<string, string> setenv = Environment.SetEnvironmentVariable;
@@ -44,7 +47,8 @@ if(tmode != "pack")
 
     if(string.IsNullOrWhiteSpace(plist))
     {
-        string ngconfig = @"$(ngconfig)";
+        string ngconfig = NullIfEmpty(@"$(ngconfig)")
+                            ?? @"packages.config;.tools\packages.config";
 
         Action<string> LoadConf = (cfg) =>
         {
@@ -93,8 +97,8 @@ if(tmode != "pack")
 
     /* -_-_-_--_-_-_--_-_-_- */
 
-    string defpath  =@"$(ngpath)";
-    string proxy    =@"$(proxycfg)";
+    string defpath  = NullIfEmpty(@"$(ngpath)") ?? "packages";
+    string proxy    = @"$(proxycfg)";
 
     // https://github.com/3F/DllExport/issues/140
     // Since Tls13 (0x3000) is not available from obsolete assemblies,
@@ -186,7 +190,11 @@ if(tmode != "pack")
                     l.Proxy.Credentials = CredentialCache.DefaultCredentials;
                 }
 
-                l.DownloadFile(@"$(ngserver)" + link, tmp);
+                l.DownloadFile
+                (
+                    (NullIfEmpty(@"$(ngserver)") ?? "https://www.nuget.org/api/v2/package/")
+                     + link,
+                tmp);
             }
             catch(Exception ex)
             {

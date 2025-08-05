@@ -13,12 +13,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
     <PropertyGroup>
-        <ngconfig Condition="'$(ngconfig)' == ''">packages.config;.tools\packages.config</ngconfig> <!-- Where to find packages.config -->
-        <ngserver Condition="'$(ngserver)' == ''">https://www.nuget.org/api/v2/package/</ngserver>  <!-- Server by default -->
-        <ngpath Condition="'$(ngpath)' == ''">packages</ngpath>                                     <!-- Path by default -->
-
         <GetNuTool>x</GetNuTool>
-        <wpath Condition="'$(wpath)' == ''">$(MSBuildProjectDirectory)</wpath>
 
         <TaskCoreDllPath Condition="Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll</TaskCoreDllPath>
         <TaskCoreDllPath Condition="'$(TaskCoreDllPath)' == '' and Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll</TaskCoreDllPath>
