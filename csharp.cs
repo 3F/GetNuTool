@@ -10,7 +10,7 @@
 // NOTE: netfx 4.0+ platforms;
 // NOTE: The default console logger can be disabled and currently exceptions are not caught at the top level; To make the code compact, use `return false` instead
 
-if("$(logo)" != "no") Console.WriteLine("\nGetNuTool $(GetNuTool)\n(c) 2015-2024  Denis Kuzmin <x-3F@outlook.com> github/3F\n");
+if("$(logo)" != "no") Console.WriteLine("\nGetNuTool $(GetNuTool)\n(c) 2015-2025  Denis Kuzmin <x-3F@outlook.com> github/3F\n");
 
 const string MSG_NOTFOUND = "{0} is not found ";
 
@@ -45,7 +45,9 @@ Func<string, string[]> _FormatList = (str) => str.Split
     StringSplitOptions.RemoveEmptyEntries
 );
 
-if(tmode == "get" || tmode == "grab")
+const string WPATH = @"$(wpath)";
+
+if(tmode == "get" || tmode == "grab" || tmode == "install")
 {
     string plist = @"$(ngpackages)";
 
@@ -64,7 +66,7 @@ if(tmode == "get" || tmode == "grab")
 
                 if(id == null)
                 {
-                    Console.Error.WriteLine("{0} is corrupted", cfg);
+                    Console.Error.WriteLine("Invalid " + cfg);
                     return;
                 }
 
@@ -80,7 +82,7 @@ if(tmode == "get" || tmode == "grab")
 
         foreach(string cfg in _FormatList(@"$(ngconfig)"))
         {
-            string lcfg = Path.Combine(@"$(wpath)", cfg);
+            string lcfg = Path.Combine(WPATH, cfg);
 
             if(File.Exists(lcfg))
             {
@@ -155,7 +157,7 @@ if(tmode == "get" || tmode == "grab")
     {
         string to = Path.GetFullPath
         (
-            Path.Combine(@"$(wpath)", path ?? name ?? string.Empty)
+            Path.Combine(WPATH, path ?? name ?? string.Empty)
         );
 
         if(Directory.Exists(to) || File.Exists(to))
@@ -245,6 +247,21 @@ if(tmode == "get" || tmode == "grab")
                 }
             }
         }
+
+        if(tmode == "install")
+        {
+            string pkgi = to + "/.pkg.install." + (Path.VolumeSeparatorChar == ':' ? "bat" : "sh");
+            if(File.Exists(pkgi))
+            {
+                DebugMessage("# {0}", pkgi);
+                System.Diagnostics
+                    // Versions of the arguments format:
+                    // v1: 1 "path to the working directory" "path to the package"
+                    .Process.Start(pkgi, "1 \"" + WPATH + "\" \"" + to + "\"")
+                    .Dispose();
+            }
+        }
+
         File.Delete(tmp);
         return true;
     };
@@ -276,7 +293,7 @@ else if(tmode == "pack")
     const string ID     = "id";
     const string VER    = "version";
 
-    string dir = Path.Combine(@"$(wpath)", @"$(ngin)");
+    string dir = Path.Combine(WPATH, @"$(ngin)");
     if(!Directory.Exists(dir))
     {
         Console.Error.WriteLine(MSG_NOTFOUND, dir);
@@ -310,12 +327,11 @@ else if(tmode == "pack")
 
     // Validate id; nuget core based rule
 
-    if(_GetMeta(ID).Length > 100
-        || !System.Text.RegularExpressions.Regex.IsMatch
-            (
-                _GetMeta(ID),
-                @"^\w+(?:[_.-]\w+)*$"
-            ))
+    if(!System.Text.RegularExpressions.Regex.IsMatch
+        (
+            _GetMeta(ID),
+            @"^\w+(?:[_.-]\w+)*$"
+        ))
     {
         Console.Error.WriteLine("Invalid id");
         return false;
@@ -325,7 +341,7 @@ else if(tmode == "pack")
 
     string pout = string.Format("{0}.{1}.nupkg", _GetMeta(ID), _GetMeta(VER));
 
-    string dout = Path.Combine(@"$(wpath)", @"$(ngout)");
+    string dout = Path.Combine(WPATH, @"$(ngout)");
     if(!string.IsNullOrWhiteSpace(dout))
     {
         if(!Directory.Exists(dout))

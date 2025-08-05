@@ -1,6 +1,6 @@
 @echo off
 ::! GetNuTool /wrapper/batch edition
-::! Copyright (c) 2015-2024  Denis Kuzmin <x-3F@outlook.com> github/3F
+::! Copyright (c) 2015-2025  Denis Kuzmin <x-3F@outlook.com> github/3F
 ::! https://github.com/3F/GetNuTool
 
 set gntcore=gnt.core
@@ -20,10 +20,13 @@ if "%~1"=="-unpack" goto off
 set args=%*
 setlocal enableDelayedExpansion
 
+:: NOTE: `"` can be compared safely when using delayed variables
+if "!args:~0,1!"=="+" set args=!args:~1! /t:install
+
 :: +1 space because %first:~0,1% will return literally "~0,1" as value if it's empty
 set "first=%~1 "
 set key=!first:~0,1!
-if "!key!" NEQ " " if !key! NEQ / set args=/p:ngpackages=!args!
+if "!key!" NEQ " " if !key! GTR / set args=/p:ngpackages=!args!
 
 set "instance=%msb.gnt.cmd%"
 if defined instance goto found

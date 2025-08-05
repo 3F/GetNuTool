@@ -5,7 +5,7 @@ Embeddable Package Manager (+core in .bat);
 *NuGet* / *Chocolatey* client;
 
 ```r
-Copyright (c) 2015-2024  Denis Kuzmin <x-3F@outlook.com> github/3F
+Copyright (c) 2015-2025  Denis Kuzmin <x-3F@outlook.com> github/3F
 ```
 
 [ 「 ❤ 」 ](https://3F.github.io/fund) [![License](https://img.shields.io/badge/License-MIT-74A5C2.svg)](https://github.com/3F/GetNuTool/blob/master/License.txt)
@@ -66,7 +66,7 @@ However! GetNuTool has more powerful ways even for standard NuGet packages provi
 
 * Install *.nupkg* packages from remote NuGet (or like: chocolatey, ...) servers.
 * Grab or Install any *zipped* packages from direct sources (local, remote http, https, ftp, ...).
-* Controlled unpacking of all received packages. Modes: `get` or `grab`
+* Controlled unpacking of all received packages. Modes: `get` or `grab` or `install`
 * Hash values control using [`sha1`](https://en.wikipedia.org/wiki/SHA-1) for receiving every package if used unsecured channels (~windows xp) etc.
 * Creating new NuGet packages *.nupkg* from *.nuspec*.
 * Two supported formats: xml *packages.config* (+extra: output, sha1) and inline records.
@@ -78,6 +78,7 @@ However! GetNuTool has more powerful ways even for standard NuGet packages provi
 * The ability to create *one click* ~8 KB .bat wrappers for any packages. Try for example [vsSolutionBuildEvent.bat](https://github.com/3F/GetNuTool/blob/master/demo/vsSolutionBuildEvent.bat)
 * Easy integration into any scripts such as pure batch-script [netfx4sdk](https://github.com/3F/netfx4sdk), [DllExport](https://github.com/3F/DllExport/wiki/DllExport-Manager), [hMSBuild](https://github.com/3F/hMSBuild)
 * C# projects support via GetNuTool.cs
+* *.pkg.install.bat* and *.pkg.install.sh* support using *install* mode and additionally via `+` (plus) sign, i.e. `gnt +...`
 
 Note:
 
@@ -205,6 +206,80 @@ gnt /t:pack /p:ngin=path\to\dir
 gnt /t:pack /p:ngin="path to\dir";ngout=..\dst.nupkg
 ```
 
+### `install`
+
+1.10+
+
+*GetNuTool* automatically invokes *.pkg.install.bat* (or *.pkg.install.sh* depending on the environment) in activated `install` mode if the package provides this. Once per clean install (it won't trigger for cached or already unpacked packages).
+
+The available options are the same as for the `get` mode described above.
+
+The `install` mode can be activated in different ways,
+
+```bat
+gnt +DllExport
+```
+
+```bat
+gnt +"DllExport;Conari"
+```
+
+or using `/t:install`
+
+```bat
+msbuild gnt.core /t:install /p:ngpackages=DllExport
+```
+
+```csharp
+net.r_eg.GetNuTool Gnt = new();
+Gnt.Run(ngpackages: "Conari;DllExport", tmode: "install");
+```
+
+#### .pkg.install.bat (.pkg.install.sh)
+
+*.pkg.install.\** are text files which can optionally be located in the root directory of the package and support the following optional arguments:
+
+Arguments                             |   #   | alternative in bat | alternative in bash | Example
+--------------------------------------|-------|--------------------|---------------------|----------
+Version of the arguments format       | `%~1` | -        | -       | 1
+Full path to the working directory    | `%~2` | `%cd%`   |         | D:\projects\obj\
+Full path to the package              | `%~3` | `%~dp0`  |         | D:\projects\obj\packages\DllExport\
+
+This can be used for any purpose related to the installation process, for example, providing License.txt
+
+```bat
+copy /Y/V "%~dp0\License.txt" "%cd%\"
+```
+
+or updating the version number for the directory up to the received 
+
+```bat
+set /p _version=<"%~3\.version"
+ren "%~3" MyPackage.%_version%
+```
+
+or to start setting up or updating something automatically.
+
+For a real example, see the following *.pkg.install.bat* from *DllExport* package (1.8.2+)
+
+```bat
+@echo off
+copy /Y/V "%~dp0\DllExport.bat" "%cd%\">nul || exit /B1
+
+    set /p _version=<"%~dp0\.version"
+    set /p _rel=<"%~dp0\.release.version"
+    if defined _rel set _version=%_version%-%_rel%
+
+ren "%~dp0" DllExport.%_version% & "%cd%\DllExport.bat"
+```
+
+Logic follows the instructions from [here](https://github.com/3F/DllExport/wiki/Quick-start):
+1. Copy *DllExport.bat* into solution folder.
+2. Associate the latest received package (i.e. `gnt +DllExport`) with a specific version (as if it were like `gnt +DllExport/1.8.2-RC`)
+3. Run Wizard.
+
+In the end, ~8 KB of the *gnt.bat* now helps to achieve the same result in a fully automated way.
+
 ## Global Properties
 
 Property | Value
@@ -256,6 +331,7 @@ gnt.Run(ngpackages: "Fnv1a128");
   ...                 | 1.9+ alias to `ngpackages=...`                                                | `gnt Conari`, `gnt "regXwild;Fnv1a128"`
  `-unpack`            | 1.6+ To generate minified gnt.core from gnt.bat.                              | `gnt -unpack`
  ~~`-msbuild`~~ path  | 1.6 - 1.8 To use specific msbuild. Removed in 1.9. Override engine instead    | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages=Conari`
+`+` | 1.10+ Activate *install* mode. Automatic call `.pkg.install.*` for supported packages. | `gnt +DllExport`, `gnt +"DllExport;Conari"`
 
 #### Override engine
 

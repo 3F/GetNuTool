@@ -1,6 +1,6 @@
 @echo off
 ::! GetNuTool /shell/batch edition
-::! Copyright (c) 2015-2024  Denis Kuzmin <x-3F@outlook.com> github/3F
+::! Copyright (c) 2015-2025  Denis Kuzmin <x-3F@outlook.com> github/3F
 ::! https://github.com/3F/GetNuTool
 
 set gntcore=gnt.core
@@ -12,19 +12,27 @@ set /a ERROR_CALL_NOT_IMPLEMENTED=120
 :: Syntax:
 ::  gnt Package
 ::  gnt "Paclage1;Package2"
+::  gnt +Package
+::  gnt +"Paclage1;Package2"
 ::  gnt <core_arguments>
 ::  gnt <shell_arguments>
 
-if "%~1"=="-unpack" goto unpack
-if "%~1"=="-msbuild" goto off
-
-set args=%*
 setlocal enableDelayedExpansion
+set args=%*
 
-:: +1 space because %first:~0,1% will return literally "~0,1" as value if it's empty
-set "first=%~1 "
-set key=!first:~0,1!
-if "!key!" NEQ " " if !key! NEQ / set args=/p:ngpackages=!args!
+:: NOTE `"` can be compared safely when only delayed variables
+set first=%~1
+
+if "!first!"=="-unpack" goto unpack
+
+:: make sure this is not a single " (double quote)
+if "!first!"=="" call :trimArgs
+
+:: NOTE !args:~0,1! should return literally "~0,1" as value when empty
+set carg="!args:~0,1!"
+if !carg!=="+" call :trimArgs !args:~1! /t:install
+if !carg!=="-" exit /B %ERROR_CALL_NOT_IMPLEMENTED%
+if !carg! NEQ "/" set args=/p:ngpackages=!args!
 
 set "instance=%msb.gnt.cmd%"
 if defined instance goto found
@@ -61,10 +69,6 @@ for %%v in (4.0, 14.0, 12.0, 3.5, 2.0) do (
 echo Engine is not found. Try with hMSBuild 1>&2
 exit /B %ERROR_FILE_NOT_FOUND%
 
-:off
-    echo This feature is disabled in current version >&2
-exit /B %ERROR_CALL_NOT_IMPLEMENTED%
-
 :found
     set con=/noconlog
     if "%debug%"=="true" set con=/v:q
@@ -86,6 +90,10 @@ echo Generating a %gntcore% at %cd%\...
 setlocal disableDelayedExpansion
 <nul set/P="">%$tpl.corevar$%&$gnt.core.logic$
 endlocal
+exit /B 0
+
+:trimArgs
+    set args=%*
 exit /B 0
 
 :unset

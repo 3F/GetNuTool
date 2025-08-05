@@ -13,7 +13,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
     <PropertyGroup>
-        <ngconfig Condition="'$(ngconfig)' == ''">packages.config;.tools\packages.config</ngconfig>                        <!-- Where to look the packages.config of solution-level -->
+        <ngconfig Condition="'$(ngconfig)' == ''">packages.config;.tools\packages.config</ngconfig> <!-- Where to find packages.config -->
         <ngserver Condition="'$(ngserver)' == ''">https://www.nuget.org/api/v2/package/</ngserver>  <!-- Server by default -->
         <ngpath Condition="'$(ngpath)' == ''">packages</ngpath>                                     <!-- Path by default -->
 
@@ -26,6 +26,9 @@
 
     <Target Name="get" BeforeTargets="Build">
         <Main tmode="get"/>
+    </Target>
+    <Target Name="install">
+        <Main tmode="install"/>
     </Target>
     <Target Name="grab">
         <Main tmode="grab"/>
@@ -57,5 +60,5 @@
         </Task>
     </UsingTask>
 
-    <Target Name="Build" DependsOnTargets="GetNuTool" />
+    <Target Name="Build" />
 </Project>
