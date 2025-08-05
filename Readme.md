@@ -15,6 +15,9 @@ Copyright (c) 2015-2025  Denis Kuzmin <x-3F@outlook.com> github/3F
 
 ```bash
 gnt Fnv1a128                                  # Get Fnv1a128 package
+gnt +DllExport                                # Install DllExport package
+gnt *DllExport                                # Install and Run DllExport.bat
+gnt ~hMSBuild                                 # Touch hMSBuild
 gnt /t:pack /p:ngin="bin\DllExport"           # Create new DllExport package
 gnt "Conari;regXwild"                         # Get Conari & regXwild packages
 msbuild gnt.core /p:ngpackages=LuNari/1.6.0   # Use msbuild to get LuNari 1.6.0 
@@ -66,7 +69,7 @@ However! GetNuTool has more powerful ways even for standard NuGet packages provi
 
 * Install *.nupkg* packages from remote NuGet (or like: chocolatey, ...) servers.
 * Grab or Install any *zipped* packages from direct sources (local, remote http, https, ftp, ...).
-* Controlled unpacking of all received packages. Modes: `get` or `grab` or `install`
+* Controlled unpacking of all received packages. Modes: `get` or `grab` or `install` or `touch`
 * Hash values control using [`sha1`](https://en.wikipedia.org/wiki/SHA-1) for receiving every package if used unsecured channels (~windows xp) etc.
 * Creating new NuGet packages *.nupkg* from *.nuspec*.
 * Two supported formats: xml *packages.config* (+extra: output, sha1) and inline records.
@@ -78,7 +81,7 @@ However! GetNuTool has more powerful ways even for standard NuGet packages provi
 * The ability to create *one click* ~8 KB .bat wrappers for any packages. Try for example [vsSolutionBuildEvent.bat](https://github.com/3F/GetNuTool/blob/master/demo/vsSolutionBuildEvent.bat)
 * Easy integration into any scripts such as pure batch-script [netfx4sdk](https://github.com/3F/netfx4sdk), [DllExport](https://github.com/3F/DllExport/wiki/DllExport-Manager), [hMSBuild](https://github.com/3F/hMSBuild)
 * C# projects support via GetNuTool.cs
-* *.pkg.install.bat* and *.pkg.install.sh* support for *install* and *run* modes and additionally via `+` (plus) and via `*` (asterisk), i.e. `gnt +...` and `gnt *...`
+* *.pkg.install.bat* and *.pkg.install.sh* support for *install*, *run*, *touch* modes and additionally via `+` (plus), `*` (asterisk), `~` (tilde) i.e. `gnt +...`, `gnt *...`, `gnt ~...` respectively.
 
 Note:
 
@@ -206,11 +209,11 @@ gnt /t:pack /p:ngin=path\to\dir
 gnt /t:pack /p:ngin="path to\dir";ngout=..\dst.nupkg
 ```
 
-### `install` & `run`
+### `touch` & `install` & `run`
 
 1.10+
 
-*GetNuTool* automatically invokes *.pkg.install.bat* (or *.pkg.install.sh* depending on the environment) in activated `install` or `run` mode if the package provides support for this. Note: Once per clean install (it won't trigger for cached or already unpacked packages).
+*GetNuTool* automatically invokes *.pkg.install.bat* (or *.pkg.install.sh* depending on the environment) in activated `install` or `run` or `touch` modes if the package provides support for this. Note: Once per clean install (it won't trigger for cached or already unpacked packages).
 
 The available options are the same as for the `get` mode described above.
 
@@ -231,8 +234,8 @@ msbuild gnt.core /t:install /p:ngpackages=DllExport
 ```
 
 ```csharp
-net.r_eg.GetNuTool Gnt = new();
-Gnt.Run(ngpackages: "Conari;DllExport", tmode: "install");
+net.r_eg.GetNuTool gnt = new();
+gnt.Run(ngpackages: "Conari;DllExport", tmode: "install");
 ```
 
 The `run` mode is similar to the *install* described above but using `*` instead of `+`,
@@ -252,7 +255,31 @@ msbuild gnt.core /t:run /p:ngpackages=DllExport
 ```
 
 ```csharp
-Gnt.Run(ngpackages: "Conari;DllExport", tmode: "run");
+gnt.Run(ngpackages: "Conari;DllExport", tmode: "run");
+```
+
+The `touch` mode extends the *install* mode and allows to work with package and its contents in a one-time or temporary execution. Once processing is complete, the package and its contents will be deleted.
+
+To activate this mode, you can define `~` (tilde) in arguments:
+
+```bat
+gnt ~hMSBuild
+```
+
+or using `/t:touch`
+
+```bat
+msbuild gnt.core /t:touch /p:ngpackages=hMSBuild
+```
+
+```csharp
+gnt.Run(ngpackages: "hMSBuild", tmode: "touch");
+```
+
+You can also control the mode options via `/p:use=...`
+
+```bat
+gnt ~GetNuTool /p:use=help.cmd
 ```
 
 #### .pkg.install.bat (.pkg.install.sh)
@@ -262,11 +289,19 @@ Gnt.Run(ngpackages: "Conari;DllExport", tmode: "run");
 Arguments                             |   #   | alternative in bat | alternative in bash | Example
 --------------------------------------|-------|--------------------|---------------------|----------
 Version of the arguments format       | `%~1` | -        | -                  | 1
-Activated tMode                       | `%~2` | -        | -                  | `install` or `run`
+Activated tMode                       | `%~2` | -        | -                  | `install` or `run` or `touch`
 Full path to the working directory    | `%~3` | `%cd%`   | `$PWD`             | D:\projects\obj\
 Full path to the package              | `%~4` | `%~dp0`  | `$(dirname "$0")`  | D:\projects\obj\packages\DllExport\
 
-This can be used for any purpose related to the installation process, for example, providing License.txt
+Accessible environment variables:
+
+Environment variable | Description               | Example
+---------------------|---------------------------|----------
+`GetNuTool`          | GetNuTool version         | 1.9.0.58814+bb83b59
+`debug`              | Activated debug mode      | true
+`use`                | Mode options              | help.cmd
+
+*.pkg.install.\** can be used for any purposes related to the installation process, for example, providing License.txt
 
 ```bat
 copy /Y/V "%~dp0\License.txt" "%cd%\"
@@ -275,29 +310,62 @@ copy /Y/V "%~dp0\License.txt" "%cd%\"
 or updating the version number for the directory up to the received 
 
 ```bat
-set /p _version=<"%~3\.version"
-ren "%~3" MyPackage.%_version%
+set /p _version=<"%~4\.version"
+ren "%~4" MyPackage.%_version%
 ```
 
 or to start setting up or updating something automatically.
+
+Additionally `touch` mode allows to wrap or deliver anything, for example:
+
+1. Add *.pkg.install.bat*
+
+```bat
+@echo off
+if not "%~2"=="touch" exit /B0
+if "%use%"=="help" (
+    echo.
+    echo In the Beginning the World ...
+    exit /B0
+)
+```
+
+2. Generate package:
+
+> gnt /t:pack /p:ngin=D:\prg\MyPackage
+
+3. Upload to the server you want.
+4. In the end, your workflow will contain nothing but the result after `gnt ~MyPackage /p:use=help`
+
+```
+> gnt ~MyPackage /p:use=help /p:info=no;logo=no
+
+In the Beginning the World ...
+```
 
 For a real example, see the following *.pkg.install.bat* from *DllExport* package (1.8.2+)
 
 ```bat
 @echo off
 copy /Y/V "%~dp0\DllExport.bat" "%cd%\">nul || exit /B1
+if "%~2"=="touch" exit /B0
 
     set /p _version=<"%~dp0\.version"
     set /p _rel=<"%~dp0\.release.version"
     if defined _rel set _version=%_version%-%_rel%
 
-ren "%~dp0" DllExport.%_version% & if "%~2"=="run" "%cd%\DllExport.bat"
+set "dst=%~dp0\..\DllExport.%_version%"
+if exist "%dst%" rmdir /S/Q "%dst%"
+
+::`ren` must be processed as a single command along with the called program due to line-by-line processing by the cmd processor after loss of src
+ren "%~dp0" DllExport.%_version% && if "%~2"=="run" ("%cd%\DllExport.bat") else echo.exit/B0>"%dst%\.cmd"&"%dst%\.cmd"
 ```
 
 Logic follows the instructions from [here](https://github.com/3F/DllExport/wiki/Quick-start):
 1. Copy *DllExport.bat* into solution folder.
-2. Associate the latest received package (i.e. `gnt +DllExport`) with a specific version (as if it were like `gnt +DllExport/1.8.2-RC`)
-3. Run Wizard if activated `run` mode (i.e. `gnt *DllExport`).
+1. Don't do anything else if activated `touch` mode (i.e. `gnt ~DllExport`). Otherwise:
+    1. Associate the latest received package (i.e. `gnt +DllExport`) with a specific version (as if it were like `gnt +DllExport/1.8.2-RC` etc.)
+    1. Run Wizard if activated `run` mode (i.e. `gnt *DllExport`).
 
 In the end, ~8 KB of the *gnt.bat* now helps to achieve the same result in a fully automated way.
 
@@ -307,6 +375,7 @@ Property | Value
 ---------|-------------
 debug    | `true` to add extra info in stream.
 logo     | `no` to hide logo when processing starts.
+info     | `no` to hide information about receiving packages etc.
 
 For example:
 
@@ -353,7 +422,7 @@ gnt.Run(ngpackages: "Fnv1a128");
  `-unpack`            | 1.6+ To generate minified gnt.core from gnt.bat.                              | `gnt -unpack`
  ~~`-msbuild`~~ path  | 1.6 - 1.8 To use specific msbuild. Removed in 1.9. Override engine instead    | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages=Conari`
 `+` | 1.10+ Activate *install* mode. Automatic call `.pkg.install.*` for supported packages. `tMode == install` | `gnt +DllExport`, `gnt +"DllExport;Conari"`
-`*` | 1.10+ Activate *run* mode. Automatic call `.pkg.install.*` for supported packages. `tMode == run` | `gnt *DllExport`, `gnt *"DllExport;Conari"`
+`*` | 1.10+ Activate *run* mode. Automatic call `.pkg.install.*` for supported packages. `tMode == run`         | `gnt *DllExport`, `gnt *"DllExport;Conari"`
 
 #### Override engine
 

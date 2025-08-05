@@ -32,6 +32,7 @@ if "!first!"=="" call :trimArgs
 set carg="!args:~0,1!"
 if !carg!=="+" call :trimArgs !args:~1! /t:install
 if !carg!=="*" call :trimArgs !args:~1! /t:run
+if !carg!=="~" call :trimArgs !args:~1! /t:touch
 if !carg!=="-" exit /B %ERROR_CALL_NOT_IMPLEMENTED%
 if !carg! NEQ "/" set args=/p:ngpackages=!args!
 

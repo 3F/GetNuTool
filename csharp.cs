@@ -23,26 +23,20 @@ var ignore = new string[] // to ignore from package
 
 Action<string, object> DebugMessage = (msg, args) =>
 {
-    if("$(debug)".Trim() == "true") Console.WriteLine(msg, args);
-};
-
-Func<string, XElement> _LoadXml = (input) =>
-{
-    try
-    {
-        return XDocument.Load(input).Root;
-    }
-    catch(Exception ex)
-    {
-        Console.Error.WriteLine(ex.Message);
-        throw;
-    }
+    if("$(debug)" == "true") Console.WriteLine(msg, args);
 };
 
 const string WPATH = @"$(wpath)";
 Environment.CurrentDirectory = WPATH; // important only for .pkg.install.* package scripts
 
-if(tmode == "get" || tmode == "grab" || tmode == "install" || tmode == "run")
+Action<string, string> setenv = Environment.SetEnvironmentVariable;
+setenv("GetNuTool", "$(GetNuTool)");
+setenv("use", "$(use)");
+setenv("debug", "$(debug)");
+
+bool info = "$(info)" != "no";
+
+if(tmode != "pack")
 {
     string plist = @"$(ngpackages)";
 
@@ -54,7 +48,7 @@ if(tmode == "get" || tmode == "grab" || tmode == "install" || tmode == "run")
 
         Action<string> LoadConf = (cfg) =>
         {
-            foreach(XElement pkg in _LoadXml(cfg).Descendants("package"))
+            foreach(XElement pkg in XDocument.Load(cfg).Root.Descendants("package"))
             {
                 XAttribute id       = pkg.Attribute("id");
                 XAttribute version  = pkg.Attribute("version");
@@ -109,11 +103,11 @@ if(tmode == "get" || tmode == "grab" || tmode == "install" || tmode == "run")
 
     // NOTE: ServicePointManager.SecurityProtocol = 0 may produce the following problem: An unexpected error occurred on a receive.
 
-    foreach(var s in Enum.GetValues(typeof(SecurityProtocolType)).Cast<SecurityProtocolType>())
+    foreach(var type in Enum.GetValues(typeof(SecurityProtocolType)).Cast<SecurityProtocolType>())
     {
         try
         {
-            ServicePointManager.SecurityProtocol |= s;
+            ServicePointManager.SecurityProtocol |= type;
         }
         catch(NotSupportedException)
         {
@@ -157,13 +151,16 @@ if(tmode == "get" || tmode == "grab" || tmode == "install" || tmode == "run")
             Path.Combine(WPATH, path ?? name ?? string.Empty)
         );
 
+        bool touch = tmode[0] == 't';
+        if(touch && Directory.Exists(to)) Directory.Delete(to, true);
+
         if(Directory.Exists(to) || File.Exists(to))
         {
-            Console.WriteLine("{0} use {1}", name, to);
+            if(info) Console.WriteLine("{0} use {1}", name, to);
             return true;
         }
 
-        Console.Write(link + " ... ");
+        if(info) Console.Write(link + " ... ");
 
         bool grab = tmode == "grab";
 
@@ -198,7 +195,7 @@ if(tmode == "get" || tmode == "grab" || tmode == "install" || tmode == "run")
             }
         }
 
-        Console.WriteLine(to);
+        if(info) Console.WriteLine(to);
 
         if(sha1 != null)
         {
@@ -208,8 +205,8 @@ if(tmode == "get" || tmode == "grab" || tmode == "install" || tmode == "run")
                 sb.Clear();
 
                 using(var stream = new FileStream(tmp, FileMode.Open, FileAccess.Read))
-                foreach(byte b in algo.ComputeHash(stream))
-                    sb.Append(b.ToString("x2"));
+                foreach(byte num in algo.ComputeHash(stream))
+                    sb.Append(num.ToString("x2"));
 
                 Console.Write(sb.ToString());
                 if(!sb.ToString().Equals(sha1, StringComparison.OrdinalIgnoreCase))
@@ -244,22 +241,34 @@ if(tmode == "get" || tmode == "grab" || tmode == "install" || tmode == "run")
                 }
             }
         }
+        File.Delete(tmp);
 
-        if(tmode == "install" || tmode == "run")
+        if(tmode != "get" /* install, run, touch */)
         {
             string pkgi = to + "/.pkg.install." + (Path.VolumeSeparatorChar == ':' ? "bat" : "sh");
             if(File.Exists(pkgi))
             {
                 DebugMessage(tmode + " {0}", pkgi);
-                System.Diagnostics
+                var process = Process.Start
+                (
                     // Versions of the arguments format:
                     // v1: 1 tmode "path to the working directory" "path to the package"
-                    .Process.Start(pkgi, "1 "+ tmode +" \""+ WPATH +"\" \""+ to +"\"")
-                    .Dispose();
+                    new ProcessStartInfo(pkgi, "1 "+ tmode +" \""+ WPATH +"\" \""+ to +"\"")
+                    { UseShellExecute = false }
+                );
+                process.WaitForExit();
+                process.Dispose();
+            }
+
+            if(touch)
+            {
+                Directory.Delete(to, true);
+
+                if(Directory.GetDirectories(to + "/../").Length < 1)
+                    Directory.Delete(to + "/../");
             }
         }
 
-        File.Delete(tmp);
         return true;
     };
 
@@ -309,7 +318,7 @@ else if(tmode == "pack")
     }
     Console.WriteLine("{0} use {1}", EXT_NUSPEC, nuspec);
 
-    XElement root = _LoadXml(nuspec).Elements().FirstOrDefault(x => x.Name.LocalName == TAG_META);
+    XElement root = XDocument.Load(nuspec).Root.Elements().FirstOrDefault(x => x.Name.LocalName == TAG_META);
     if(root == null)
     {
         Console.Error.WriteLine(MSG_NOTFOUND, TAG_META);
