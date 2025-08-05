@@ -30,6 +30,9 @@
     <Target Name="install">
         <Main tmode="install"/>
     </Target>
+    <Target Name="run">
+        <Main tmode="run"/>
+    </Target>
     <Target Name="grab">
         <Main tmode="grab"/>
     </Target>

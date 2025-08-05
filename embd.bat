@@ -31,6 +31,7 @@ if "!first!"=="" call :trimArgs
 :: NOTE !args:~0,1! should return literally "~0,1" as value when empty
 set carg="!args:~0,1!"
 if !carg!=="+" call :trimArgs !args:~1! /t:install
+if !carg!=="*" call :trimArgs !args:~1! /t:run
 if !carg!=="-" exit /B %ERROR_CALL_NOT_IMPLEMENTED%
 if !carg! NEQ "/" set args=/p:ngpackages=!args!
 

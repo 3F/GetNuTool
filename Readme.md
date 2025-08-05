@@ -78,7 +78,7 @@ However! GetNuTool has more powerful ways even for standard NuGet packages provi
 * The ability to create *one click* ~8 KB .bat wrappers for any packages. Try for example [vsSolutionBuildEvent.bat](https://github.com/3F/GetNuTool/blob/master/demo/vsSolutionBuildEvent.bat)
 * Easy integration into any scripts such as pure batch-script [netfx4sdk](https://github.com/3F/netfx4sdk), [DllExport](https://github.com/3F/DllExport/wiki/DllExport-Manager), [hMSBuild](https://github.com/3F/hMSBuild)
 * C# projects support via GetNuTool.cs
-* *.pkg.install.bat* and *.pkg.install.sh* support using *install* mode and additionally via `+` (plus) sign, i.e. `gnt +...`
+* *.pkg.install.bat* and *.pkg.install.sh* support for *install* and *run* modes and additionally via `+` (plus) and via `*` (asterisk), i.e. `gnt +...` and `gnt *...`
 
 Note:
 
@@ -133,7 +133,7 @@ id[/version][?sha1][:path];id2[/version][?sha1][:path];...
 delimiters:
 
 * `;` 1.6+ `Name1;Name2;Name3`
-* `|` 1.0+ `Name1|Name2|Name3`
+* `|` 1.0-1.9 `Name1|Name2|Name3`
 
 ```ps
 /p:ngpackages=Name1
@@ -206,11 +206,11 @@ gnt /t:pack /p:ngin=path\to\dir
 gnt /t:pack /p:ngin="path to\dir";ngout=..\dst.nupkg
 ```
 
-### `install`
+### `install` & `run`
 
 1.10+
 
-*GetNuTool* automatically invokes *.pkg.install.bat* (or *.pkg.install.sh* depending on the environment) in activated `install` mode if the package provides this. Once per clean install (it won't trigger for cached or already unpacked packages).
+*GetNuTool* automatically invokes *.pkg.install.bat* (or *.pkg.install.sh* depending on the environment) in activated `install` or `run` mode if the package provides support for this. Note: Once per clean install (it won't trigger for cached or already unpacked packages).
 
 The available options are the same as for the `get` mode described above.
 
@@ -235,15 +235,36 @@ net.r_eg.GetNuTool Gnt = new();
 Gnt.Run(ngpackages: "Conari;DllExport", tmode: "install");
 ```
 
+The `run` mode is similar to the *install* described above but using `*` instead of `+`,
+
+```bat
+gnt *DllExport
+```
+
+```bat
+gnt *"DllExport;Conari"
+```
+
+and `/t:run`
+
+```bat
+msbuild gnt.core /t:run /p:ngpackages=DllExport
+```
+
+```csharp
+Gnt.Run(ngpackages: "Conari;DllExport", tmode: "run");
+```
+
 #### .pkg.install.bat (.pkg.install.sh)
 
 *.pkg.install.\** are text files which can optionally be located in the root directory of the package and support the following optional arguments:
 
 Arguments                             |   #   | alternative in bat | alternative in bash | Example
 --------------------------------------|-------|--------------------|---------------------|----------
-Version of the arguments format       | `%~1` | -        | -       | 1
-Full path to the working directory    | `%~2` | `%cd%`   |         | D:\projects\obj\
-Full path to the package              | `%~3` | `%~dp0`  |         | D:\projects\obj\packages\DllExport\
+Version of the arguments format       | `%~1` | -        | -                  | 1
+Activated tMode                       | `%~2` | -        | -                  | `install` or `run`
+Full path to the working directory    | `%~3` | `%cd%`   | `$PWD`             | D:\projects\obj\
+Full path to the package              | `%~4` | `%~dp0`  | `$(dirname "$0")`  | D:\projects\obj\packages\DllExport\
 
 This can be used for any purpose related to the installation process, for example, providing License.txt
 
@@ -270,13 +291,13 @@ copy /Y/V "%~dp0\DllExport.bat" "%cd%\">nul || exit /B1
     set /p _rel=<"%~dp0\.release.version"
     if defined _rel set _version=%_version%-%_rel%
 
-ren "%~dp0" DllExport.%_version% & "%cd%\DllExport.bat"
+ren "%~dp0" DllExport.%_version% & if "%~2"=="run" "%cd%\DllExport.bat"
 ```
 
 Logic follows the instructions from [here](https://github.com/3F/DllExport/wiki/Quick-start):
 1. Copy *DllExport.bat* into solution folder.
 2. Associate the latest received package (i.e. `gnt +DllExport`) with a specific version (as if it were like `gnt +DllExport/1.8.2-RC`)
-3. Run Wizard.
+3. Run Wizard if activated `run` mode (i.e. `gnt *DllExport`).
 
 In the end, ~8 KB of the *gnt.bat* now helps to achieve the same result in a fully automated way.
 
@@ -331,7 +352,8 @@ gnt.Run(ngpackages: "Fnv1a128");
   ...                 | 1.9+ alias to `ngpackages=...`                                                | `gnt Conari`, `gnt "regXwild;Fnv1a128"`
  `-unpack`            | 1.6+ To generate minified gnt.core from gnt.bat.                              | `gnt -unpack`
  ~~`-msbuild`~~ path  | 1.6 - 1.8 To use specific msbuild. Removed in 1.9. Override engine instead    | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages=Conari`
-`+` | 1.10+ Activate *install* mode. Automatic call `.pkg.install.*` for supported packages. | `gnt +DllExport`, `gnt +"DllExport;Conari"`
+`+` | 1.10+ Activate *install* mode. Automatic call `.pkg.install.*` for supported packages. `tMode == install` | `gnt +DllExport`, `gnt +"DllExport;Conari"`
+`*` | 1.10+ Activate *run* mode. Automatic call `.pkg.install.*` for supported packages. `tMode == run` | `gnt *DllExport`, `gnt *"DllExport;Conari"`
 
 #### Override engine
 

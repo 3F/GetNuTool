@@ -39,22 +39,19 @@ Func<string, XElement> _LoadXml = (input) =>
     }
 };
 
-Func<string, string[]> _FormatList = (str) => str.Split
-(
-    new[] { str.Contains('|') ? '|' : ';' },
-    StringSplitOptions.RemoveEmptyEntries
-);
-
 const string WPATH = @"$(wpath)";
+Environment.CurrentDirectory = WPATH; // important only for .pkg.install.* package scripts
 
-if(tmode == "get" || tmode == "grab" || tmode == "install")
+if(tmode == "get" || tmode == "grab" || tmode == "install" || tmode == "run")
 {
     string plist = @"$(ngpackages)";
 
     var sb = new StringBuilder();
 
-    if(string.IsNullOrEmpty(plist))
+    if(string.IsNullOrWhiteSpace(plist))
     {
+        string ngconfig = @"$(ngconfig)";
+
         Action<string> LoadConf = (cfg) =>
         {
             foreach(XElement pkg in _LoadXml(cfg).Descendants("package"))
@@ -80,7 +77,7 @@ if(tmode == "get" || tmode == "grab" || tmode == "install")
             }
         };
 
-        foreach(string cfg in _FormatList(@"$(ngconfig)"))
+        foreach(string cfg in ngconfig.Split(';'))
         {
             string lcfg = Path.Combine(WPATH, cfg);
 
@@ -248,16 +245,16 @@ if(tmode == "get" || tmode == "grab" || tmode == "install")
             }
         }
 
-        if(tmode == "install")
+        if(tmode == "install" || tmode == "run")
         {
             string pkgi = to + "/.pkg.install." + (Path.VolumeSeparatorChar == ':' ? "bat" : "sh");
             if(File.Exists(pkgi))
             {
-                DebugMessage("# {0}", pkgi);
+                DebugMessage(tmode + " {0}", pkgi);
                 System.Diagnostics
                     // Versions of the arguments format:
-                    // v1: 1 "path to the working directory" "path to the package"
-                    .Process.Start(pkgi, "1 \"" + WPATH + "\" \"" + to + "\"")
+                    // v1: 1 tmode "path to the working directory" "path to the package"
+                    .Process.Start(pkgi, "1 "+ tmode +" \""+ WPATH +"\" \""+ to +"\"")
                     .Dispose();
             }
         }
@@ -268,12 +265,14 @@ if(tmode == "get" || tmode == "grab" || tmode == "install")
 
     //Format: id[/version][?sha1][:path];id2[/version][?sha1][:path];...
 
-    foreach(string pkg in _FormatList(plist))
+    foreach(string pkg in plist.Split(';'))
     {
+        if(pkg == string.Empty) continue;
+
         string[] ident  = pkg.Split(new[] { ':' }, 2);
         string[] link   = ident[0].Split(new[] { '?' }, 2);
         string path     = ident.Length > 1 ? ident[1] : null;
-        string name     = link[0].Replace('/', '.');
+        string name     = link[0].Replace('/', '.').Trim();
 
         if(!string.IsNullOrEmpty(defpath))
         {
