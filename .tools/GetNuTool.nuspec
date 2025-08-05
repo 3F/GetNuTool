@@ -14,7 +14,7 @@
     <description>Embeddable Package Manager;
         Lightweight tool to Create or Distribute using basic shell scripts (does not require powershell or dotnet-cli);
         ```
-        gnt -help
+        gnt /help
         ```
         ```
         gnt +GetNuTool/$-version-$

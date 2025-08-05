@@ -1,6 +1,5 @@
-::! GetNuTool /shell/batch edition
-::! Copyright (c) 2015-2025  Denis Kuzmin <x-3F@outlook.com> github/3F
-::! https://github.com/3F/GetNuTool
+::! github.com/3F/GetNuTool
+::! (c) Denis Kuzmin <x-3F@outlook.com>
 
 @echo off & echo Incomplete script. Compile it first using build.bat: github.com/3F/GetNuTool >&2 & exit /B 1
 
@@ -41,39 +40,24 @@ if !carg!=="~" call :trimArgs !args:~1! /t:touch
 if !carg!=="-" exit /B %ERROR_CALL_NOT_IMPLEMENTED%
 if !carg! NEQ "/" set args=/p:ngpackages=!args!
 
-set "instance=%msb.gnt.cmd%"
-if defined instance goto found
+set "instance="
+:: Find the engine via hMSBuild.cmd stub or hMSBuild.bat script https://github.com/3F/hMSBuild
 
-:: Find engine via msb.gnt.cmd stub or hMSBuild.bat script https://github.com/3F/hMSBuild
+for /F "tokens=*" %%i in ('hMSBuild -only-path 2^>^&1') do 2>nul set instance="%%i"
+if exist !instance! goto found
 
-set script=hMSBuild
-if exist msb.gnt.cmd set script=msb.gnt.cmd
+:: Find the engine via system records (except 3.5 and 2.0 /F-40, 141)
 
-for /F "tokens=*" %%i in ('%script% -only-path 2^>^&1 ^&call echo %%^^ERRORLEVEL%%') do 2>nul (
-    if not defined instance ( set instance="%%i" ) else set EXIT_CODE=%%i
-)
-
-if .%EXIT_CODE%==.0 if exist !instance! goto found
-
-:: Find engine via system records
-
-for %%v in (4.0, 14.0, 12.0, 3.5, 2.0) do (
+for %%v in (4.0, 14.0, 12.0) do (
     for /F "usebackq tokens=2* skip=2" %%a in (
         `reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions\%%v" /v MSBuildToolsPath 2^> nul`
-    ) do if exist %%b (
-
+    ) do (
         set instance="%%~b\MSBuild.exe"
-        if exist !instance! (
-
-            if %%v NEQ 3.5 if %%v NEQ 2.0 goto found
-
-            echo Override engine or contact for legacy support %%v
-            exit /B %ERROR_CALL_NOT_IMPLEMENTED%
-        )
+        if exist !instance! goto found
     )
 ) ::&:
 
-echo Engine is not found. Try with hMSBuild>&2
+echo [x]Engine>&2
 exit /B %ERROR_FILE_NOT_FOUND%
 
 :found

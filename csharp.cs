@@ -190,6 +190,11 @@ if(tmode != "pack")
                     l.Proxy.Credentials = CredentialCache.DefaultCredentials;
                 }
 
+                // F-138
+                if(Environment.GetEnvironmentVariable("ngserver") != null
+                    || Environment.GetEnvironmentVariable("proxycfg") != null)
+                        throw new Exception("denied");
+
                 l.DownloadFile
                 (
                     (NullIfEmpty(@"$(ngserver)") ?? "https://www.nuget.org/api/v2/package/")

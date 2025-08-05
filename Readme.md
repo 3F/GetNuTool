@@ -98,17 +98,18 @@ For receiving packages or zipped files from local or remote source, then install
 
 The `get` is used by default but you can also specify `/t:get`
 
-Property   | Description                                                   | Default values
------------|---------------------------------------------------------------|-----------------
-ngconfig   | Define *.config* files.                                       | 1.9+ `packages.config;.tools\packages.config`
-ngserver   | Define server.                                                | 1.0+ `https://www.nuget.org/api/v2/package/`
-ngpackages | List of packages. Disables *ngconfig* if specified.           | 
-ngpath     | Common path for all packages.                                 | 1.0+ `packages`
-wpath      | *1.4+*  To change working directory.                          | 1.4+ *(The absolute path of the directory where the GetNuTool is located)*
-proxycfg   | *1.6.2+* To configure connection via proxy.                   | 
-ssl3       | *1.9+* Do **not** drop legacy ssl3, tls1.0, tls1.1 if `true`. | 
-break      | *1.9+* Disable the break on first package error if `no`       | 
+Property    | Description                                                  | Default values
+------------|--------------------------------------------------------------|-----------------
+ngconfig    | Define *.config* files.                                      | 1.9+ `packages.config;.tools\packages.config`
+🔒 ngserver | Define server.                                               | 1.0+ `https://www.nuget.org/api/v2/package/`
+ngpackages  | List of packages. Disables *ngconfig* if specified.          | 
+ngpath      | Common path for all packages.                                | 1.0+ `packages`
+wpath       | *1.4+*  To change working directory.                         | 1.4+ *(The absolute path of the directory where the GetNuTool is located)*
+🔒 proxycfg | *1.6.2+* To configure connection via proxy.                  | 
+ssl3        | *1.9+* Do **not** drop legacy ssl3, tls1.0, tls1.1 if `true`.| 
+break       | *1.9+* Disable the break on first package error if `no`      | 
 
+\*🔒 env protected property in 1.10+. Changing the value using an environment variables with the same name is prohibited. All intersections in used environment must be removed before actual execution (for example `set "ngserver="`), otherwise it will result in *denied* error.
 
 #### Package List Format
 
@@ -234,7 +235,7 @@ msbuild gnt.core /t:install /p:ngpackages=DllExport
 ```
 
 ```csharp
-net.r_eg.GetNuTool gnt = new();
+io.github._3F.GetNuTool gnt = new();
 gnt.Run(ngpackages: "Conari;DllExport", tmode: "install");
 ```
 
@@ -399,18 +400,44 @@ GetNuTool now is part of [NuGetComponent](https://3F.github.io/web.vsSBE/doc/Scr
 
 ### C# GetNuTool.cs
 
-GetNuTool.cs includes a fully compatible *gnt.core* inside.
+*GetNuTool.cs* includes a fully compatible *gnt.core* inside.
 
-Add GetNuTool.cs to your project (.NET Framework 4.0+, .NET 5+, Mono, .NET Core, .NET Standard), then command like:
+Add *GetNuTool.cs* to your project (.NET Framework 4.0+, .NET 5+, Mono, .NET Core, .NET Standard), then use it like:
 
 ```csharp
-var gnt = new net.r_eg.GetNuTool();
+io.github._3F.GetNuTool gnt = new();
+
+// NOTE: older GetNuTool (before 1.10) used the `net.r_eg` namespace
+// var gnt = new net.r_eg.GetNuTool();
+
 gnt.Run(ngpackages: "Conari;regXwild");
-...
+//...
 gnt.Run(ngpackages: "Fnv1a128");
 ```
 
-### Batch (.bat) version
+NOTE: modern GetNuTool now provides [its own package](https://www.nuget.org/packages/GetNuTool/); In this case *GetNuTool.cs* can be automatically added to your project after installation in Visual Studio or like. Control it via `$(GetNuToolDisableCsharp)` option.
+
+To override the way messages are printed in 1.10+
+
+```csharp
+class MyGnt: io.github._3F.GetNuTool
+{
+    public override void StdOutLine(string msg = "", params object[] args)
+    {
+        base.StdOutLine(msg, args);
+    }
+
+    public override void StdErrLine(string msg = "", params object[] args)
+    {
+        base.StdErrLine(msg, args);
+    }
+}
+...
+MyGnt gnt = new();
+gnt.Run();
+```
+
+### Batch (.bat) edition
 
 ~8 KB `gnt.bat` includes a fully compatible *gnt.core* inside.
 
@@ -423,35 +450,75 @@ gnt.Run(ngpackages: "Fnv1a128");
  ~~`-msbuild`~~ path  | 1.6 - 1.8 To use specific msbuild. Removed in 1.9. Override engine instead    | `gnt -msbuild "D:\MSBuild\bin\amd64\msbuild" /p:ngpackages=Conari`
 `+` | 1.10+ Activate *install* mode. Automatic call `.pkg.install.*` for supported packages. `tMode == install` | `gnt +DllExport`, `gnt +"DllExport;Conari"`
 `*` | 1.10+ Activate *run* mode. Automatic call `.pkg.install.*` for supported packages. `tMode == run`         | `gnt *DllExport`, `gnt *"DllExport;Conari"`
+`~` | 1.10+ Activate *touch* mode. Automatic call `.pkg.install.*` for supported packages with their  automatic disposal. `tMode == touch`         | `gnt ~hMSBuild`
 
 Other keys to gnt.bat               | Description                        | Example
 ------------------------------------|------------------------------------|---------
 `/help` `-help` `/h` `-h` `/?` `-?` | 1.9 Reserved; 1.10+ Help command;  | `gnt /help`
 
-#### Override engine
+#### Custom engine
 
-Since the `-msbuild` key was removed in 1.9 as obsolete, you have following ways to override engine search:
+GetNuTool allows to override the engine in the following ways:
 
-Either create `msb.gnt.cmd` in the directory from which the call *gnt.bat* is planned; with the following content, for example:
+Either create `hMSBuild.cmd` stub (inside the directory from which the call *gnt.bat* is planned, or globally using system or environment PATH) with the following content, for example:
 
 ```bat
 @echo msbuild.exe
 ```
 
-Or place a full version of [hMSBuild.bat](https://github.com/3F/hMSBuild) (~19 KB) tool instead of *msb.gnt.cmd* stub.
+Or the same but using the full [hMSBuild.bat](https://github.com/3F/hMSBuild) (~19 KB) script.
 
-
-Or **-unpack** command:
+Or manually via **-unpack** command:
 
 ```bat
 gnt -unpack & msbuild.exe gnt.core {args}
 ```
 
-Or use the same `msb.gnt.cmd` as environment variable:
+Deprecated:
 
-```bat
-set msb.gnt.cmd=msbuild.exe & gnt {args}
-```
+1.9: `msb.gnt.cmd` file stub and `%msb.gnt.cmd%` environment variable.
+
+1.6 - 1.8: `-msbuild` key.
+
+## NuGet package
+
+1.10+
+
+https://www.nuget.org/packages/GetNuTool/
+
+Predefined properties:
+
+MSBuild Properties | Description
+-------------------|---------------
+`GetNuToolRootPkg` |  Root path to the installed GetNuTool package.
+`GetNuToolBatPath` |  Path to the directory where batch scripts (.bat,.cmd).
+`GetNuToolBat`     |  Full path to *gnt.bat* edition.
+`GetNuToolSvcBat`  |  Full path to *svc.gnt.bat* helper.
+`GetNuToolCsharp`  |  Full path to *GetNuTool.cs* edition.
+`GetNuToolCore`    |  Full path to *gnt.core*.
+
+Preferences:
+
+MSBuild Property / Environment variable | Default value | Description
+----------------------------------------|---------------|---------------
+`GetNuToolDisableCsharp` |    | To prevent adding *GetNuTool.cs* for compilation with the project, set as **false**
+
+### URLs / local paths / proxy
+
+*GetNuTool* supports hostname + IPv4 + IPv6 (via square brackets, `http://[::1]`) for specified protocol:
+
+* Over http: `http://`server/, `https://`server/
+* Over ftp: `ftp://`server/, `ftp://`usr@server/, `ftp://`usr:pwd@server/
+* Over URL File Format: `file:///`D:/path/
+
+Local paths:
+
+* absolute: `D:/path/`, `D:\path\`, `D:\\path\\`, ...
+* relative: `../path/`, `..\..\path\`,  ...
+
+Proxy format:
+
+* `[usr[:pwd]@]host[:port]`. For example, `guest:1234@10.0.2.15:7428`
 
 ## Examples
 
