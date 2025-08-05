@@ -424,6 +424,10 @@ gnt.Run(ngpackages: "Fnv1a128");
 `+` | 1.10+ Activate *install* mode. Automatic call `.pkg.install.*` for supported packages. `tMode == install` | `gnt +DllExport`, `gnt +"DllExport;Conari"`
 `*` | 1.10+ Activate *run* mode. Automatic call `.pkg.install.*` for supported packages. `tMode == run`         | `gnt *DllExport`, `gnt *"DllExport;Conari"`
 
+Other keys to gnt.bat               | Description                        | Example
+------------------------------------|------------------------------------|---------
+`/help` `-help` `/h` `-h` `/?` `-?` | 1.9 Reserved; 1.10+ Help command;  | `gnt /help`
+
 #### Override engine
 
 Since the `-msbuild` key was removed in 1.9 as obsolete, you have following ways to override engine search:
@@ -437,13 +441,13 @@ Either create `msb.gnt.cmd` in the directory from which the call *gnt.bat* is pl
 Or place a full version of [hMSBuild.bat](https://github.com/3F/hMSBuild) (~19 KB) tool instead of *msb.gnt.cmd* stub.
 
 
-Or -unpack command:
+Or **-unpack** command:
 
 ```bat
 gnt -unpack & msbuild.exe gnt.core {args}
 ```
 
-Or `msb.gnt.cmd` environment variable:
+Or use the same `msb.gnt.cmd` as environment variable:
 
 ```bat
 set msb.gnt.cmd=msbuild.exe & gnt {args}
@@ -469,6 +473,15 @@ gnt /p:ngpackages="Conari;regXwild;MvsSln"
 ```bat
 gnt Fnv1a128
 gnt /t:pack /p:ngin=packages/Fnv1a128
+```
+
+```bat
+gnt LX4Cnh? /p:logo=no;info=no
+ ... 65f7d7f5d29a16a91f1c0a8ae01ef65d5868c2cf[x]
+```
+
+```bat
+gnt LX4Cnh?65f7d7f5d29a16a91f1c0a8ae01ef65d5868c2cf
 ```
 
 ```bat

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>GetNuTool</id>
+    <version>$-version-$</version>
+    <title>GetNuTool</title>
+    <authors>github.com/3F/GetNuTool</authors>
+    <license type="file">License.txt</license>
+    <owners>reg</owners>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <projectUrl>https://github.com/3F/GetNuTool</projectUrl>
+    <repository type="git" url="https://github.com/3F/GetNuTool" />
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Embeddable Package Manager;
+        Lightweight tool to Create or Distribute using basic shell scripts (does not require powershell or dotnet-cli);
+        ```
+        gnt -help
+        ```
+        ```
+        gnt +GetNuTool/$-version-$
+        ```        
+        Open source https://github.com/3F/GetNuTool
+        {build_info}</description>
+    <summary>Embeddable Package Manager; Create or Distribute using basic shell scripts (no powershell no dotnet-cli)</summary>
+    <tags>package manager nuget client packages bat batch PackageManager downloader zip files nupkg distributing archiver Package-Manager nuspec nugetclient GetNuTool tools</tags>
+    <releaseNotes> changelog: https://github.com/3F/GetNuTool/blob/master/changelog.txt </releaseNotes>
+    <copyright>Copyright (c) 2016-2025  Denis Kuzmin &lt;x-3F@outlook.com&gt; github/3F </copyright>
+  </metadata>
+</package>

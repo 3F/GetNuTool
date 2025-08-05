@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?><!-- https://github.com/3F/GetNuTool -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <GetNuToolRootPkg>$(MSBuildThisFileDirectory)..\..\</GetNuToolRootPkg> <!-- [root]\build\native\GetNuTool.targets -->
+
+    <GetNuToolBatPath>$(GetNuToolRootPkg)shell\batch\</GetNuToolBatPath>
+    <GetNuToolBat>$(GetNuToolBatPath)gnt.bat</GetNuToolBat>
+    <GetNuToolSvcBat>$(GetNuToolBatPath)svc.gnt.bat</GetNuToolSvcBat>
+
+    <GetNuToolCore>$(GetNuToolRootPkg)core\gnt.core</GetNuToolCore>
+  </PropertyGroup>
+
+</Project>

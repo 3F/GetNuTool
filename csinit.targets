@@ -24,9 +24,11 @@
         <TaskCoreDllPath Condition="'$(TaskCoreDllPath)' == '' and Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll</TaskCoreDllPath>
     </PropertyGroup>
 
-    <Target Name="get" BeforeTargets="Build">
+    <!-- First target is the default target /F-123 -->
+    <Target Name="get">
         <Main tmode="get"/>
     </Target>
+
     <Target Name="install">
         <Main tmode="install"/>
     </Target>
@@ -67,6 +69,4 @@
             ]]></Code>
         </Task>
     </UsingTask>
-
-    <Target Name="Build" />
 </Project>

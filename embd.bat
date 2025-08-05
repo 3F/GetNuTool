@@ -1,7 +1,8 @@
-@echo off
 ::! GetNuTool /shell/batch edition
 ::! Copyright (c) 2015-2025  Denis Kuzmin <x-3F@outlook.com> github/3F
 ::! https://github.com/3F/GetNuTool
+
+@echo off & echo Incomplete script. Compile it first using build.bat: github.com/3F/GetNuTool >&2 & exit /B 1
 
 set gntcore=gnt.core
 set $tpl.corevar$="%temp%\%gntcore%$core.version$%random%%random%"
@@ -27,6 +28,10 @@ if "!first!"=="-unpack" goto unpack
 
 :: make sure this is not a single " (double quote)
 if "!first!"=="" call :trimArgs
+
+set "checkH=!args!"
+call :unset "/help" "-help" "/h" "-h" "/?" "-?"
+if "!checkH!" NEQ "!args!" set args=~GetNuTool/$core.version$ /p:use=?;info=no
 
 :: NOTE !args:~0,1! should return literally "~0,1" as value when empty
 set carg="!args:~0,1!"
@@ -66,9 +71,9 @@ for %%v in (4.0, 14.0, 12.0, 3.5, 2.0) do (
             exit /B %ERROR_CALL_NOT_IMPLEMENTED%
         )
     )
-)
+) ::&:
 
-echo Engine is not found. Try with hMSBuild 1>&2
+echo Engine is not found. Try with hMSBuild>&2
 exit /B %ERROR_FILE_NOT_FOUND%
 
 :found
@@ -76,7 +81,6 @@ exit /B %ERROR_FILE_NOT_FOUND%
     if "%debug%"=="true" set con=/v:q
 
     call :core
-    call :unset "/help" "-help" "/h" "-h" "/?" "-?"
 
     call !instance! %$tpl.corevar$% /nologo /noautorsp !con! /p:wpath="%cd%/" !args!
     set EXIT_CODE=!ERRORLEVEL!

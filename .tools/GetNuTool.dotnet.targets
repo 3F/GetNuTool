@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?><!-- https://github.com/3F/GetNuTool -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <GetNuToolRootPkg>$(MSBuildThisFileDirectory)..\..\</GetNuToolRootPkg> <!-- [root]\build\[dotnet-platform]\GetNuTool.targets -->
+
+    <GetNuToolBatPath>$(GetNuToolRootPkg)shell\batch\</GetNuToolBatPath>
+    <GetNuToolBat>$(GetNuToolBatPath)gnt.bat</GetNuToolBat>
+    <GetNuToolSvcBat>$(GetNuToolBatPath)svc.gnt.bat</GetNuToolSvcBat>
+
+    <GetNuToolCsharp>$(GetNuToolRootPkg)csharp\GetNuTool.cs</GetNuToolCsharp>
+    <GetNuToolCore>$(GetNuToolRootPkg)core\gnt.core</GetNuToolCore>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- https://github.com/3F/DllExport/blob/c2d3cd1e6febe3b6f72bb59287b7239398de869a/.tools/net.r_eg.DllExport.targets#L9 -->
+    <!-- Identify via TargetFramework because TargetFrameworkIdentifier is not ready at this stage and MSBuild 16+ -->
+    <_tfmlower>$(TargetFramework.ToLower())</_tfmlower>
+    <IsNetCoreBased Condition="$(_tfmlower.StartsWith('netc')) Or $(_tfmlower.StartsWith('nets')) Or ('$(_tfmlower)'!='' And $([System.Char]::IsDigit($(_tfmlower[3]))) And '$(_tfmlower[3])' &gt;= '5')">true</IsNetCoreBased>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(GetNuToolDisableCsharp)'!='false' And '$(IsNetCoreBased)'!='true'">
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(GetNuToolDisableCsharp)'!='false' And '$(IsNetCoreBased)'=='true'">
+    <PackageReference Include="System.IO.Packaging" Version="4.4.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(GetNuToolDisableCsharp)'!='false'">
+
+    <Compile Include="$(GetNuToolCsharp)">
+      <Visible>true</Visible>
+      <InProject>true</InProject>
+      <Link>GetNuTool\GetNuTool.cs</Link>
+    </Compile>
+
+  </ItemGroup>
+
+</Project>
