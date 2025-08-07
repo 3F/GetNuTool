@@ -9,6 +9,7 @@ namespace GntCSharpTest
     [Collection("Sequential")]
     public class BasicTest
     {
+        private readonly string svcbat = "svc.gnt.bat";
         private readonly _GetNuTool gnt = new();
 
         [Fact]
@@ -58,18 +59,20 @@ namespace GntCSharpTest
             Assert.Contains("[STDERR] Empty .config + ngpackages", gnt.stream[1]);
         }
 
-        [Fact]
-        public void Sha1Test1()
+        [Theory]
+        [InlineData("cccccccccccccccccccccccccccccccccccccccc")]
+        [InlineData("")]
+        public void Sha1Test1(string checksum)
         {
             gnt.DeleteAllPackages();
-            gnt.Run(ngpackages: "Fnv1a128/1.0.0?cccccccccccccccccccccccccccccccccccccccc");
+            gnt.Run(ngpackages: $"Fnv1a128/1.0.0?{checksum}");
             Assert.False(gnt.CheckPackage("Fnv1a128"));
 
             Assert.Equal(3, gnt.stream.Count);
 
             Assert.Contains("Fnv1a128/1.0.0 ... ", gnt.stream[1]);
             string actualSha1 = Regex.Match(gnt.stream[2], @"\.\.\. (.+)\[x\]").Groups[1].Value;
-            Assert.Contains($"cccccccccccccccccccccccccccccccccccccccc ... {actualSha1}[x]", gnt.stream[2]);
+            Assert.Contains($"{checksum} ... {actualSha1}[x]", gnt.stream[2]);
 
             gnt.stream.Clear();
             gnt.Run(ngpackages: $"Fnv1a128/1.0.0?{actualSha1}");
@@ -101,12 +104,12 @@ namespace GntCSharpTest
         public void InstallTest1(string tmode)
         {
             gnt.DeletePackage("GetNuTool", "1.9.0");
-            gnt.UnsetFile("svc.gnt.bat");
+            gnt.UnsetFile(svcbat);
 
-            Assert.False(File.Exists("svc.gnt.bat"));
+            Assert.False(File.Exists(svcbat));
             gnt.Run(tmode, ngpackages: "GetNuTool/1.9.0");
             Assert.Equal(tmode != "touch", gnt.CheckPackage("GetNuTool", "1.9.0"));
-            Assert.Equal(tmode != "get", File.Exists("svc.gnt.bat"));
+            Assert.Equal(tmode != "get", File.Exists(svcbat));
 
             Assert.Equal(2, gnt.stream.Count);
             Assert.Contains("GetNuTool/1.9.0 ... ", gnt.stream[1]);
@@ -118,12 +121,12 @@ namespace GntCSharpTest
         public void InstallTest2(string tmode)
         {
             gnt.DeletePackage("GetNuTool", "1.9.0");
-            gnt.UnsetFile("svc.gnt.bat");
+            gnt.UnsetFile(svcbat);
 
-            Assert.False(File.Exists("svc.gnt.bat"));
+            Assert.False(File.Exists(svcbat));
             gnt.Run(tmode, ngpackages: "GetNuTool/1.9.0");
             Assert.True(gnt.CheckPackage("GetNuTool", "1.9.0"));
-            Assert.Equal(tmode != "get", File.Exists("svc.gnt.bat"));
+            Assert.Equal(tmode != "get", File.Exists(svcbat));
 
             Assert.Equal(2, gnt.stream.Count);
             Assert.Contains("GetNuTool/1.9.0 ... ", gnt.stream[1]);
@@ -131,11 +134,11 @@ namespace GntCSharpTest
             //  -
 
             gnt.stream.Clear();
-            gnt.UnsetFile("svc.gnt.bat");
+            gnt.UnsetFile(svcbat);
 
             gnt.Run(tmode, ngpackages: "GetNuTool/1.9.0");
             Assert.True(gnt.CheckPackage("GetNuTool", "1.9.0"));
-            Assert.False(File.Exists("svc.gnt.bat"));
+            Assert.False(File.Exists(svcbat));
 
             Assert.Equal(2, gnt.stream.Count);
             Assert.Contains("GetNuTool.1.9.0 use ", gnt.stream[1]);

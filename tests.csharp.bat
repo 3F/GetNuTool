@@ -9,6 +9,6 @@ set msb=%~dp0\.tools\hMSBuild
 setlocal
     cd tests\cs\
 
-    call %msb% ~x ~c Release
-    dotnet test -c Release --no-build --no-restore --test-adapter-path:. %usrLogger% GntCSharpTest
+    call %msb% ~x ~c Release /t:restore /t:Build
+    dotnet test -c Release --no-build --no-restore --test-adapter-path:. %usrLogger% CsEditionTest
 endlocal

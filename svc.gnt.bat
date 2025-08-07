@@ -325,7 +325,7 @@ echo.
 echo  To override the engine:
 echo     Examples:
 echo       gnt -unpack ^& msbuild.exe gnt.core {args}
-echo       echo.@echo  msbuild.exe> hMSBuild.cmd
+echo       echo.@echo  msbuild.exe^> hMSBuild.cmd
 echo       hMSBuild.bat ( https://github.com/3F/hMSBuild )
 echo.
 echo  Build from src:
