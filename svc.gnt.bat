@@ -270,7 +270,7 @@ echo      ^<package id="" version="" /^>
 echo      ^<package id="" version="" sha1="" output="" /^>
 echo.
 echo  First keys to gnt.bat:
-echo    -unpack    - To generate minified gnt.core.
+echo    -unpack   - To generate minified gnt.core.
 echo.
 echo  tModes        aliases
 echo    /t:get        (...)
@@ -325,8 +325,7 @@ echo.
 echo  To override the engine:
 echo     Examples:
 echo       gnt -unpack ^& msbuild.exe gnt.core {args}
-echo       set msb.gnt.cmd=msbuild.exe ^& gnt {args}
-echo       echo.@echo  msbuild.exe> msb.gnt.cmd
+echo       echo.@echo  msbuild.exe> hMSBuild.cmd
 echo       hMSBuild.bat ( https://github.com/3F/hMSBuild )
 echo.
 echo  Build from src:

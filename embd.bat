@@ -1,5 +1,4 @@
-::! github.com/3F/GetNuTool
-::! (c) Denis Kuzmin <x-3F@outlook.com>
+::! (c) Denis Kuzmin <x-3F@outlook.com> github.com/3F
 
 @echo off & echo Incomplete script. Compile it first using build.bat: github.com/3F/GetNuTool >&2 & exit /B 1
 
@@ -34,11 +33,11 @@ if "!checkH!" NEQ "!args!" set args=~GetNuTool/$core.version$ /p:use=?;info=no
 
 :: NOTE !args:~0,1! should return literally "~0,1" as value when empty
 set carg="!args:~0,1!"
-if !carg!=="+" call :trimArgs !args:~1! /t:install
-if !carg!=="*" call :trimArgs !args:~1! /t:run
-if !carg!=="~" call :trimArgs !args:~1! /t:touch
+if !carg!=="+" call :trimArgsAsMode install
+if !carg!=="*" call :trimArgsAsMode run
+if !carg!=="~" call :trimArgsAsMode touch
 if !carg!=="-" exit /B %ERROR_CALL_NOT_IMPLEMENTED%
-if !carg! NEQ "/" set args=/p:ngpackages=!args!
+if defined args if !carg! NEQ "/" set args=/p:ngpackages=!args!
 
 set "instance="
 :: Find the engine via hMSBuild.cmd stub or hMSBuild.bat script https://github.com/3F/hMSBuild
@@ -78,12 +77,16 @@ echo Generating a %gntcore% at %cd%\...
 
 :core
 setlocal disableDelayedExpansion
-<nul set/P="">%$tpl.corevar$%&$gnt.core.logic$
+<nul set/P=>%$tpl.corevar$%&$gnt.core.logic$
 endlocal
 exit /B 0
 
 :trimArgs
     set args=%*
+exit /B 0
+
+:trimArgsAsMode
+    call :trimArgs !args:~1! /t:%1
 exit /B 0
 
 :unset

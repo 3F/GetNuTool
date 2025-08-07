@@ -57,6 +57,15 @@ set "exec=%~3" & set "wdir=%~4"
         call a completeTest
     ::_____________________________________________________
 
+    ::_______ ------ ______________________________________
+
+        call a startTest "-h" || goto x
+            call a findInStreamOrFail "Package List Format" || goto x
+            call a findInStreamOrFail "Examples:" || goto x
+            call a findInStreamOrFail "Documentation:" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
 
     set "logo=no"
 
@@ -281,9 +290,11 @@ set "exec=%~3" & set "wdir=%~4"
 
         echo ^<?xml version="1.0" encoding="utf-8"?^>>>%config%
 
+        set "debug=true"
         call a startTest "/p:ngconfig=`%config%`" 1 || goto x
-            call a msgOrFailAt 1 "Root element is missing" || goto x
+            call a findInStreamOrFail "Root element is missing" 1 || goto x
         call a completeTest
+        set "debug="
     ::_____________________________________________________
 
 
@@ -449,6 +460,75 @@ set "exec=%~3" & set "wdir=%~4"
     ::_____________________________________________________
 
 
+    ::_______ ------ ______________________________________
+
+        call a unsetPackage GetNuTool.1.9.0
+        call a unsetFile "svc.gnt.bat"
+
+        call a startTest "GetNuTool/1.9.0" || goto x
+            call a msgOrFailAt 1 "GetNuTool/1.9.0 ... " || goto x
+            call a checkFsBase "GetNuTool.1.9.0" "GetNuTool.nuspec" || goto x
+            call a checkFsNo "svc.gnt.bat" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a startTest "+GetNuTool/1.9.0" || goto x
+            call a msgOrFailAt 1 "GetNuTool.1.9.0 use " || goto x
+            call a checkFsNo "svc.gnt.bat" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a unsetPackage GetNuTool.1.9.0
+
+        call a startTest "+GetNuTool/1.9.0" || goto x
+            call a msgOrFailAt 1 "GetNuTool/1.9.0 ... " || goto x
+            call a checkFsBase "GetNuTool.1.9.0" "GetNuTool.nuspec" || goto x
+            call a checkFs . "svc.gnt.bat" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a unsetPackage GetNuTool.1.9.0
+        call a unsetFile "svc.gnt.bat"
+
+        call a startTest "~GetNuTool/1.9.0" || goto x
+            call a msgOrFailAt 1 "GetNuTool/1.9.0 ... " || goto x
+            call a checkFsBaseNo "GetNuTool.1.9.0" || goto x
+            call a checkFs . "svc.gnt.bat" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a unsetFile "svc.gnt.bat"
+
+        call a startTest "*GetNuTool/1.9.0" || goto x
+            call a msgOrFailAt 1 "GetNuTool/1.9.0 ... " || goto x
+            call a checkFsBase "GetNuTool.1.9.0" "GetNuTool.nuspec" || goto x
+            call a checkFs . "svc.gnt.bat" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a startTest "/help" || goto x
+            call a findInStreamOrFail "Package List Format" || goto x
+            call a findInStreamOrFail "Examples:" || goto x
+            call a findInStreamOrFail "Documentation:" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
 :::::::::::::
 call :cleanup
 
@@ -463,4 +543,5 @@ exit /B 1
     call a unsetPackage
     call a unsetFile %config%
     call a unsetDir %artefactsDirName%
+    call a unsetFile "svc.gnt.bat"
 exit /B 0

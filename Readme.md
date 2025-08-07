@@ -78,7 +78,7 @@ However! GetNuTool has more powerful ways even for standard NuGet packages provi
 * Request to the server only if the package is not installed.
 * Supports proxy with custom credential.
 * Default settings are overridden through an environment variables: default .config files, NuGet server, etc.
-* The ability to create *one click* ~8 KB .bat wrappers for any packages. Try for example [vsSolutionBuildEvent.bat](https://github.com/3F/GetNuTool/blob/master/demo/vsSolutionBuildEvent.bat)
+* The ability to create *one click* ~8 KB .bat wrappers for any packages. Try for example [vsSolutionBuildEvent.bat](https://github.com/3F/GetNuTool/blob/master/doc/demo/vsSolutionBuildEvent.bat)
 * Easy integration into any scripts such as pure batch-script [netfx4sdk](https://github.com/3F/netfx4sdk), [DllExport](https://github.com/3F/DllExport/wiki/DllExport-Manager), [hMSBuild](https://github.com/3F/hMSBuild)
 * C# projects support via GetNuTool.cs
 * *.pkg.install.bat* and *.pkg.install.sh* support for *install*, *run*, *touch* modes and additionally via `+` (plus), `*` (asterisk), `~` (tilde) i.e. `gnt +...`, `gnt *...`, `gnt ~...` respectively.

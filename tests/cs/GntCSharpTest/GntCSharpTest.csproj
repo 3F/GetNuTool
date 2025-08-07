@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <NoWarn>1701;1702;CS1591;IDE1006</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- https://github.com/3F/DllExport/blob/c2d3cd1e6febe3b6f72bb59287b7239398de869a/.tools/net.r_eg.DllExport.targets#L9 -->
+    <!-- Identify via TargetFramework because TargetFrameworkIdentifier is not ready at this stage and MSBuild 16+ -->
+    <_tfmlower>$(TargetFramework.ToLower())</_tfmlower>
+    <IsNetCoreBased Condition="$(_tfmlower.StartsWith('netc')) Or $(_tfmlower.StartsWith('nets')) Or ('$(_tfmlower)'!='' And $([System.Char]::IsDigit($(_tfmlower[3]))) And '$(_tfmlower[3])' &gt;= '5')">true</IsNetCoreBased>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(GetNuToolDisableCsharp)'!='false' And '$(IsNetCoreBased)'!='true'">
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(GetNuToolDisableCsharp)'!='false' And '$(IsNetCoreBased)'=='true'">
+    <PackageReference Include="System.IO.Packaging" Version="4.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\bin\Release\raw\csharp\GetNuTool.cs">
+      <Visible>true</Visible>
+      <InProject>true</InProject>
+      <Link>GetNuTool\GetNuTool.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

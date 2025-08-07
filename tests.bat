@@ -3,7 +3,7 @@
 :: run tests by default
 
 setlocal
-    if exist "core\gnt.core\" (
+    if exist "core\gnt.core" (
 
         set "bdir=..\shell\batch\"
 

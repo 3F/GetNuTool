@@ -10,3 +10,4 @@ obj
 /demo/wrappers/packages
 /demo/packages
 /demo/*.sln
+/tests/svc.gnt.bat

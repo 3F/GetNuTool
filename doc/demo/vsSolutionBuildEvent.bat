@@ -1,0 +1,42 @@
+@call :GetNuTool vsSolutionBuildEvent/1.16.1||(echo Please contact support>&2&exit/B1)
+if "%~1"=="" packages\vsSolutionBuildEvent.1.16.1\GUI
+:GetNuTool
+::! (c) Denis Kuzmin <x-3F@outlook.com> github.com/3F
+@echo off&set ee=gnt.core&set ef="%temp%\%ee%1.9.0%random%%random%"
+setlocal enableDelayedExpansion&set eg=%*&set eh=%~1&if "!eh!"=="-unpack" goto en
+if "!eh!"=="" call :eo
+set "ei=!eg!"&call :ep "/help" "-help" "/h" "-h" "/?" "-?"&if "!ei!" NEQ "!eg!" set eg=~GetNuTool/1.9.0 /p:use=?;info=no
+set ej="!eg:~0,1!"&if !ej!=="+" call :eq install
+if !ej!=="*" call :eq run
+if !ej!=="~" call :eq touch
+if !ej!=="-" exit/B120
+if defined eg if !ej! NEQ "/" set eg=/p:ngpackages=!eg!
+set "ek="&for /F "tokens=*" %%i in ('hMSBuild -only-path 2^>^&1') do 2>nul set ek="%%i"
+if exist !ek! goto er
+for %%v in (4.0,14.0,12.0)do (for /F "usebackq tokens=2* skip=2" %%a in (`reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions\%%v" /v MSBuildToolsPath 2^> nul`) do (set ek="%%~b\MSBuild.exe"
+if exist !ek! goto er))
+echo [x]Engine>&2
+exit/B2
+:er
+set el=/noconlog&if "%debug%"=="true" set el=/v:q
+call :es&call !ek! %ef% /nologo /noautorsp !el! /p:wpath="%cd%/" !eg!&set em=!ERRORLEVEL!&del /Q/F %ef%&exit/B!em!
+:en
+set ef="%cd%\%ee%"&echo Generating a %ee% at %cd%\...
+:es
+setlocal disableDelayedExpansion
+<nul set/P=>%ef%&set -=GetNuTool&set [=TaskCoreDllPath&set ]=Exists&set ;=MSBuildToolsPath&set .=Microsoft.Build.Tasks.&set ,=MSBuildToolsVersion&set :=tmode&set +=Reference&set {=System&set }=Using&set _=Namespace&set a=Console.WriteLine(&set b=);var&set c=String&set d=package&set e=Environment&set f=){var&set g=);if(&set h=.IsNullOr&set i=foreach&set j=XDocument.Load(&set k=Attribute&set l=Console.Error.WriteLine(&set m=return&set n=Append&set o=Split&set p=Path&set q=Combine&set r=Length&set s=false&set t=SecurityProtocolType&set u=ServicePointManager.SecurityProtocol&set v=Credential&set w=Directory&set x=Console.Write(&set y=using&set z=Exception&set $=FileMode&set #=FileAccess&set @=Comparison&set `=StartsWith&set ?=)continue;var&set !=http://schemas.microsoft.com/
+<nul set/P=^<?xml version="1.0" encoding="utf-8"?^>^<Project ToolsVersion="4.0" xmlns="%!%developer/msbuild/2003"^>^<PropertyGroup^>^<%-%^>1.9.0^</%-%^>^<%[% Condition="%]%('$(%;%)\%.%v$(%,%).dll')"^>$(%;%)\%.%v$(%,%).dll^</%[%^>^<%[% Condition="'$(%[%)'=='' and %]%('$(%;%)\%.%Core.dll')"^>$(%;%)\%.%Core.dll^</%[%^>^</PropertyGroup^>>>%ef%
+for %%t in (get,install,run,touch,grab,pack)do <nul set/P=^<Target Name="%%t"^>^<K %:%="%%t"/^>^</Target^>>>%ef%
+<nul set/P=^<%}%Task TaskName="K" TaskFactory="CodeTaskFactory" AssemblyFile="$(%[%)"^>^<ParameterGroup^>^<%:%/^>^</ParameterGroup^>^<Task^>^<%+% Include="%{%.Xml"/^>^<%+% Include="%{%.Xml.Linq"/^>^<%+% Include="WindowsBase"/^>^<%}% %_%="%{%"/^>^<%}% %_%="%{%.Text"/^>^<%}% %_%="%{%.IO"/^>^<%}% %_%="%{%.IO.Packaging"/^>^<%}% %_%="%{%.Linq"/^>^<%}% %_%="%{%.Net"/^>^<%}% %_%="%{%.Xml.Linq"/^>^<%}% %_%="%{%.Diagnostics"/^>^<Code Type="Fragment" Language="cs"^>^<![CDATA[if("$(logo)"!="no")%a%"\n%-% $(%-%)\n(c) 2015-2025  Denis Kuzmin <x-3F@outlook.com> github/3F\n"%b% K="{0} is not found ";var L=new %c%[]{"/_rels/","/%d%/","/[Content_Types].xml"};Action^<%c%,object^>M=(N,O)=^>{if("$(debug)"=="true")%a%N,O);};Func^<%c%,%c%^>P=Q=^>Q==""?null:Q;var R=P(@"$(wpath)")??@"$(MSBuildProject%w%)";%e%.Current%w%=R;Action^<%c%,%c%^>S=%e%.Set%e%Variable;S("%-%","$(%-%)");S("use","$(use)");S("debug","$(debug)"%b% T="$(info)"!="no";if(%:%!="pack"%f% U=@"$(ng%d%s)";var V=new %c%Builder(%g%%c%%h%WhiteSpace(U)%f% W=P(@"$(ngconfig)")??@"%d%s.config;.tools\%d%s.config";Action^<%c%^>X=Y=^>{%i%(var Z in %j%Y).Root.Descendants("%d%")%f% D=Z.%k%("id"%b% E=Z.%k%("version"%b% F=Z.%k%("output"%b% G=Z.%k%("sha1"%g%D==null){%l%"Invalid "+Y);%m%;}V.%n%(D.Value%g%E!=null)V.%n%("/"+E.Value%g%G!=null)V.%n%("?"+G.V>>%ef%
+<nul set/P=alue%g%F!=null)V.%n%(":"+F.Value);V.%n%(';');}};%i%(var Y in W.%o%(';')%f% H=%p%.%q%(R,Y%g%File.%]%(H)){X(H);}else M(K,H);}if(V.%r%^<1){%l%"Empty .config + ng%d%s");%m% %s%;}U=V.To%c%();}var I=P(@"$(ngpath)")??"%d%s";var J=@"$(proxycfg)";%i%(var A in Enum.GetValues(typeof(%t%)).Cast^<%t%^>()){try{%u%^|=A;}catch(NotSupported%z%){}}if("$(ssl3)"!="true")%u%^&=~(%t%)(48^|192^|768);Func^<%c%,WebProxy^>B=Y=^>{var C=Y.%o%('@'%g%C.%r%^<=1)%m% new WebProxy(C[0],%s%%b% d=C[0].%o%(':');%m% new WebProxy(C[1],%s%){%v%s=new Network%v%(d[0],d.%r%^>1?d[1]:null)};};Func^<%c%,%c%^>e=f=^>{var g=%p%.Get%w%Name(f%g%!%w%.%]%(g))%w%.Create%w%(g);%m% f;};Func^<%c%,%c%,%c%,%c%,bool^>h=(i,j,f,G)=^>{var k=%p%.GetFull%p%(%p%.%q%(R,f??j??"")%b% l=%:%[0]=='t';if(l^&^&%w%.%]%(k))%w%.Delete(k,true%g%%w%.%]%(k)^|^|File.%]%(k)){if(T)%a%"{0} use {1}",j,k);%m% true;}if(T)%x%i+" ... "%b% m=%:%=="grab";var n=m?e(k):%p%.%q%(%p%.GetTemp%p%(),Guid.NewGuid().To%c%());%y%(var o=new WebClient()){try{if(!%c%%h%Empty(J)){o.Proxy=B(J);}o.Headers.Add("User-Agent","%-%/$(%-%)");o.UseDefault%v%s=true;if(o.Proxy!=null^&^&o.Proxy.%v%s==null){o.Proxy.%v%s=%v%Cache.Default%v%s;}if(%e%.Get%e%Variable("ngserver")!=null^|^|%e%.Get%e%Variable("proxycfg")!=null)throw new %z%("denied");o.DownloadFile((P(@"$(ngserver)")??"https://www.nuget.org/api/v2/%d%/")+i,n);}catch(%z% p){%l%p.Message);%m% %s%;}}if(T)%a%k%g%G!=null){%x%"{0} ... ",G);%y%(var q=%{%.Security.Cryptography.SHA1.Create()){V.Clear();%y%(var r=new FileStream(n,(%$%)3,(%#%)1))%i%(var s in q.ComputeHash(r))V.%n%(s.To%c%("x2"));%x%V.To%c%()%g%!V.To%c%().Equals(G,(%c%%@%)5)){%a%"[x]");%m% %s%;}%a%);}}if(m)%m% true;%y%(var Z=ZipPackage.Open(n,(%$%)3,(%#%)1)){%i%(var t in Z.GetParts()%f% u=Uri.UnescapeData%c%(t.Uri.Original%c%%g%L.Any(v=^>u.%`%(v,(%c%%@%)4))%?% w=%p%.%q%(k,u.TrimStart('/'));M("- {0}",u);%y%(var x=t.GetStream((%$%)3,(%#%)1))%y%(var y=File.OpenWrite(e(w))){try{x.CopyTo(y);}catch(FileFormat%z%){M>>%ef%
+<nul set/P=("[x]?crc: {0}",w);}}}}File.Delete(n%g%%:%!="get"%f% z=k+"/.pkg.install."+(%p%.VolumeSeparatorChar==':'?"bat":"sh"%g%File.%]%(z)){M(%:%+" {0}",z%b% a=Process.Start(new ProcessStartInfo(z,"1 "+%:%+" \""+R+"\" \""+k+"\""){UseShellExecute=%s%});a.WaitForExit();a.Dispose();}if(l){%w%.Delete(k,true%g%%w%.GetDirectories(k+"/../").%r%^<1)%w%.Delete(k+"/../");}}%m% true;};%i%(var Z in U.%o%(';')){if(Z==""%?% b=Z.%o%(new[]{':'},2%b% i=b[0].%o%(new[]{'?'},2%b% f=b.%r%^>1?b[1]:null;var j=i[0].Replace('/','.').Trim();if(!%c%%h%Empty(I)){f=%p%.%q%(I,f??j);}if(!h(i[0],j,f,i.%r%^>1?i[1]:null)^&^&"$(break)".Trim()!="no")%m% %s%;}}else if(%:%=="pack"%f% c=".nuspec";var _="metadata";var KK="id";var KL="version";var g=%p%.%q%(R,@"$(ngin)"%g%!%w%.%]%(g)){%l%K,g);%m% %s%;}var KM=%w%.GetFiles(g,"*"+c).FirstOrDefault(%g%KM==null){%l%K+g,c);%m% %s%;}%a%"{0} use {1}",c,KM%b% KN=%j%KM).Root.Elements().FirstOrDefault(v=^>v.Name.LocalName==_%g%KN==null){%l%K,_);%m% %s%;}var KO=new %{%.Collections.Generic.Dictionary^<%c%,%c%^>();Func^<%c%,%c%^>KP=KQ=^>KO.ContainsKey(KQ)?KO[KQ]:"";%i%(var KR in KN.Elements())KO[KR.Name.LocalName.ToLower()]=KR.Value;if(!%{%.Text.RegularExpressions.Regex.IsMatch(KP(KK),@"^\w+(?:[_.-]\w+)*$")){%l%"Invalid id");%m% %s%;}var KS=%c%.Format("{0}.{1}.nupkg",KP(KK),KP(KL)%b% KT=%p%.%q%(R,@"$(ngout)"%g%!%c%%h%WhiteSpace(KT)){if(!%w%.%]%(KT)){%w%.Create%w%(KT);}KS=%p%.%q%(KT,KS);}%a%"Creating %d% {0} ...",KS);%y%(var Z=Package.Open(KS,(%$%)2)%f% KU=new Uri(%c%.Format("/{0}{1}",KP(KK),c),(UriKind)2);Z.CreateRelationship(KU,0,"%!%packaging/2010/07/manifest");%i%(var KV in %w%.GetFiles(g,"*.*",(SearchOption)1)){if(L.Any(v=^>KV.%`%(%p%.%q%(g,v.Trim('/')),(%c%%@%)4))%?% KW=KV.%`%(g,(%c%%@%)5)?KV.Substring(g.%r%).TrimStart(%p%.%w%SeparatorChar):KV;M("+ {0}",KW%b% t=Z.CreatePart(PackUriHelper.CreatePartUri(new Uri(%c%.Join("/",KW.%o%('\\','/').Select(Uri.EscapeData%c%)),(UriKind)2)),"application/octet",(CompressionOption)>>%ef%
+<nul set/P=1);%y%(var KX=t.GetStream())%y%(var KY=new FileStream(KV,(%$%)3,(%#%)1)){KY.CopyTo(KX);}}var KZ=Z.PackageProperties;KZ.Creator=KP("authors");KZ.Description=KP("description");KZ.Identifier=KP(KK);KZ.Version=KP(KL);KZ.Keywords=KP("tags");KZ.Title=KP("title");KZ.LastModifiedBy="%-%/$(%-%)";}}else %m% %s%;]]^>^</Code^>^</Task^>^</%}%Task^>^</Project^>>>%ef%
+endlocal&exit/B0
+:eo
+set eg=%*&exit/B0
+:eq
+call :eo !eg:~1! /t:%1&exit/B0
+:ep
+if defined eg set eg=!eg:%~1=!
+if "%~2" NEQ "" shift & goto ep
+exit/B0
