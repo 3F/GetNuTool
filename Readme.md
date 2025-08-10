@@ -125,7 +125,7 @@ sha1      | *(Optional)* Expected sha1 for this package. | `eead8f5c1fdff2abd4da
 * As of version 1.2+, attributes are now case sensitive. Please use lowercase for `id`, `version`, `output`, `sha1`.
 * It will link to the **latest** available version if `version` attribute is not defined.
 * `output` attribute is relative to `ngpath`. You can also use absolute path.
-* `sha1` activates security check before every install / extracting. It useful when connection is not secure like on windows xp with obsolete ciphers. But please note: some servers (like official NuGet) may repackage .nupkg for some purposes, such as adding *.signature.p7s* etc. This of course changes sha1 hash value that you need to check.
+* `sha1` activates the alternative security check before each accessing (modes: *get*, *install*, *run*, *touch*, *grab*). It useful when connection is not secure like on windows xp with obsolete ciphers. But please note: some servers (like official NuGet) may repackage .nupkg for some purposes, such as adding *.signature.p7s* etc. This of course changes sha1 hash value that you need to check.
 * `id` allows only `a-z` `A-Z` `0-9` `.` `-` `_` symbols without whitespaces.
 
 ##### *ngpackages*
@@ -456,6 +456,57 @@ Other keys to gnt.bat               | Description                        | Examp
 ------------------------------------|------------------------------------|---------
 `/help` `-help` `/h` `-h` `/?` `-?` | 1.9 Reserved; 1.10+ Help command;  | `gnt /help`
 
+#### Aliases to itself
+
+1.10+
+
+`gnt ~` (using *touch* mode), `gnt *` (using *run* mode), `gnt +` (using *install* mode)
+
+For example:
+
+Gets svc.gnt.bat
+
+```bat
+gnt ~
+```
+
+Access *svc.gnt* helper and execute *-sha1-get* command
+
+```bat
+gnt ~& svc.gnt -sha1-get LX4Cnh/1.1
+```
+
+Install and open the documentation
+```bat
+gnt +/p:use=doc
+```
+
+Get version of the core
+
+```bat
+gnt ~/p:use=version
+```
+
+syntax
+
+```bat
+gnt ~/p:use=?
+```
+
+etc.
+
+Note you can also generate wrapper using *svc.gnt -embed*, for example:
+
+```bat
+gnt ~/p:use=doc
+```
+
+as *help.bat*
+
+```bat
+svc.gnt -embed "~/p:use=doc" -name help
+```
+
 #### Custom engine
 
 GetNuTool allows to override the engine in the following ways:
@@ -502,6 +553,46 @@ Preferences:
 MSBuild Property / Environment variable | Default value | Description
 ----------------------------------------|---------------|---------------
 `GetNuToolDisableCsharp` |    | To prevent adding *GetNuTool.cs* for compilation with the project, set as **false**
+
+
+### Installation
+
+[GetNuTool](https://www.nuget.org/packages/GetNuTool/) supports *install* mode (+run, +touch) starting with 1.10.
+
+Supported `use` commands:
+
+Command          | Description
+-----------------|------------
+`?`              | alias `svc.gnt -core syntax`
+`doc`            | (depending on modes) Copy GetNuTool.version.html into the working directory; then open it.
+`-`              | nothing
+` ` (empty)      | Copy fresh *gnt.bat* and *svc.gnt.bat* into the working directory.
+`version`        | alias `svc.gnt -version`
+`version-short`  | alias `svc.gnt -version-short`
+
+Note `gnt /help` is alias to `gnt ~/p:use=?`
+
+Empty package name is alias to `GetNuTool/{version}`: `gnt ~`, `gnt +`, `gnt *`
+
+For example, to install *gnt.bat* and *svc.gnt.bat* helper into the working directory: 
+
+```bat
+gnt ~
+```
+
+Note `gnt ~GetNuTool` is equal to `gnt ~` but `gnt ~GetNuTool/1.10` can be different depending on actual *gnt.bat*
+
+Same but using addional properties (n. *ngserver*):
+
+```bat
+gnt ~/p:ngserver=...
+```
+
+All this will result in overwriting existing local copies if there are any inside the working directory. To prevent this behaviour, update *reaonly* attribute e.g. `attrib +r gnt.bat` to lock updating and `attrib -r gnt.bat` to unlock accordingly.
+
+Using the format `gnt ~& svc.gnt ...` allows accessing to *svc.gnt* even if it doesn't exist locally, for example:
+
+> gnt ~& svc.gnt -help
 
 ### URLs / local paths / proxy
 
@@ -612,6 +703,11 @@ git clone https://github.com/3F/GetNuTool.git src
 cd src & build & bin\Release\gnt Conari
 ```
 
+Test the result using the following,
+
+* [tests.bat](tests.bat) - for .bat edition
+* [tests.csharp.bat](tests.csharp.bat) - for C# edition
+
 ### .sha1 official distribution
 
 *GetNuTool* releases are now accompanied by a *.sha1* file in the official distribution; At the same time, commits from which releases are published are signed with the committer's verified signature (GPG).
@@ -626,6 +722,22 @@ Note: *.sha1* file is a text list of published files with checksums in the forma
 eead8f5c1fdff2abd4da7d799fbbe694d392c792 path\file
 ...
 ```
+
+### gnt.bat self validation
+
+It is important to note the following: this is not a specialized protection of *gnt.bat*, this is only part of its capabilities which can also be used to check itself too.
+
+For example, to validate itself:
+
+> gnt ~& svc.gnt -sha1-cmp gnt.bat sha1 -package-as-path
+
+Where *sha1* is the checksum from the [official distribution](https://github.com/3F/GetNuTool). Also, the official [package](https://www.nuget.org/packages/GetNuTool/) (`gnt +GetNuTool`) provides *validate.gnt.bat*; this is wrapper of the command above, located in `\shell\batch\`
+
+How safe is it?
+
+Since the testing logic is part of the feature `id[/version][?sha1]` support (here above, read about the alternative security check before each accessing on legacy windows xp etc), it is located inside *gnt.bat*. This way improves control over unexpected changes, however, it still cannot fully guarantee automatic protection against third party interference directly into the *gnt.bat*.
+
+Same for env protected properties (n. v1.10: *ngserver* and *proxycfg*); this improves control over unexpected modification in environment when processing at runtime, but this of course cannot stop direct modifications of the code. Keep this in mind.
 
 ## Contributing
 

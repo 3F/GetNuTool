@@ -96,7 +96,7 @@ echo %~n0 -embed *DllExport
 echo %~n0 -embed vsSolutionBuildEvent -boot packages\vsSolutionBuildEvent\GUI
 echo %~n0 -embed vsSolutionBuildEvent -boot packages\vsSolutionBuildEvent\GUI -name vssbe
 echo %~n0 -embed "+`Conari;DllExport`" -name unmanaged
-echo %~n0 -embed "~GetNuTool /p:use=?;info=no" -name help
+echo %~n0 -embed "~/p:use=?" -name help
 echo %~n0 -sha1-get LX4Cnh/1.1
 echo %~n0 -sha1-cmp Fnv1a128 eead8f5c1fdff2abd4da7d799fbbe694d392c792
 echo %~n0 -sha1-get "path to\LX4Cnh.nupkg" -package-as-path
@@ -280,6 +280,13 @@ echo    /t:install   (+...)
 echo    /t:run       (*...)
 echo    /t:touch     (~...)
 echo.
+echo  Aliases to itself `gnt ~` (+, *, ~)
+echo    Examples:
+echo     gnt ~
+echo     gnt ~^& svc.gnt -sha1-get LX4Cnh/1.1
+echo     gnt ~/p:use=doc
+echo     gnt +/p:use=version
+echo.
 echo  /t:get
 echo    ngpackages - List of packages.
 echo    ngpath     - Common path for all packages.
@@ -356,7 +363,7 @@ echo.
 echo  Documentation:
 echo    * https://github.com/3F/GetNuTool
 echo    * doc\documentation.html
-echo    * gnt ~GetNuTool /p:use=doc
+echo    * gnt ~/p:use=doc
 exit /B 0
 
 

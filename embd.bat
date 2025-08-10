@@ -6,7 +6,6 @@ set gntcore=gnt.core
 set $tpl.corevar$="%temp%\%gntcore%$core.version$%random%%random%"
 
 set /a ERROR_FILE_NOT_FOUND=2
-set /a ERROR_CALL_NOT_IMPLEMENTED=120
 
 :: Syntax:
 ::  gnt Package
@@ -29,15 +28,15 @@ if "!first!"=="" call :trimArgs
 
 set "checkH=!args!"
 call :unset "/help" "-help" "/h" "-h" "/?" "-?"
-if "!checkH!" NEQ "!args!" set args=~GetNuTool/$core.version$ /p:use=?;info=no
+set GNT=GetNuTool/$core.version$ /p:info=no;use=
+if "!checkH!" NEQ "!args!" set args=~!GNT!?
 
 :: NOTE !args:~0,1! should return literally "~0,1" as value when empty
 set carg="!args:~0,1!"
 if !carg!=="+" call :trimArgsAsMode install
 if !carg!=="*" call :trimArgsAsMode run
 if !carg!=="~" call :trimArgsAsMode touch
-if !carg!=="-" exit /B %ERROR_CALL_NOT_IMPLEMENTED%
-if defined args if !carg! NEQ "/" set args=/p:ngpackages=!args!
+if defined args if !carg! NEQ "/" if !carg! NEQ "-" set args=/p:ngpackages=!args!
 
 set "instance="
 :: Find the engine via hMSBuild.cmd stub or hMSBuild.bat script https://github.com/3F/hMSBuild
@@ -86,7 +85,15 @@ exit /B 0
 exit /B 0
 
 :trimArgsAsMode
-    call :trimArgs !args:~1! /t:%1
+    call :trimArgs !args:~1!
+
+    :: `gnt ~` (+, *, ~) aliases to itself /F-133
+
+    :: `~DllExport`; `+"Conari;regXwild"`; ...
+    if "!args:~0,1!" NEQ "/" if "!args:~0,1!" NEQ "-" if "!args!" NEQ "" set args=!args! /t:%1 & exit /B 0
+
+    :: `~`; `~/p:use=doc`; ...
+    set args=!GNT!;logo=no !args! /t:%1
 exit /B 0
 
 :unset

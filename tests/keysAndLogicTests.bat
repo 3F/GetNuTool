@@ -21,6 +21,8 @@ set "exec=%~3" & set "wdir=%~4"
     set "svcbat=svc.gnt.bat"
     call a unsetFile %config%
 
+    if exist "%gntLocalServer%" ( set "gntServer=/p:ngserver=%gntLocalServer%" ) else set "gntServer="
+
     :: NOTE: :startTest will use ` as "
     :: It helps to use double quotes inside double quotes " ... `args` ... "
 
@@ -392,6 +394,33 @@ set "exec=%~3" & set "wdir=%~4"
 
     ::_______ ------ ______________________________________
 
+        call a startTest "~ %gntServer% & %svcbat% -sha1-get `%basePkgDir%%artefactsDirName%\Fnv1a128.1.0.0.nupkg` -package-as-path -no-color" || goto x
+            call a getSha1At 1 sha1LocalFnv1a128
+            echo !sha1LocalFnv1a128!
+            call a assertNotEqual "!sha1LocalFnv1a128!" "Error" || goto x
+            call a assertNotEqual "!sha1LocalFnv1a128!" "" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a startTest "~ %gntServer% & %svcbat% -sha1-cmp `%basePkgDir%%artefactsDirName%\Fnv1a128.1.0.0.nupkg` !sha1LocalFnv1a128! -package-as-path -no-color" || goto x
+            call a msgOrFailAt 1 "OK" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a startTest "~ %gntServer% & %svcbat% -sha1-cmp `%basePkgDir%%artefactsDirName%\Fnv1a128.1.0.0.nupkg` cccccccccccccccccccccccccccccccccccccccc -package-as-path -no-color" 12 || goto x
+            call a msgOrFailAt 1 "FAIL" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
         call a startTest "/p:wpath=%cd%\%basePkgDir%" || goto x
             call a msgOrFailAt 1 "Conari " || goto x
             call a msgOrFailAt 2 "Fnv1a128" || goto x
@@ -457,6 +486,20 @@ set "exec=%~3" & set "wdir=%~4"
             call a msgOrFailAt 1 "Huid ... " || goto x
             call a msgOrFailAt 2 "[x]" || goto x
             call a checkFsNupkg "%basePkgDir%Huid.nupkg" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a unsetPackage Fnv1a128.1.0.0
+
+        call a startTest "Fnv1a128/1.0.0?" 1 || goto x
+            call a msgOrFailAt 1 "Fnv1a128/1.0.0 ... " || goto x
+            call a msgOrFailAt 2 "[x]" || goto x
+            call a getSha1At 2 sha1Fnv1a128Emp 4
+            call a checkFsBaseNo "Fnv1a128.1.0.0/Fnv1a128.nuspec" || goto x
+            call a assertEqual "!sha1Fnv1a128!" "!sha1Fnv1a128Emp!" || goto x
         call a completeTest
     ::_____________________________________________________
 
@@ -530,6 +573,69 @@ set "exec=%~3" & set "wdir=%~4"
     ::_____________________________________________________
 
 
+    ::_______ ------ ______________________________________
+
+        call a startTest "~ %gntServer% & %svcbat% -sha1-get LX4Cnh/1.1 -no-color" || goto x
+            call a getSha1At 1 sha1LX4Cnh
+
+            set "_argInv=LX4Cnh/1.1?!sha1LX4Cnh!"
+            call a invoke "%wdir%%exec%" _argInv || goto x
+                call a msgOrFailAt 1 "LX4Cnh/1.1 ... " || goto x
+                call a msgOrFailAt 2 "!sha1LX4Cnh! ... !sha1LX4Cnh!" || goto x
+                call a checkFsBase "LX4Cnh.1.1" "LX4Cnh.nuspec" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a startTest "~ %gntServer% & %svcbat% -sha1-get TestGntForNotRealPackage -no-color" || goto x
+            call a msgOrFailAt 1 "Error" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a startTest "~ %gntServer% & %svcbat% -sha1-cmp LX4Cnh/1.1 !sha1LX4Cnh! -no-color" || goto x
+            call a msgOrFailAt 1 "OK" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a startTest "~ %gntServer% & %svcbat% -sha1-cmp LX4Cnh/1.1 cccccccccccccccccccccccccccccccccccccccc -no-color" 12 || goto x
+            call a msgOrFailAt 1 "FAIL" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a startTest "~ %gntServer% & %svcbat% -sha1-cmp TestGntForNotRealPackage cccccccccccccccccccccccccccccccccccccccc -no-color" || goto x
+            call a msgOrFailAt 1 "Error" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
+    ::_______ ------ ______________________________________
+
+        call a unsetFile "TestGntHelpCmd.bat"
+
+        call a startTest "~ %gntServer% & %svcbat% -embed `~/p:use=?` -name TestGntHelpCmd" || goto x
+            call a msgOrFailAt 1 "Completed as a TestGntHelpCmd" || goto x
+            call a checkFs . "TestGntHelpCmd.bat" || goto x
+
+            set "_argInv="
+            call a invoke "TestGntHelpCmd" _argInv || goto x
+                call a findInStreamOrFail "Package List Format" || goto x
+                call a findInStreamOrFail "Examples:" || goto x
+                call a findInStreamOrFail "Documentation:" || goto x
+        call a completeTest
+    ::_____________________________________________________
+
+
 :::::::::::::
 call :cleanup
 
@@ -545,4 +651,7 @@ exit /B 1
     call a unsetFile %config%
     call a unsetDir %artefactsDirName%
     call a unsetFile %svcbat%
+    call a unsetFile "gnt.bat"
+    call a unsetFile "TestGntHelpCmd.bat"
+    call a unsetFile "msb.gnt.cmd"
 exit /B 0

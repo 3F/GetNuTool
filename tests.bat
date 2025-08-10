@@ -1,15 +1,17 @@
 @echo off
 
-:: run tests by default
+:: run tests for .bat edition
 
 setlocal
     if exist "core\gnt.core" (
 
         set "bdir=..\shell\batch\"
+        set "gntLocalServer=..\..\"
 
     ) else if exist "bin\Release\" (
 
         set "bdir=..\bin\Release\"
+        set "gntLocalServer=..\bin\Release\"
 
     ) else goto buildError
 

@@ -323,6 +323,22 @@ exit /B 0
     if not exist "%~1" call :failTest & exit /B 1
 exit /B 0
 
+:assertEqual
+    ::  (1) - value 1
+    ::  (2) - value 2
+    :: !!1  - Error code 1 if not equal.
+
+    if not "%~1"=="%~2" call :failTest & exit /B 1
+exit /B 0
+
+:assertNotEqual
+    ::  (1) - value 1
+    ::  (2) - value 2
+    :: !!1  - Error code 1 if not equal.
+
+    if "%~1"=="%~2" call :failTest & exit /B 1
+exit /B 0
+
 :findInStream
     ::  (1) - substring to check
     ::  [2] - Start index, 0 by default.
@@ -404,16 +420,20 @@ exit /B 0
     :: e.g. set a="" not set "a="
 exit /B 0
 
-:sha1At0
+:getSha1At
     ::  (1) - Stream index.
     :: &(2) - sha1 result.
-    set %2=!msg[%~1]:~4,40!
+    ::  [3] - Start position in input stream.
+    set "_posSha1=%~3"
+    if not defined _posSha1 set "_posSha1=0"
+    set %2=!msg[%~1]:~%_posSha1%,40!
 exit /B 0
 
 :sha1At
     ::  (1) - Stream index.
     :: &(2) - sha1 result.
-    set %2=!msg[%~1]:~45,40!
+    call :getSha1At %1 _sha1 45
+    set %2=!_sha1!
 exit /B 0
 
 :errargs

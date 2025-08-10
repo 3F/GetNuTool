@@ -1252,6 +1252,7 @@
           "                },",
           "                RegexOptions.IgnoreCase);",
           "",
+          "                content = Regex.Replace(content, @\"\\s*(&+)\\s*(exit/B)\", \"$1$2\");",
           "",
           "                /* pseudo arguments from labels */",
           "",
@@ -1837,7 +1838,7 @@
           "#[( $(isPubRel) )",
           "{",
           "    #[Core events.Post.item(\"Doc\").run()]",
-          "    #[IO copy.file(\"$(dobj)doc.html\", \"$(odir)doc/GetNuTool.html\", true)]",
+          "    #[IO copy.file(\"$(dobj)doc.html\", \"$(odir)doc/GetNuTool.$(pVer).html\", true)]",
           "}]",
           "",
           "#[IO copy.file",
@@ -1990,7 +1991,14 @@
           "#[IO copy.file(\".tools/GetNuTool.dotnet.targets\", \"$(odir)build\\netstandard/GetNuTool.targets\", true)]",
           "",
           "",
-          "#[IO cmd(\"cd $(dbin) & gnt /t:pack /p:ngin=raw\", 0)]"
+          "#[IO cmd(\"cd $(dbin) & gnt /t:pack /p:ngin=raw\", 0)]",
+          "",
+          "~ local server alias to use as `gnt ~/p:ngserver=.\\` or `gnt ~/p:ngserver=bin\\Release\\`",
+          "",
+          "#[$(dbgSrvDir = \"$(dbin.Replace('/', '\\'))GetNuTool\\\\\")]",
+          "",
+          "#[IO copy.directory(\"\", \"$(dbgSrvDir)\", true)]",
+          "#[IO scall(\"cmd\", \"/C mklink /H $(dbgSrvDir)$(pVer) $(dbin.Replace('/', '\\'))GetNuTool.$(pVer).nupkg\", 0)]"
         ]
       }
     }
