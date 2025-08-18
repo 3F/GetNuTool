@@ -93,8 +93,8 @@ namespace GntCSharpTest
             Assert.True(gnt.CheckNupkg("Fnv1a128", "1.0.0"));
             Assert.Equal(3, gnt.stream.Count);
             Assert.Contains(".nuspec use ", gnt.stream[1]);
-            Assert.Contains("Creating package ", gnt.stream[2]);
-            Assert.Contains("Fnv1a128.1.0.0.nupkg ...", gnt.stream[2]);
+            Assert.Contains("Pack ... ", gnt.stream[2]);
+            Assert.Contains("Fnv1a128.1.0.0.nupkg", gnt.stream[2]);
         }
 
         [Theory]

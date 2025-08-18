@@ -2,7 +2,7 @@
  * Copyright (c) 2015  Denis Kuzmin <x-3F@outlook.com> github/3F
  * Copyright (c) GetNuTool contributors https://github.com/3F/GetNuTool/graphs/contributors
  * Licensed under the MIT License (MIT).
- * See accompanying LICENSE file or visit https://github.com/3F/GetNuTool
+ * See accompanying License.txt file or visit https://github.com/3F/GetNuTool
 */
 
 // TODO: This was part of logic.targets separated between Tasks. New structure needs to be reviewed!
@@ -12,7 +12,7 @@
 
 if("$(logo)" != "no") Console.WriteLine("\nGetNuTool $(GetNuTool)\n(c) 2015-2025  Denis Kuzmin <x-3F@outlook.com> github/3F\n");
 
-const string MSG_NOTFOUND = "{0} is not found ";
+const string MSG_NOTFOUND = " is not found ";
 
 var ignore = new string[] // to ignore from package
 {
@@ -21,9 +21,9 @@ var ignore = new string[] // to ignore from package
     "/[Content_Types].xml"
 };
 
-Action<string, object> DebugMessage = (msg, args) =>
+Action<string> DebugMessage = (msg) =>
 {
-    if("$(debug)" == "true") Console.WriteLine(msg, args);
+    if("$(debug)" == "true") Console.WriteLine(msg);
 };
 
 Func<string, string> NullIfEmpty = (input)
@@ -36,6 +36,9 @@ Action<string, string> setenv = Environment.SetEnvironmentVariable;
 setenv("GetNuTool", "$(GetNuTool)");
 setenv("use", "$(use)");
 setenv("debug", "$(debug)");
+
+const string ID     = "id";
+const string VER    = "version";
 
 bool info = "$(info)" != "no";
 
@@ -54,8 +57,8 @@ if(tmode != "pack")
         {
             foreach(XElement pkg in XDocument.Load(cfg).Root.Descendants("package"))
             {
-                XAttribute id       = pkg.Attribute("id");
-                XAttribute version  = pkg.Attribute("version");
+                XAttribute id       = pkg.Attribute(ID);
+                XAttribute version  = pkg.Attribute(VER);
                 XAttribute output   = pkg.Attribute("output");
                 XAttribute sha1     = pkg.Attribute("sha1");
 
@@ -83,7 +86,7 @@ if(tmode != "pack")
             {
                 LoadConf(lcfg);
             }
-            else DebugMessage(MSG_NOTFOUND, lcfg);
+            else DebugMessage(lcfg + MSG_NOTFOUND);
         }
 
         if(sb.Length < 1)
@@ -160,7 +163,7 @@ if(tmode != "pack")
 
         if(Directory.Exists(to) || File.Exists(to))
         {
-            if(info) Console.WriteLine("{0} use {1}", name, to);
+            if(info) Console.WriteLine(name + " use " + to);
             return true;
         }
 
@@ -212,7 +215,7 @@ if(tmode != "pack")
 
         if(sha1 != null)
         {
-            Console.Write("{0} ... ", sha1);
+            Console.Write(sha1 + " ... ");
             using(SHA1 algo = System.Security.Cryptography.SHA1.Create())
             {
                 sb.Clear();
@@ -241,7 +244,7 @@ if(tmode != "pack")
                 if(ignore.Any(x => uri.StartsWith(x, StringComparison.Ordinal))) continue;
 
                 string dest = Path.Combine(to, uri.TrimStart('/'));
-                DebugMessage("- {0}", uri);
+                DebugMessage("- " + uri);
 
                 using(Stream src = part.GetStream(FileMode.Open, FileAccess.Read))
                 using(FileStream target = File.OpenWrite(SetDir(dest)))
@@ -250,7 +253,7 @@ if(tmode != "pack")
                     {
                         src.CopyTo(target);
                     }
-                    catch(FileFormatException) { DebugMessage("[x]?crc: {0}", dest); }
+                    catch(FileFormatException) { DebugMessage("[x]?crc: " + dest); }
                 }
             }
         }
@@ -261,7 +264,7 @@ if(tmode != "pack")
             string pkgi = to + "/.pkg.install." + (Path.VolumeSeparatorChar == ':' ? "bat" : "sh");
             if(File.Exists(pkgi))
             {
-                DebugMessage(tmode + " {0}", pkgi);
+                DebugMessage(tmode + " " + pkgi);
                 var process = Process.Start
                 (
                     // Versions of the arguments format:
@@ -302,22 +305,17 @@ if(tmode != "pack")
         }
 
         if(!GetLink(link[0], name, path, /*sha1:*/ link.Length > 1 ? link[1] : null)
-            && "$(break)".Trim() != "no") return false;
+            && "$(break)" != "no") return false;
     }
 }
 else if(tmode == "pack")
 {
     const string EXT_NUSPEC = ".nuspec";
-    const string TAG_META   = "metadata";
-
-    // Tags
-    const string ID     = "id";
-    const string VER    = "version";
 
     string dir = Path.Combine(WPATH, @"$(ngin)");
     if(!Directory.Exists(dir))
     {
-        Console.Error.WriteLine(MSG_NOTFOUND, dir);
+        Console.Error.WriteLine(dir + MSG_NOTFOUND);
         return false;
     }
 
@@ -326,15 +324,15 @@ else if(tmode == "pack")
     string nuspec = Directory.GetFiles(dir, "*" + EXT_NUSPEC).FirstOrDefault();
     if(nuspec == null)
     {
-        Console.Error.WriteLine(MSG_NOTFOUND + dir, EXT_NUSPEC);
+        Console.Error.WriteLine(EXT_NUSPEC + MSG_NOTFOUND + dir);
         return false;
     }
-    Console.WriteLine("{0} use {1}", EXT_NUSPEC, nuspec);
+    Console.WriteLine(EXT_NUSPEC + " use " + nuspec);
 
-    XElement root = XDocument.Load(nuspec).Root.Elements().FirstOrDefault(x => x.Name.LocalName == TAG_META);
+    XElement root = XDocument.Load(nuspec).Root.Elements().FirstOrDefault(x => x.Name.LocalName == "metadata");
     if(root == null)
     {
-        Console.Error.WriteLine(MSG_NOTFOUND, TAG_META);
+        Console.Error.WriteLine("metadata" + MSG_NOTFOUND);
         return false;
     }
 
@@ -360,7 +358,7 @@ else if(tmode == "pack")
 
     // Format package
 
-    string pout = string.Format("{0}.{1}.nupkg", _GetMeta(ID), _GetMeta(VER));
+    string pout = _GetMeta(ID) + "." + _GetMeta(VER) + ".nupkg";
 
     string dout = Path.Combine(WPATH, @"$(ngout)");
     if(!string.IsNullOrWhiteSpace(dout))
@@ -372,12 +370,12 @@ else if(tmode == "pack")
         pout = Path.Combine(dout, pout);
     }
 
-    Console.WriteLine("Creating package {0} ...", pout);
+    Console.WriteLine("Pack ... " + pout);
     using(string pkg = Package.Open(pout, FileMode.Create))
     {
         // manifest relationship
 
-        Uri manifestUri = new Uri(string.Format("/{0}{1}", _GetMeta(ID), EXT_NUSPEC), UriKind.Relative);
+        Uri manifestUri = new Uri("/" + _GetMeta(ID) + EXT_NUSPEC, UriKind.Relative);
         pkg.CreateRelationship(manifestUri, TargetMode.Internal, "http://schemas.microsoft.com/packaging/2010/07/manifest");
 
         // content
@@ -393,7 +391,7 @@ else if(tmode == "pack")
                         ? file.Substring(dir.Length).TrimStart(Path.DirectorySeparatorChar)
                         : file;
 
-            DebugMessage("+ {0}", pUri);
+            DebugMessage("+ " + pUri);
 
             PackagePart part = pkg.CreatePart
             (

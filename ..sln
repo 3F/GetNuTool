@@ -5,14 +5,18 @@ VisualStudioVersion = 17.8.34408.163
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GetNuTool", "GetNuTool", "{D221D332-2A57-44F9-B866-F7C00C29032D}"
 	ProjectSection(SolutionItems) = preProject
+		.pkg.install.bat = .pkg.install.bat
 		.version = .version
 		build.bat = build.bat
-		caller.bat = caller.bat
 		changelog.txt = changelog.txt
+		csharp.cs = csharp.cs
+		csinit.targets = csinit.targets
 		embd.bat = embd.bat
-		logic.cs = logic.cs
-		logic.targets = logic.targets
+		srv.create.bat = srv.create.bat
+		svc.gnt.bat = svc.gnt.bat
 		tests.bat = tests.bat
+		tests.csharp.bat = tests.csharp.bat
+		validate.gnt.bat = validate.gnt.bat
 		vsSolutionBuildEvent.bat = vsSolutionBuildEvent.bat
 	EndProjectSection
 EndProject

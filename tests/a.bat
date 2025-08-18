@@ -1,6 +1,8 @@
+::! Copyright (c) 2015  Denis Kuzmin <x-3F@outlook.com> github/3F
+::! Copyright (c) GetNuTool contributors https://github.com/3F/GetNuTool/graphs/contributors
+::! Licensed under the MIT License (MIT).
+::! See accompanying License.txt file or visit https://github.com/3F/GetNuTool
 @echo off
-:: Copyright (c) 2015  Denis Kuzmin <x-3F@outlook.com> github/3F
-:: Part of https://github.com/3F/GetNuTool
 
 if "%~1"=="" echo Empty function name & exit /B 1
 if .%~1 EQU .1001 call :NotRealLabel & exit /B

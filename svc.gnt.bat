@@ -1,6 +1,8 @@
 ::! GetNuTool /svc helper
-::! Copyright (c) 2015-2025  Denis Kuzmin <x-3F@outlook.com> github/3F
-::! https://github.com/3F/GetNuTool
+::! Copyright (c) 2015  Denis Kuzmin <x-3F@outlook.com> github/3F
+::! Copyright (c) GetNuTool contributors https://github.com/3F/GetNuTool/graphs/contributors
+::! Licensed under the MIT License (MIT).
+::! See accompanying License.txt file or visit https://github.com/3F/GetNuTool
 
 @echo off & echo Incomplete script. Compile it first using build.bat: github.com/3F/GetNuTool >&2 & exit /B 1
 
@@ -363,7 +365,7 @@ echo.
 echo  Documentation:
 echo    * https://github.com/3F/GetNuTool
 echo    * doc\documentation.html
-echo    * gnt ~/p:use=doc
+echo    * gnt ~/p:use=documentation
 exit /B 0
 
 

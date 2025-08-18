@@ -1,5 +1,8 @@
+::! Copyright (c) 2015  Denis Kuzmin <x-3F@outlook.com> github/3F
+::! Copyright (c) GetNuTool contributors https://github.com/3F/GetNuTool/graphs/contributors
+::! Licensed under the MIT License (MIT).
+::! See accompanying License.txt file or visit https://github.com/3F/GetNuTool
 @echo off
-:: Copyright (c) 2015  Denis Kuzmin <x-3F@outlook.com> github/3F
 
 :: Tests. Part of https://github.com/3F/GetNuTool
 
@@ -177,7 +180,7 @@ set "exec=%~3" & set "wdir=%~4"
 
         call a startTest "/t:pack /p:ngin=%basePkgDir%regXwild.1.4.0" || goto x
             call a msgOrFailAt 1 ".nuspec use " || goto x
-            call a msgOrFailAt 2 "Creating package " || goto x
+            call a msgOrFailAt 2 "Pack ... " || goto x
             call a checkFsNupkg %expNupkg% || goto x
         call a completeTest
 
@@ -352,7 +355,7 @@ set "exec=%~3" & set "wdir=%~4"
         call a unsetNupkg %basePkgDir%%artefactsDirName%\Fnv1a128.1.0.0.nupkg
 
         call a startTest "/t:pack /p:ngin=%basePkgDir%Fnv1a128.1.0.0 /p:ngout=%artefactsDirName% /p:debug=true" || goto x
-            call a msgOrFailAt 2 "Creating package " || goto x
+            call a msgOrFailAt 2 "Pack ... " || goto x
             call a msgOrFailAt 2 "Fnv1a128.1.0.0.nupkg" || goto x
             call a msgOrFailAt 6 "Fnv1a128.nuspec" || goto x
             call a msgOrFailAt 11 "Fnv1a128.dll" || goto x
@@ -372,7 +375,7 @@ set "exec=%~3" & set "wdir=%~4"
 
         call a startTest "/t:pack /p:ngin=Fnv1a128.1.0.0 /p:wpath=%cd%\%basePkgDir% /p:ngout=%artefactsDirName%" || goto x
             call a msgOrFailAt 1 ".nuspec " || goto x
-            call a msgOrFailAt 2 "Creating package " || goto x
+            call a msgOrFailAt 2 "Pack ... " || goto x
             call a msgOrFailAt 2 "Fnv1a128.1.0.0.nupkg" || goto x
             call a checkFsBase %artefactsDirName% "Fnv1a128.1.0.0.nupkg" || goto x
         call a completeTest
@@ -385,7 +388,7 @@ set "exec=%~3" & set "wdir=%~4"
         :: for example, by adding a new one "...\path\\" or "...\path\/" or removed at all "...\path" or escape every backslash "dir1\\dir2\\path\\" or use the common slash "dir1/dir2/path/" instead
         call a startTest "/t:pack /p:ngin=Fnv1a128.1.0.0 /p:wpath=`%cd%\%basePkgDir%\`" || goto x
             call a msgOrFailAt 1 ".nuspec " || goto x
-            call a msgOrFailAt 2 "Creating package " || goto x
+            call a msgOrFailAt 2 "Pack ... " || goto x
             call a msgOrFailAt 2 "Fnv1a128.1.0.0.nupkg" || goto x
             call a checkFsBase %artefactsDirName% "Fnv1a128.1.0.0.nupkg" || goto x
         call a completeTest
@@ -437,7 +440,7 @@ set "exec=%~3" & set "wdir=%~4"
         :: NOTE: sha1_comparer compares both cores when running build.bat
 
         call a startTest "-unpack  " || goto x
-            call a msgOrFailAt 1 "Generating a %gntcore% at " || goto x
+            call a msgOrFailAt 1 "+%gntcore% " || goto x
             call a checkFs %gntcore%
         call a completeTest
 

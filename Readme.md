@@ -280,7 +280,7 @@ gnt.Run(ngpackages: "hMSBuild", tmode: "touch");
 You can also control the mode options via `/p:use=...`
 
 ```bat
-gnt ~GetNuTool /p:use=help.cmd
+gnt ~GetNuTool /p:use=documentation
 ```
 
 #### .pkg.install.bat (.pkg.install.sh)
@@ -476,9 +476,9 @@ Access *svc.gnt* helper and execute *-sha1-get* command
 gnt ~& svc.gnt -sha1-get LX4Cnh/1.1
 ```
 
-Install and open the documentation
+Install and run the documentation
 ```bat
-gnt +/p:use=doc
+gnt */p:use=documentation
 ```
 
 Get version of the core
@@ -561,14 +561,14 @@ MSBuild Property / Environment variable | Default value | Description
 
 Supported `use` commands:
 
-Command          | Description
------------------|------------
-`?`              | alias `svc.gnt -core syntax`
-`doc`            | (depending on modes) Copy GetNuTool.version.html into the working directory; then open it.
-`-`              | nothing
-` ` (empty)      | Copy fresh *gnt.bat* and *svc.gnt.bat* into the working directory.
-`version`        | alias `svc.gnt -version`
-`version-short`  | alias `svc.gnt -version-short`
+Command                 | Description
+------------------------|------------
+`?`                     | alias `svc.gnt -core syntax`
+`doc` / `documentation` | (depending on modes) Copy GetNuTool.version.html into the working directory; then open it.
+`-`                     | nothing
+` ` (empty)             | Copy fresh *gnt.bat* and *svc.gnt.bat* into the working directory.
+`version`               | alias `svc.gnt -version`
+`version-short`         | alias `svc.gnt -version-short`
 
 Note `gnt /help` is alias to `gnt ~/p:use=?`
 
@@ -588,7 +588,7 @@ Same but using addional properties (n. *ngserver*):
 gnt ~/p:ngserver=...
 ```
 
-All this will result in overwriting existing local copies if there are any inside the working directory. To prevent this behaviour, update *reaonly* attribute e.g. `attrib +r gnt.bat` to lock updating and `attrib -r gnt.bat` to unlock accordingly.
+All this will result in overwriting existing local copies if there are any inside the working directory. To prevent this behaviour, update *reaonly* attribute e.g. `attrib +r gnt.bat` to lock updating and `attrib -r gnt.bat` to unlock respectively.
 
 Using the format `gnt ~& svc.gnt ...` allows accessing to *svc.gnt* even if it doesn't exist locally, for example:
 
@@ -723,7 +723,7 @@ eead8f5c1fdff2abd4da7d799fbbe694d392c792 path\file
 ...
 ```
 
-### gnt.bat self validation
+#### gnt.bat self validation
 
 It is important to note the following: this is not a specialized protection of *gnt.bat*, this is only part of its capabilities which can also be used to check itself too.
 
