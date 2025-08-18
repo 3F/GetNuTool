@@ -12,3 +12,4 @@ obj
 /demo/*.sln
 /tests/svc.gnt.bat
 /tests/msb.gnt.cmd
+/doc/demo/packages

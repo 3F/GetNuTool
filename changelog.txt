@@ -2,6 +2,82 @@
 GetNuTool - https://github.com/3F/GetNuTool
 - - - - - - - - - - - - - - - - - - - - -  
 
+[1.10] 2025.08.18
+    
+    * NEW: New `run` mode. Alias `gnt *...` in bat edition.
+           e.g. `gnt *DllExport`  (more about: gnt /help)
+    
+    * NEW: New `install` mode. Alias `gnt +...` in bat edition.
+           e.g. `gnt +Fnv1a128`   (more about: gnt /help)
+    
+    * NEW: New `touch` mode. Alias `gnt ~...` in bat edition.
+           e.g. `gnt ~GetNuTool`  (more about: gnt /help)
+    
+    * NEW: Added virtual StdOutLine/StdErrLine in C# edition.
+    
+    * NEW: .pkg.install.bat/sh support for packages.
+            arguments format:
+            v1: 1 "path to the working directory" "path to the package"
+    
+    * NEW: Added svc.gnt.bat helper for bat edition.
+            Allows easily generate new gnt.bat with predefined package access;
+            Get or compare for sha1 equality for a package and other as an assistant.
+            
+            To access it when it does not exist locally:
+           `gnt ~& svc.gnt -help`
+    
+    * NEW: ~, +, * aliases to itself in bat edition.
+           e.g. `gnt ~` (more about: gnt /help)
+    
+    * NEW: Official nuget package, GetNuTool:
+           https://www.nuget.org/packages/GetNuTool/
+           To prevent adding GetNuTool.cs for compilation with the project, set GetNuToolDisableCsharp=false.
+           (more about: gnt /help)
+    
+    * NEW: Added srv.create.bat to prepare local server access, use it like `gnt ~/p:ngserver=.\`
+    
+    * NEW: Added validate.gnt.bat helper to validate core itself.
+    
+    * FIXED: Fixed possible "The system cannot find the path specified".
+    
+    * FIXED: Fixed duplicated messages "Engine is not found." on WindowsXP.
+    
+    * CHANGED: `ngserver` and `proxycfg` are env protected properties now.
+               Changing the value using an environment variables with the same name is prohibited.
+               All intersections in used environment must be removed before actual execution,
+               otherwise it will result in *denied* error.
+    
+    * CHANGED: gnt.bat edition now uses LF by default instead of CRLF. Support for both types.
+               LF/CRLF of course affects the checksums; check the desired in shell\batch\
+               * LF (actual): gnt.bat.sha1
+               * CRLF (possible): gnt.bat.crlf.sha1
+    
+    * CHANGED: C# edition. new namespace `io.github._3F`. Use it like,
+               `io.github._3F.GetNuTool gnt = new();`
+    
+    * CHANGED: Removed `msb.gnt.cmd` support and removed obsolete -msbuild stub.
+               Use -unpack and hMSBuild.cmd or hMSBuild.bat script https://github.com/3F/hMSBuild
+    
+    * CHANGED: "/help" "-help" "/h" "-h" "/?" "-?" support in bat edition.
+    
+    * CHANGED: Allow spaces in aliases call, e.g. `gnt "  DllExport ; Conari "`
+               Also ignoring processing when there are only spaces, e.g. `gnt   "   "`
+    
+    * CHANGED: Removed obsolete delimiter '|'. Use ';' instead.
+    
+    * CHANGED: $(GetNuTool) + $(debug) + $(use) are available as environment variables,
+              for example in .pkg.install.bat/sh etc.
+    
+    * NOTE: Official 1.10 release with checksums https://github.com/3F/GetNuTool/releases/tag/1.10
+    
+    * NOTE: Access Help using `gnt /help` or read the documentation `gnt ~/p:use=documentation`
+            or visit https://github.com/3F/GetNuTool
+            
+    * NOTE: Anniversary (10 years) update GetNuTool 1.10 //github.com/3F
+            adds new modes (install, run, touch, get, grab, pack); custom scripts;
+            improves security; and became even more compact for .bat edition (now 7.87 KB); and ...
+
+
 [1.9] 2024.02.07
 
     * FIXED: TLS 1.3 (and newer versions) support.

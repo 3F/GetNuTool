@@ -1,4 +1,4 @@
-::! (c) Denis Kuzmin <x-3F@outlook.com> github.com/3F
+::!(c) Denis Kuzmin <x-3F@outlook.com> github.com/3F
 
 @echo off & echo Incomplete script. Compile it first using build.bat: github.com/3F/GetNuTool >&2 & exit /B 1
 :: Copyright (c) 2015  Denis Kuzmin <x-3F@outlook.com> github/3F
@@ -52,7 +52,7 @@ if exist !instance! goto found
 
 for %%v in (4.0, 14.0, 12.0) do (
     for /F "usebackq tokens=2* skip=2" %%a in (
-        `reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions\%%v" /v MSBuildToolsPath 2^> nul`
+        `reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSBuild\ToolsVersions\%%v" /v MSBuildToolsPath 2^>nul`
     ) do (
         set instance="%%~b\MSBuild.exe"
         if exist !instance! goto found
