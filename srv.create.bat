@@ -19,7 +19,7 @@ if exist %srv% (
     rmdir /S/Q "%dstdir%" 2>nul>nul
 )
 
-call "%~dp0\shell\batch\gnt" /t:pack /p:ngin=%~dp0;ngout="%tpldir%" >nul
+call "%~dp0\shell\batch\gnt" /t:pack /p:ngin="%~dp0/";ngout="%tpldir%/" >nul
 if not exist "%tplnupkg%" exit /B2
 
 mkdir "%dstdir%" 2>nul>nul

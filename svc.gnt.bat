@@ -476,9 +476,8 @@ exit /B 0
     :: delayed evaluation
     set _vl=!%1!  ::&:
 
+    :: data from %..% below should not contain double quotes, thus we need to protect this:
     (if "!_vl!" NEQ "" (
-
-        :: data from %..% below should not contain double quotes, thus we need to protect this:
 
         set "_vl=%_vl: T =^%"   ::&:
         set "_vl=%_vl: L =^!%"  ::&:

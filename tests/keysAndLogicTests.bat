@@ -24,7 +24,12 @@ set "exec=%~3" & set "wdir=%~4"
     set "svcbat=svc.gnt.bat"
     call a unsetFile %config%
 
-    if exist "%gntLocalServer%" ( set "gntServer=/p:ngserver=%gntLocalServer%" ) else set "gntServer="
+    if exist "%gntLocalServer%" ( set gntServer=/p:ngserver="%gntLocalServer%" ) else set "gntServer="
+
+    :: check if the package is not published yet /F-156
+        set "packageGetNuToolIsNotReady="
+        call a execute "%wdir%%exec% ~" 2>nul>nul || set "packageGetNuToolIsNotReady=true"
+        if defined packageGetNuToolIsNotReady echo Warning: Remote package is not ready. Some tests will be disabled.
 
     :: NOTE: :startTest will use ` as "
     :: It helps to use double quotes inside double quotes " ... `args` ... "
@@ -63,13 +68,16 @@ set "exec=%~3" & set "wdir=%~4"
         call a completeTest
     ::_____________________________________________________
 
+
     ::_______ ------ ______________________________________
 
-        call a startTest "-h" || goto x
-            call a findInStreamOrFail "Package List Format" || goto x
-            call a findInStreamOrFail "Examples:" || goto x
-            call a findInStreamOrFail "Documentation:" || goto x
-        call a completeTest
+        if not defined packageGetNuToolIsNotReady (
+            call a startTest "-h" || goto x
+                call a findInStreamOrFail "Package List Format" || goto x
+                call a findInStreamOrFail "Examples:" || goto x
+                call a findInStreamOrFail "Documentation:" || goto x
+            call a completeTest
+        )
     ::_____________________________________________________
 
 
@@ -214,7 +222,7 @@ set "exec=%~3" & set "wdir=%~4"
 
         call a unsetPackage Huid.local
 
-        call a startTest "/p:ngpackages=:Huid.local /p:ngserver=file:///%cd%\%basePkgDir%Huid.nupkg" || goto x
+        call a startTest "/p:ngpackages=:Huid.local /p:ngserver=`file:///%cd%\%basePkgDir%Huid.nupkg`" || goto x
             call a msgOrFailAt 1 "... %cd%\%basePkgDir%Huid.local" || goto x
             call a checkFsBase "Huid.local" "Huid.nuspec" || goto x
         call a completeTest
@@ -225,7 +233,7 @@ set "exec=%~3" & set "wdir=%~4"
 
         call a unsetPackage Huid.local
 
-        call a startTest ":Huid.local /p:ngserver=%cd%\%basePkgDir%Huid.nupkg /p:debug=true" || goto x
+        call a startTest ":Huid.local /p:ngserver=`%cd%\%basePkgDir%Huid.nupkg` /p:debug=true" || goto x
             call a msgOrFailAt 1 "... " || goto x
             call a msgOrFailAt 2 "/.version" || goto x
             call a msgOrFailAt 3 "/3rd-party-notices.txt" || goto x
@@ -240,7 +248,7 @@ set "exec=%~3" & set "wdir=%~4"
 
         call a unsetPackage ..\T00LS
 
-        call a startTest "/p:ngserver=%cd%\%basePkgDir%Huid.nupkg /p:ngpackages=: /p:ngpath=T00LS" || goto x
+        call a startTest "/p:ngserver=`%cd%\%basePkgDir%Huid.nupkg` /p:ngpackages=: /p:ngpath=T00LS" || goto x
             call a msgOrFailAt 1 "... %cd%\T00LS" || goto x
             call a checkFs "T00LS" "Huid.nuspec" || goto x
         call a completeTest
@@ -373,7 +381,7 @@ set "exec=%~3" & set "wdir=%~4"
 
         call a unsetNupkg %basePkgDir%%artefactsDirName%\Fnv1a128.1.0.0.nupkg
 
-        call a startTest "/t:pack /p:ngin=Fnv1a128.1.0.0 /p:wpath=%cd%\%basePkgDir% /p:ngout=%artefactsDirName%" || goto x
+        call a startTest "/t:pack /p:ngin=Fnv1a128.1.0.0 /p:wpath=`%cd%\%basePkgDir%\` /p:ngout=%artefactsDirName%" || goto x
             call a msgOrFailAt 1 ".nuspec " || goto x
             call a msgOrFailAt 2 "Pack ... " || goto x
             call a msgOrFailAt 2 "Fnv1a128.1.0.0.nupkg" || goto x
@@ -424,7 +432,7 @@ set "exec=%~3" & set "wdir=%~4"
 
     ::_______ ------ ______________________________________
 
-        call a startTest "/p:wpath=%cd%\%basePkgDir%" || goto x
+        call a startTest "/p:wpath=`%cd%\%basePkgDir%\`" || goto x
             call a msgOrFailAt 1 "Conari " || goto x
             call a msgOrFailAt 2 "Fnv1a128" || goto x
             call a msgOrFailAt 3 "!sha1Fnv1a128! ... !sha1Fnv1a128!" || goto x
@@ -558,9 +566,9 @@ set "exec=%~3" & set "wdir=%~4"
 
         call a unsetFile %svcbat%
 
-        call a startTest "*GetNuTool/1.9.0" || goto x
-            call a msgOrFailAt 1 "GetNuTool/1.9.0 ... " || goto x
-            call a checkFsBase "GetNuTool.1.9.0" "GetNuTool.nuspec" || goto x
+        call a startTest "*GetNuTool/1.10.0" || goto x
+            call a msgOrFailAt 1 "GetNuTool/1.10.0 ... " || goto x
+            call a checkFsBase "GetNuTool.1.10.0" "GetNuTool.nuspec" || goto x
             call a checkFs . %svcbat% || goto x
         call a completeTest
     ::_____________________________________________________
@@ -568,11 +576,13 @@ set "exec=%~3" & set "wdir=%~4"
 
     ::_______ ------ ______________________________________
 
-        call a startTest "/help" || goto x
-            call a findInStreamOrFail "Package List Format" || goto x
-            call a findInStreamOrFail "Examples:" || goto x
-            call a findInStreamOrFail "Documentation:" || goto x
-        call a completeTest
+        if not defined packageGetNuToolIsNotReady (
+            call a startTest "/help" || goto x
+                call a findInStreamOrFail "Package List Format" || goto x
+                call a findInStreamOrFail "Examples:" || goto x
+                call a findInStreamOrFail "Documentation:" || goto x
+            call a completeTest
+        )
     ::_____________________________________________________
 
 

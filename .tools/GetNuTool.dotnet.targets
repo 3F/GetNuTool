@@ -39,4 +39,28 @@
 
   </ItemGroup>
 
+  <!--  -->
+
+  <PropertyGroup>
+    <GetNuToolCopyToOutput Condition="'$(GetNuToolCopyToOutput)'==''">false</GetNuToolCopyToOutput>
+    <GetNuToolResolvePublish Condition="'$(GetNuToolResolvePublish)'==''">$(GetNuToolCopyToOutput)</GetNuToolResolvePublish>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <GetNuToolDistFiles Include="$(GetNuToolBat)" Condition="Exists('$(GetNuToolBat)')" />
+  </ItemGroup>
+
+  <Target Condition="'$(GetNuToolCopyToOutput)'=='true'"
+          Name="GetNuToolAfterBuild" AfterTargets="AfterBuild">
+
+      <Copy SourceFiles="@(GetNuToolDistFiles)"
+                    DestinationFolder="$(TargetDir)\"
+                    SkipUnchangedFiles="true"
+                    OverwriteReadOnlyFiles="true" />
+  </Target>
+
+  <ItemGroup Condition="'$(GetNuToolResolvePublish)'=='true'">
+    <ResolvedFileToPublish Include="@(GetNuToolDistFiles)" RelativePath="%(Filename)%(Extension)"/>
+  </ItemGroup>
+
 </Project>

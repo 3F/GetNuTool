@@ -11,4 +11,21 @@
     <GetNuToolCore>$(GetNuToolRootPkg)core\gnt.core</GetNuToolCore>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <GetNuToolCopyToOutput Condition="'$(GetNuToolCopyToOutput)'==''">true</GetNuToolCopyToOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <GetNuToolDistFiles Include="$(GetNuToolBat)" Condition="Exists('$(GetNuToolBat)')" />
+  </ItemGroup>
+
+  <Target Condition="'$(GetNuToolCopyToOutput)'=='true'"
+          Name="GetNuToolAfterBuild" AfterTargets="AfterBuild">
+
+      <Copy SourceFiles="@(GetNuToolDistFiles)"
+                    DestinationFolder="$(TargetDir)\"
+                    SkipUnchangedFiles="true"
+                    OverwriteReadOnlyFiles="true" />
+  </Target>
+
 </Project>

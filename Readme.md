@@ -12,6 +12,7 @@ Copyright (c) 2015-2025  Denis Kuzmin <x-3F@outlook.com> github/3F
 [![Build status](https://ci.appveyor.com/api/projects/status/gw8tij2230gwkqs6/branch/master?svg=true)](https://ci.appveyor.com/project/3Fs/getnutool-github/branch/master)
 [![release](https://img.shields.io/github/release/3F/GetNuTool.svg)](https://github.com/3F/GetNuTool/releases/latest)
 
+[`gnt`](https://3F.github.io/GetNuTool/releases/latest/gnt/)`-help` | [`gnt`](https://3F.github.io/GetNuTool/releases/latest/gnt/)`~& svc.gnt` | [`gnt`](https://3F.github.io/GetNuTool/releases/latest/gnt/)`*/p:use=documentation`
 
 ```bash
 gnt Fnv1a128                                  # Get Fnv1a128 package
@@ -30,7 +31,7 @@ gnt /p:ngpackages=putty.portable/0.69         # chocolatey
 
 **[Download](https://github.com/3F/GetNuTool/releases/latest)** all editions: *Core, Minified, Executable, C# version for .NET, ...*
 
-Official Direct Links:
+Direct Links to the latest stable:
 
 * (Windows) Latest stable compiled batch-script [ [gnt.bat](https://3F.github.io/GetNuTool/releases/latest/gnt/) ] `https://3F.github.io/GetNuTool/releases/latest/gnt/`
 
@@ -719,7 +720,7 @@ Note: *.sha1* file is a text list of published files with checksums in the forma
 `40-hexadecimal-digits` `<space>` `file`
 
 ```
-eead8f5c1fdff2abd4da7d799fbbe694d392c792 path\file
+e9e533b0da8e5546eff821a40fbf7ca20ab9cf7e path\file
 ...
 ```
 

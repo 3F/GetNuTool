@@ -10,12 +10,13 @@ setlocal
     if exist "core\gnt.core" (
 
         set "bdir=..\shell\batch\"
-        set "gntLocalServer=..\..\"
+        call srv.create >nul
+        set "gntLocalServer=..\\"
 
     ) else if exist "bin\Release\" (
 
         set "bdir=..\bin\Release\"
-        set "gntLocalServer=..\bin\Release\"
+        set "gntLocalServer=..\bin\Release\\"
 
     ) else goto buildError
 
