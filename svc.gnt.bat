@@ -475,9 +475,10 @@ exit /B 0
 
     :: delayed evaluation
     set _vl=!%1!  ::&:
+    if not defined _vl set %2=&exit/B0
 
     :: data from %..% below should not contain double quotes, thus we need to protect this:
-    (if "!_vl!" NEQ "" (
+    :: NOTE: DO NOT enclose in square brackets () because of delayed expansion
 
         set "_vl=%_vl: T =^%"   ::&:
         set "_vl=%_vl: L =^!%"  ::&:
@@ -485,7 +486,6 @@ exit /B 0
 
         :: to support extra quotes
         set _vl=!_vl:`="!         ::&:
-    ))
 
     set %2=!_vl!
 exit /B 0

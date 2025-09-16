@@ -10,7 +10,16 @@ call :shiftArgs 1,99 shProcArgs %* & call :!shProcArgs! & exit /B
 
 :initAppVersion
     :: [1] - Optional postfix.
-    set /p appversion%~1=<..\.version
+    :: [2] - Optional path or version string
+
+    set "_pathOrVer=%~2"
+    if not defined _pathOrVer set "_pathOrVer=..\.version"
+
+    if exist "%_pathOrVer%" (
+        set /p appversion%~1=<"%_pathOrVer%"
+    ) else (
+        set appversion%~1=%_pathOrVer%
+    )
 exit /B
 
 :invoke
@@ -41,6 +50,17 @@ exit /B !msg[%msgIdx%]!
 
     call :invoke "%~1" nul retcode
 exit /B !retcode!
+
+:invokeShortVersion
+    ::   (1) - Input command to get raw version string.
+    :: *&(2) - Output in a short version format major.minor.patch
+    ::  !!1  - Error code 1 if failed.
+
+    for /F "tokens=1,2,3 delims=." %%a in ('%~1') do (
+        set "%2=%%a.%%b.%%c" & exit /B 0
+    )
+    set "%2="
+exit /B 1
 
 :startExTest
     ::  (1) - Logic via :label name
